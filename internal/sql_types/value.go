@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package sqltypes implements interfaces and types that represent SQL values.
-package sqltypes
+// Package sql_types implements interfaces and types that represent SQL values.
+package sql_types
 
 import (
 	"encoding/base64"

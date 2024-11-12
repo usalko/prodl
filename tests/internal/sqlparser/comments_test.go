@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestSplitComments(t *testing.T) {
@@ -136,7 +136,7 @@ func TestSplitComments(t *testing.T) {
 	}}
 	for _, testCase := range testCases {
 		t.Run(testCase.input, func(t *testing.T) {
-			gotSQL, gotComments := sqlparser.SplitMarginComments(testCase.input)
+			gotSQL, gotComments := sql_parser.SplitMarginComments(testCase.input)
 			gotLeadingComments, gotTrailingComments := gotComments.Leading, gotComments.Trailing
 
 			if gotSQL != testCase.outSQL {
@@ -220,7 +220,7 @@ a`,
 		outSQL: "",
 	}}
 	for _, testCase := range testCases {
-		gotSQL := sqlparser.StripLeadingComments(testCase.input)
+		gotSQL := sql_parser.StripLeadingComments(testCase.input)
 
 		if gotSQL != testCase.outSQL {
 			t.Errorf("test input: '%s', got SQL\n%+v, want\n%+v", testCase.input, gotSQL, testCase.outSQL)
@@ -249,7 +249,7 @@ func TestExtractMysqlComment(t *testing.T) {
 		outVersion: "",
 	}}
 	for _, testCase := range testCases {
-		gotVersion, gotSQL := sqlparser.ExtractMysqlComment(testCase.input)
+		gotVersion, gotSQL := sql_parser.ExtractMysqlComment(testCase.input)
 
 		if gotVersion != testCase.outVersion {
 			t.Errorf("test input: '%s', got version\n%+v, want\n%+v", testCase.input, gotVersion, testCase.outVersion)
@@ -263,54 +263,54 @@ func TestExtractMysqlComment(t *testing.T) {
 func TestExtractCommentDirectives(t *testing.T) {
 	var testCases = []struct {
 		input string
-		vals  sqlparser.CommentDirectives
+		vals  sql_parser.CommentDirectives
 	}{{
 		input: "",
 		vals:  nil,
 	}, {
 		input: "/* not a vt comment */",
-		vals:  sqlparser.CommentDirectives{},
+		vals:  sql_parser.CommentDirectives{},
 	}, {
 		input: "/*vt+ */",
-		vals:  sqlparser.CommentDirectives{},
+		vals:  sql_parser.CommentDirectives{},
 	}, {
 		input: "/*vt+ SINGLE_OPTION */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"SINGLE_OPTION": "true",
 		},
 	}, {
 		input: "/*vt+ ONE_OPT TWO_OPT */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"ONE_OPT": "true",
 			"TWO_OPT": "true",
 		},
 	}, {
 		input: "/*vt+ ONE_OPT */ /* other comment */ /*vt+ TWO_OPT */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"ONE_OPT": "true",
 			"TWO_OPT": "true",
 		},
 	}, {
 		input: "/*vt+ ONE_OPT=abc TWO_OPT=def */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"ONE_OPT": "abc",
 			"TWO_OPT": "def",
 		},
 	}, {
 		input: "/*vt+ ONE_OPT=true TWO_OPT=false */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"ONE_OPT": "true",
 			"TWO_OPT": "false",
 		},
 	}, {
 		input: "/*vt+ ONE_OPT=true TWO_OPT=\"false\" */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"ONE_OPT": "true",
 			"TWO_OPT": "\"false\"",
 		},
 	}, {
 		input: "/*vt+ RANGE_OPT=[a:b] ANOTHER ANOTHER_WITH_VALEQ=val= AND_ONE_WITH_EQ== */",
-		vals: sqlparser.CommentDirectives{
+		vals: sql_parser.CommentDirectives{
 			"RANGE_OPT":          "[a:b]",
 			"ANOTHER":            "true",
 			"ANOTHER_WITH_VALEQ": "val=",
@@ -334,26 +334,26 @@ func TestExtractCommentDirectives(t *testing.T) {
 			}
 			for _, sql := range sqls {
 				t.Run(sql, func(t *testing.T) {
-					var comments *sqlparser.ParsedComments
-					stmt, _ := sqlparser.Parse(sql)
+					var comments *sql_parser.ParsedComments
+					stmt, _ := sql_parser.Parse(sql)
 					switch s := stmt.(type) {
-					case *sqlparser.Select:
+					case *sql_parser.Select:
 						comments = s.Comments
-					case *sqlparser.Update:
+					case *sql_parser.Update:
 						comments = s.Comments
-					case *sqlparser.Delete:
+					case *sql_parser.Delete:
 						comments = s.Comments
-					case *sqlparser.DropTable:
+					case *sql_parser.DropTable:
 						comments = s.Comments
-					case *sqlparser.AlterTable:
+					case *sql_parser.AlterTable:
 						comments = s.Comments
-					case *sqlparser.CreateTable:
+					case *sql_parser.CreateTable:
 						comments = s.Comments
-					case *sqlparser.CreateView:
+					case *sql_parser.CreateView:
 						comments = s.Comments
-					case *sqlparser.AlterView:
+					case *sql_parser.AlterView:
 						comments = s.Comments
-					case *sqlparser.DropView:
+					case *sql_parser.DropView:
 						comments = s.Comments
 					default:
 						t.Errorf("Unexpected statement type %+v", s)
@@ -368,7 +368,7 @@ func TestExtractCommentDirectives(t *testing.T) {
 		})
 	}
 
-	d := sqlparser.CommentDirectives{
+	d := sql_parser.CommentDirectives{
 		"ONE_OPT": "true",
 		"TWO_OPT": "false",
 		"three":   "1",
@@ -403,28 +403,28 @@ func TestExtractCommentDirectives(t *testing.T) {
 }
 
 func TestSkipQueryPlanCacheDirective(t *testing.T) {
-	stmt, _ := sqlparser.Parse("insert /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ into user(id) values (1), (2)")
-	if !sqlparser.SkipQueryPlanCacheDirective(stmt) {
+	stmt, _ := sql_parser.Parse("insert /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ into user(id) values (1), (2)")
+	if !sql_parser.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sqlparser.Parse("insert into user(id) values (1), (2)")
-	if sqlparser.SkipQueryPlanCacheDirective(stmt) {
+	stmt, _ = sql_parser.Parse("insert into user(id) values (1), (2)")
+	if sql_parser.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be false")
 	}
 
-	stmt, _ = sqlparser.Parse("update /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ users set name=1")
-	if !sqlparser.SkipQueryPlanCacheDirective(stmt) {
+	stmt, _ = sql_parser.Parse("update /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ users set name=1")
+	if !sql_parser.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sqlparser.Parse("select /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ * from users")
-	if !sqlparser.SkipQueryPlanCacheDirective(stmt) {
+	stmt, _ = sql_parser.Parse("select /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ * from users")
+	if !sql_parser.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sqlparser.Parse("delete /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ from users")
-	if !sqlparser.SkipQueryPlanCacheDirective(stmt) {
+	stmt, _ = sql_parser.Parse("delete /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ from users")
+	if !sql_parser.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 }
@@ -448,8 +448,8 @@ func TestIgnoreMaxPayloadSizeDirective(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.query, func(t *testing.T) {
-			stmt, _ := sqlparser.Parse(test.query)
-			got := sqlparser.IgnoreMaxPayloadSizeDirective(stmt)
+			stmt, _ := sql_parser.Parse(test.query)
+			got := sql_parser.IgnoreMaxPayloadSizeDirective(stmt)
 			assert.Equalf(t, test.expected, got, fmt.Sprintf("IgnoreMaxPayloadSizeDirective(stmt) returned %v but expected %v", got, test.expected))
 		})
 	}
@@ -474,8 +474,8 @@ func TestIgnoreMaxMaxMemoryRowsDirective(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.query, func(t *testing.T) {
-			stmt, _ := sqlparser.Parse(test.query)
-			got := sqlparser.IgnoreMaxMaxMemoryRowsDirective(stmt)
+			stmt, _ := sql_parser.Parse(test.query)
+			got := sql_parser.IgnoreMaxMaxMemoryRowsDirective(stmt)
 			assert.Equalf(t, test.expected, got, fmt.Sprintf("IgnoreMaxPayloadSizeDirective(stmt) returned %v but expected %v", got, test.expected))
 		})
 	}

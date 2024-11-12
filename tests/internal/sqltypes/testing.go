@@ -14,18 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqltypes
+package sql_types
 
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 // TestValue builds a Value from typ and val.
 // This function should only be used for testing.
-func TestValue(typ sqltypes.Type, val string) sqltypes.Value {
-	return sqltypes.MakeTrusted(typ, []byte(val))
+func TestValue(typ sql_types.Type, val string) sql_types.Value {
+	return sql_types.MakeTrusted(typ, []byte(val))
 }
 
 func split(str string) []string {

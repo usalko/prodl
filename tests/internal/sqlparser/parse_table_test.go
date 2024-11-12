@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestParseTable(t *testing.T) {
@@ -58,7 +58,7 @@ func TestParseTable(t *testing.T) {
 		err:   true,
 	}}
 	for _, tcase := range testcases {
-		keyspace, table, err := sqlparser.ParseTable(tcase.input)
+		keyspace, table, err := sql_parser.ParseTable(tcase.input)
 		assert.Equal(t, tcase.keyspace, keyspace)
 		assert.Equal(t, tcase.table, table)
 		if tcase.err {

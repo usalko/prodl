@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func BenchmarkWalkLargeExpression(b *testing.B) {
@@ -30,7 +30,7 @@ func BenchmarkWalkLargeExpression(b *testing.B) {
 			exp := newGenerator(int64(i*100), 5).expression()
 			count := 0
 			for i := 0; i < b.N; i++ {
-				err := sqlparser.Walk(func(node sqlparser.SQLNode) (kontinue bool, err error) {
+				err := sql_parser.Walk(func(node sql_parser.SQLNode) (kontinue bool, err error) {
 					count++
 					return true, nil
 				}, exp)
@@ -46,10 +46,10 @@ func BenchmarkRewriteLargeExpression(b *testing.B) {
 			exp := newGenerator(int64(i*100), i).expression()
 			count := 0
 			for i := 0; i < b.N; i++ {
-				_ = sqlparser.Rewrite(exp, func(_ *sqlparser.Cursor) bool {
+				_ = sql_parser.Rewrite(exp, func(_ *sql_parser.Cursor) bool {
 					count++
 					return true
-				}, func(_ *sqlparser.Cursor) bool {
+				}, func(_ *sql_parser.Cursor) bool {
 					count--
 					return true
 				})

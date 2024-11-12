@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"bytes"
@@ -27,21 +27,21 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestAppend(t *testing.T) {
 	query := "select * from t where a = 1"
-	tree, err := sqlparser.Parse(query)
+	tree, err := sql_parser.Parse(query)
 	require.NoError(t, err)
 	var b strings.Builder
-	sqlparser.Append(&b, tree)
+	sql_parser.Append(&b, tree)
 	got := b.String()
 	want := query
 	if got != want {
 		t.Errorf("Append: %s, want %s", got, want)
 	}
-	sqlparser.Append(&b, tree)
+	sql_parser.Append(&b, tree)
 	got = b.String()
 	want = query + query
 	if got != want {
@@ -50,55 +50,55 @@ func TestAppend(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	tree, err := sqlparser.Parse("select * from t where a = 1")
+	tree, err := sql_parser.Parse("select * from t where a = 1")
 	require.NoError(t, err)
-	expr := tree.(*sqlparser.Select).Where.Expr
+	expr := tree.(*sql_parser.Select).Where.Expr
 
-	sel := &sqlparser.Select{}
+	sel := &sql_parser.Select{}
 	sel.AddWhere(expr)
-	buf := sqlparser.NewTrackedBuffer(nil)
+	buf := sql_parser.NewTrackedBuffer(nil)
 	sel.Where.Format(buf)
 	want := " where a = 1"
 	if buf.String() != want {
 		t.Errorf("where: %q, want %s", buf.String(), want)
 	}
 	sel.AddWhere(expr)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	sel.Where.Format(buf)
 	want = " where a = 1"
 	if buf.String() != want {
 		t.Errorf("where: %q, want %s", buf.String(), want)
 	}
-	sel = &sqlparser.Select{}
+	sel = &sql_parser.Select{}
 	sel.AddHaving(expr)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	sel.Having.Format(buf)
 	want = " having a = 1"
 	if buf.String() != want {
 		t.Errorf("having: %q, want %s", buf.String(), want)
 	}
 	sel.AddHaving(expr)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	sel.Having.Format(buf)
 	want = " having a = 1 and a = 1"
 	if buf.String() != want {
 		t.Errorf("having: %q, want %s", buf.String(), want)
 	}
 
-	tree, err = sqlparser.Parse("select * from t where a = 1 or b = 1")
+	tree, err = sql_parser.Parse("select * from t where a = 1 or b = 1")
 	require.NoError(t, err)
-	expr = tree.(*sqlparser.Select).Where.Expr
-	sel = &sqlparser.Select{}
+	expr = tree.(*sql_parser.Select).Where.Expr
+	sel = &sql_parser.Select{}
 	sel.AddWhere(expr)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	sel.Where.Format(buf)
 	want = " where a = 1 or b = 1"
 	if buf.String() != want {
 		t.Errorf("where: %q, want %s", buf.String(), want)
 	}
-	sel = &sqlparser.Select{}
+	sel = &sql_parser.Select{}
 	sel.AddHaving(expr)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	sel.Having.Format(buf)
 	want = " having a = 1 or b = 1"
 	if buf.String() != want {
@@ -107,25 +107,25 @@ func TestSelect(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	tree, err := sqlparser.Parse("update t set a = 1")
+	tree, err := sql_parser.Parse("update t set a = 1")
 	require.NoError(t, err)
 
-	upd, ok := tree.(*sqlparser.Update)
+	upd, ok := tree.(*sql_parser.Update)
 	require.True(t, ok)
 
-	upd.AddWhere(&sqlparser.ComparisonExpr{
-		Left:     &sqlparser.ColName{Name: sqlparser.NewColIdent("b")},
-		Operator: sqlparser.EqualOp,
-		Right:    sqlparser.NewIntLiteral("2"),
+	upd.AddWhere(&sql_parser.ComparisonExpr{
+		Left:     &sql_parser.ColName{Name: sql_parser.NewColIdent("b")},
+		Operator: sql_parser.EqualOp,
+		Right:    sql_parser.NewIntLiteral("2"),
 	})
-	assert.Equal(t, "update t set a = 1 where b = 2", sqlparser.String(upd))
+	assert.Equal(t, "update t set a = 1 where b = 2", sql_parser.String(upd))
 
-	upd.AddWhere(&sqlparser.ComparisonExpr{
-		Left:     &sqlparser.ColName{Name: sqlparser.NewColIdent("c")},
-		Operator: sqlparser.EqualOp,
-		Right:    sqlparser.NewIntLiteral("3"),
+	upd.AddWhere(&sql_parser.ComparisonExpr{
+		Left:     &sql_parser.ColName{Name: sql_parser.NewColIdent("c")},
+		Operator: sql_parser.EqualOp,
+		Right:    sql_parser.NewIntLiteral("3"),
 	})
-	assert.Equal(t, "update t set a = 1 where b = 2 and c = 3", sqlparser.String(upd))
+	assert.Equal(t, "update t set a = 1 where b = 2 and c = 3", sql_parser.String(upd))
 }
 
 func TestRemoveHints(t *testing.T) {
@@ -133,15 +133,15 @@ func TestRemoveHints(t *testing.T) {
 		"select * from t use index (i)",
 		"select * from t force index (i)",
 	} {
-		tree, err := sqlparser.Parse(query)
+		tree, err := sql_parser.Parse(query)
 		if err != nil {
 			t.Fatal(err)
 		}
-		sel := tree.(*sqlparser.Select)
-		sel.From = sqlparser.TableExprs{
-			sel.From[0].(*sqlparser.AliasedTableExpr).RemoveHints(),
+		sel := tree.(*sql_parser.Select)
+		sel.From = sql_parser.TableExprs{
+			sel.From[0].(*sql_parser.AliasedTableExpr).RemoveHints(),
 		}
-		buf := sqlparser.NewTrackedBuffer(nil)
+		buf := sql_parser.NewTrackedBuffer(nil)
 		sel.Format(buf)
 		if got, want := buf.String(), "select * from t"; got != want {
 			t.Errorf("stripped query: %s, want %s", got, want)
@@ -150,37 +150,37 @@ func TestRemoveHints(t *testing.T) {
 }
 
 func TestAddOrder(t *testing.T) {
-	src, err := sqlparser.Parse("select foo, bar from baz order by foo")
+	src, err := sql_parser.Parse("select foo, bar from baz order by foo")
 	require.NoError(t, err)
-	order := src.(*sqlparser.Select).OrderBy[0]
-	dst, err := sqlparser.Parse("select * from t")
+	order := src.(*sql_parser.Select).OrderBy[0]
+	dst, err := sql_parser.Parse("select * from t")
 	require.NoError(t, err)
-	dst.(*sqlparser.Select).AddOrder(order)
-	buf := sqlparser.NewTrackedBuffer(nil)
+	dst.(*sql_parser.Select).AddOrder(order)
+	buf := sql_parser.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t order by foo asc", buf.String())
-	dst, err = sqlparser.Parse("select * from t union select * from s")
+	dst, err = sql_parser.Parse("select * from t union select * from s")
 	require.NoError(t, err)
-	dst.(*sqlparser.Union).AddOrder(order)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	dst.(*sql_parser.Union).AddOrder(order)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t union select * from s order by foo asc", buf.String())
 }
 
 func TestSetLimit(t *testing.T) {
-	src, err := sqlparser.Parse("select foo, bar from baz limit 4")
+	src, err := sql_parser.Parse("select foo, bar from baz limit 4")
 	require.NoError(t, err)
-	limit := src.(*sqlparser.Select).Limit
-	dst, err := sqlparser.Parse("select * from t")
+	limit := src.(*sql_parser.Select).Limit
+	dst, err := sql_parser.Parse("select * from t")
 	require.NoError(t, err)
-	dst.(*sqlparser.Select).SetLimit(limit)
-	buf := sqlparser.NewTrackedBuffer(nil)
+	dst.(*sql_parser.Select).SetLimit(limit)
+	buf := sql_parser.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t limit 4", buf.String())
-	dst, err = sqlparser.Parse("select * from t union select * from s")
+	dst, err = sql_parser.Parse("select * from t union select * from s")
 	require.NoError(t, err)
-	dst.(*sqlparser.Union).SetLimit(limit)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	dst.(*sql_parser.Union).SetLimit(limit)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t union select * from s limit 4", buf.String())
 }
@@ -188,79 +188,79 @@ func TestSetLimit(t *testing.T) {
 func TestDDL(t *testing.T) {
 	testcases := []struct {
 		query    string
-		output   sqlparser.DDLStatement
+		output   sql_parser.DDLStatement
 		affected []string
 	}{{
 		query: "create table a",
-		output: &sqlparser.CreateTable{
-			Table: sqlparser.TableName{Name: sqlparser.NewTableIdent("a")},
+		output: &sql_parser.CreateTable{
+			Table: sql_parser.TableName{Name: sql_parser.NewTableIdent("a")},
 		},
 		affected: []string{"a"},
 	}, {
 		query: "rename table a to b",
-		output: &sqlparser.RenameTable{
-			TablePairs: []*sqlparser.RenameTablePair{
+		output: &sql_parser.RenameTable{
+			TablePairs: []*sql_parser.RenameTablePair{
 				{
-					FromTable: sqlparser.TableName{Name: sqlparser.NewTableIdent("a")},
-					ToTable:   sqlparser.TableName{Name: sqlparser.NewTableIdent("b")},
+					FromTable: sql_parser.TableName{Name: sql_parser.NewTableIdent("a")},
+					ToTable:   sql_parser.TableName{Name: sql_parser.NewTableIdent("b")},
 				},
 			},
 		},
 		affected: []string{"a", "b"},
 	}, {
 		query: "rename table a to b, c to d",
-		output: &sqlparser.RenameTable{
-			TablePairs: []*sqlparser.RenameTablePair{
+		output: &sql_parser.RenameTable{
+			TablePairs: []*sql_parser.RenameTablePair{
 				{
-					FromTable: sqlparser.TableName{Name: sqlparser.NewTableIdent("a")},
-					ToTable:   sqlparser.TableName{Name: sqlparser.NewTableIdent("b")},
+					FromTable: sql_parser.TableName{Name: sql_parser.NewTableIdent("a")},
+					ToTable:   sql_parser.TableName{Name: sql_parser.NewTableIdent("b")},
 				}, {
-					FromTable: sqlparser.TableName{Name: sqlparser.NewTableIdent("c")},
-					ToTable:   sqlparser.TableName{Name: sqlparser.NewTableIdent("d")},
+					FromTable: sql_parser.TableName{Name: sql_parser.NewTableIdent("c")},
+					ToTable:   sql_parser.TableName{Name: sql_parser.NewTableIdent("d")},
 				},
 			},
 		},
 		affected: []string{"a", "b", "c", "d"},
 	}, {
 		query: "drop table a",
-		output: &sqlparser.DropTable{
-			FromTables: sqlparser.TableNames{
-				sqlparser.TableName{Name: sqlparser.NewTableIdent("a")},
+		output: &sql_parser.DropTable{
+			FromTables: sql_parser.TableNames{
+				sql_parser.TableName{Name: sql_parser.NewTableIdent("a")},
 			},
 		},
 		affected: []string{"a"},
 	}, {
 		query: "drop table a, b",
-		output: &sqlparser.DropTable{
-			FromTables: sqlparser.TableNames{
-				sqlparser.TableName{Name: sqlparser.NewTableIdent("a")},
-				sqlparser.TableName{Name: sqlparser.NewTableIdent("b")},
+		output: &sql_parser.DropTable{
+			FromTables: sql_parser.TableNames{
+				sql_parser.TableName{Name: sql_parser.NewTableIdent("a")},
+				sql_parser.TableName{Name: sql_parser.NewTableIdent("b")},
 			},
 		},
 		affected: []string{"a", "b"},
 	}}
 	for _, tcase := range testcases {
-		got, err := sqlparser.Parse(tcase.query)
+		got, err := sql_parser.Parse(tcase.query)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(got, tcase.output) {
 			t.Errorf("%s: %v, want %v", tcase.query, got, tcase.output)
 		}
-		want := make(sqlparser.TableNames, 0, len(tcase.affected))
+		want := make(sql_parser.TableNames, 0, len(tcase.affected))
 		for _, t := range tcase.affected {
-			want = append(want, sqlparser.TableName{Name: sqlparser.NewTableIdent(t)})
+			want = append(want, sql_parser.TableName{Name: sql_parser.NewTableIdent(t)})
 		}
-		if affected := got.(sqlparser.DDLStatement).AffectedTables(); !reflect.DeepEqual(affected, want) {
+		if affected := got.(sql_parser.DDLStatement).AffectedTables(); !reflect.DeepEqual(affected, want) {
 			t.Errorf("Affected(%s): %v, want %v", tcase.query, affected, want)
 		}
 	}
 }
 
 func TestSetAutocommitON(t *testing.T) {
-	stmt, err := sqlparser.Parse("SET autocommit=ON")
+	stmt, err := sql_parser.Parse("SET autocommit=ON")
 	require.NoError(t, err)
-	s, ok := stmt.(*sqlparser.Set)
+	s, ok := stmt.(*sql_parser.Set)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -271,8 +271,8 @@ func TestSetAutocommitON(t *testing.T) {
 
 	e := s.Exprs[0]
 	switch v := e.Expr.(type) {
-	case *sqlparser.Literal:
-		if v.Type != sqlparser.StrVal {
+	case *sql_parser.Literal:
+		if v.Type != sql_parser.StrVal {
 			t.Errorf("SET statement value is not StrVal: %T", v)
 		}
 
@@ -283,9 +283,9 @@ func TestSetAutocommitON(t *testing.T) {
 		t.Errorf("SET statement expression is not Literal: %T", e.Expr)
 	}
 
-	stmt, err = sqlparser.Parse("SET @@session.autocommit=ON")
+	stmt, err = sql_parser.Parse("SET @@session.autocommit=ON")
 	require.NoError(t, err)
-	s, ok = stmt.(*sqlparser.Set)
+	s, ok = stmt.(*sql_parser.Set)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -296,8 +296,8 @@ func TestSetAutocommitON(t *testing.T) {
 
 	e = s.Exprs[0]
 	switch v := e.Expr.(type) {
-	case *sqlparser.Literal:
-		if v.Type != sqlparser.StrVal {
+	case *sql_parser.Literal:
+		if v.Type != sql_parser.StrVal {
 			t.Errorf("SET statement value is not StrVal: %T", v)
 		}
 
@@ -310,9 +310,9 @@ func TestSetAutocommitON(t *testing.T) {
 }
 
 func TestSetAutocommitOFF(t *testing.T) {
-	stmt, err := sqlparser.Parse("SET autocommit=OFF")
+	stmt, err := sql_parser.Parse("SET autocommit=OFF")
 	require.NoError(t, err)
-	s, ok := stmt.(*sqlparser.Set)
+	s, ok := stmt.(*sql_parser.Set)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -323,8 +323,8 @@ func TestSetAutocommitOFF(t *testing.T) {
 
 	e := s.Exprs[0]
 	switch v := e.Expr.(type) {
-	case *sqlparser.Literal:
-		if v.Type != sqlparser.StrVal {
+	case *sql_parser.Literal:
+		if v.Type != sql_parser.StrVal {
 			t.Errorf("SET statement value is not StrVal: %T", v)
 		}
 
@@ -335,9 +335,9 @@ func TestSetAutocommitOFF(t *testing.T) {
 		t.Errorf("SET statement expression is not Literal: %T", e.Expr)
 	}
 
-	stmt, err = sqlparser.Parse("SET @@session.autocommit=OFF")
+	stmt, err = sql_parser.Parse("SET @@session.autocommit=OFF")
 	require.NoError(t, err)
-	s, ok = stmt.(*sqlparser.Set)
+	s, ok = stmt.(*sql_parser.Set)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -348,8 +348,8 @@ func TestSetAutocommitOFF(t *testing.T) {
 
 	e = s.Exprs[0]
 	switch v := e.Expr.(type) {
-	case *sqlparser.Literal:
-		if v.Type != sqlparser.StrVal {
+	case *sql_parser.Literal:
+		if v.Type != sql_parser.StrVal {
 			t.Errorf("SET statement value is not StrVal: %T", v)
 		}
 
@@ -363,14 +363,14 @@ func TestSetAutocommitOFF(t *testing.T) {
 }
 
 func TestWhere(t *testing.T) {
-	var w *sqlparser.Where
-	buf := sqlparser.NewTrackedBuffer(nil)
+	var w *sql_parser.Where
+	buf := sql_parser.NewTrackedBuffer(nil)
 	w.Format(buf)
 	if buf.String() != "" {
 		t.Errorf("w.Format(nil): %q, want \"\"", buf.String())
 	}
-	w = sqlparser.NewWhere(sqlparser.WhereClause, nil)
-	buf = sqlparser.NewTrackedBuffer(nil)
+	w = sql_parser.NewWhere(sql_parser.WhereClause, nil)
+	buf = sql_parser.NewTrackedBuffer(nil)
 	w.Format(buf)
 	if buf.String() != "" {
 		t.Errorf("w.Format(&Where{nil}: %q, want \"\"", buf.String())
@@ -378,45 +378,45 @@ func TestWhere(t *testing.T) {
 }
 
 func TestIsAggregate(t *testing.T) {
-	f := sqlparser.FuncExpr{Name: sqlparser.NewColIdent("avg")}
+	f := sql_parser.FuncExpr{Name: sql_parser.NewColIdent("avg")}
 	if !f.IsAggregate() {
 		t.Error("IsAggregate: false, want true")
 	}
 
-	f = sqlparser.FuncExpr{Name: sqlparser.NewColIdent("Avg")}
+	f = sql_parser.FuncExpr{Name: sql_parser.NewColIdent("Avg")}
 	if !f.IsAggregate() {
 		t.Error("IsAggregate: false, want true")
 	}
 
-	f = sqlparser.FuncExpr{Name: sqlparser.NewColIdent("foo")}
+	f = sql_parser.FuncExpr{Name: sql_parser.NewColIdent("foo")}
 	if f.IsAggregate() {
 		t.Error("IsAggregate: true, want false")
 	}
 }
 
 func TestIsImpossible(t *testing.T) {
-	f := sqlparser.ComparisonExpr{
-		Operator: sqlparser.NotEqualOp,
-		Left:     sqlparser.NewIntLiteral("1"),
-		Right:    sqlparser.NewIntLiteral("1"),
+	f := sql_parser.ComparisonExpr{
+		Operator: sql_parser.NotEqualOp,
+		Left:     sql_parser.NewIntLiteral("1"),
+		Right:    sql_parser.NewIntLiteral("1"),
 	}
 	if !f.IsImpossible() {
 		t.Error("IsImpossible: false, want true")
 	}
 
-	f = sqlparser.ComparisonExpr{
-		Operator: sqlparser.EqualOp,
-		Left:     sqlparser.NewIntLiteral("1"),
-		Right:    sqlparser.NewIntLiteral("1"),
+	f = sql_parser.ComparisonExpr{
+		Operator: sql_parser.EqualOp,
+		Left:     sql_parser.NewIntLiteral("1"),
+		Right:    sql_parser.NewIntLiteral("1"),
 	}
 	if f.IsImpossible() {
 		t.Error("IsImpossible: true, want false")
 	}
 
-	f = sqlparser.ComparisonExpr{
-		Operator: sqlparser.NotEqualOp,
-		Left:     sqlparser.NewIntLiteral("1"),
-		Right:    sqlparser.NewIntLiteral("2"),
+	f = sql_parser.ComparisonExpr{
+		Operator: sql_parser.NotEqualOp,
+		Left:     sql_parser.NewIntLiteral("1"),
+		Right:    sql_parser.NewIntLiteral("2"),
 	}
 	if f.IsImpossible() {
 		t.Error("IsImpossible: true, want false")
@@ -545,15 +545,15 @@ func TestReplaceExpr(t *testing.T) {
 		in:  "select * from t where case a when b then c when d then c else (select a from b) end",
 		out: "case a when b then c when d then c else :a end",
 	}}
-	to := sqlparser.NewArgument("a")
+	to := sql_parser.NewArgument("a")
 	for _, tcase := range tcases {
-		tree, err := sqlparser.Parse(tcase.in)
+		tree, err := sql_parser.Parse(tcase.in)
 		if err != nil {
 			t.Fatal(err)
 		}
-		var from *sqlparser.Subquery
-		_ = sqlparser.Walk(func(node sqlparser.SQLNode) (kontinue bool, err error) {
-			if sq, ok := node.(*sqlparser.Subquery); ok {
+		var from *sql_parser.Subquery
+		_ = sql_parser.Walk(func(node sql_parser.SQLNode) (kontinue bool, err error) {
+			if sq, ok := node.(*sql_parser.Subquery); ok {
 				from = sq
 				return false, nil
 			}
@@ -562,8 +562,8 @@ func TestReplaceExpr(t *testing.T) {
 		if from == nil {
 			t.Fatalf("from is nil for %s", tcase.in)
 		}
-		expr := sqlparser.ReplaceExpr(tree.(*sqlparser.Select).Where.Expr, from, to)
-		got := sqlparser.String(expr)
+		expr := sql_parser.ReplaceExpr(tree.(*sql_parser.Select).Where.Expr, from, to)
+		got := sql_parser.String(expr)
 		if tcase.out != got {
 			t.Errorf("ReplaceExpr(%s): %s, want %s", tcase.in, got, tcase.out)
 		}
@@ -571,27 +571,27 @@ func TestReplaceExpr(t *testing.T) {
 }
 
 func TestColNameEqual(t *testing.T) {
-	var c1, c2 *sqlparser.ColName
+	var c1, c2 *sql_parser.ColName
 	if c1.Equal(c2) {
 		t.Error("nil columns equal, want unequal")
 	}
-	c1 = &sqlparser.ColName{
-		Name: sqlparser.NewColIdent("aa"),
+	c1 = &sql_parser.ColName{
+		Name: sql_parser.NewColIdent("aa"),
 	}
-	c2 = &sqlparser.ColName{
-		Name: sqlparser.NewColIdent("bb"),
+	c2 = &sql_parser.ColName{
+		Name: sql_parser.NewColIdent("bb"),
 	}
 	if c1.Equal(c2) {
 		t.Error("columns equal, want unequal")
 	}
-	c2.Name = sqlparser.NewColIdent("aa")
+	c2.Name = sql_parser.NewColIdent("aa")
 	if !c1.Equal(c2) {
 		t.Error("columns unequal, want equal")
 	}
 }
 
 func TestColIdent(t *testing.T) {
-	str := sqlparser.NewColIdent("Ab")
+	str := sql_parser.NewColIdent("Ab")
 	if str.String() != "Ab" {
 		t.Errorf("String=%s, want Ab", str.String())
 	}
@@ -601,20 +601,20 @@ func TestColIdent(t *testing.T) {
 	if str.Lowered() != "ab" {
 		t.Errorf("Val=%s, want ab", str.Lowered())
 	}
-	if !str.Equal(sqlparser.NewColIdent("aB")) {
+	if !str.Equal(sql_parser.NewColIdent("aB")) {
 		t.Error("str.Equal(NewColIdent(aB))=false, want true")
 	}
 	if !str.EqualString("ab") {
 		t.Error("str.EqualString(ab)=false, want true")
 	}
-	str = sqlparser.NewColIdent("")
+	str = sql_parser.NewColIdent("")
 	if str.Lowered() != "" {
 		t.Errorf("Val=%s, want \"\"", str.Lowered())
 	}
 }
 
 func TestColIdentMarshal(t *testing.T) {
-	str := sqlparser.NewColIdent("Ab")
+	str := sql_parser.NewColIdent("Ab")
 	b, err := json.Marshal(str)
 	if err != nil {
 		t.Fatal(err)
@@ -624,7 +624,7 @@ func TestColIdentMarshal(t *testing.T) {
 	if got != want {
 		t.Errorf("json.Marshal()= %s, want %s", got, want)
 	}
-	var out sqlparser.ColIdent
+	var out sql_parser.ColIdent
 	if err := json.Unmarshal(b, &out); err != nil {
 		t.Errorf("Unmarshal err: %v, want nil", err)
 	}
@@ -634,7 +634,7 @@ func TestColIdentMarshal(t *testing.T) {
 }
 
 func TestColIdentSize(t *testing.T) {
-	size := unsafe.Sizeof(sqlparser.NewColIdent(""))
+	size := unsafe.Sizeof(sql_parser.NewColIdent(""))
 	want := 2*unsafe.Sizeof("") + 8
 	if size != want {
 		t.Errorf("Size of ColIdent: %d, want 32", want)
@@ -642,7 +642,7 @@ func TestColIdentSize(t *testing.T) {
 }
 
 func TestTableIdentMarshal(t *testing.T) {
-	str := sqlparser.NewTableIdent("Ab")
+	str := sql_parser.NewTableIdent("Ab")
 	b, err := json.Marshal(str)
 	if err != nil {
 		t.Fatal(err)
@@ -652,7 +652,7 @@ func TestTableIdentMarshal(t *testing.T) {
 	if got != want {
 		t.Errorf("json.Marshal()= %s, want %s", got, want)
 	}
-	var out sqlparser.TableIdent
+	var out sql_parser.TableIdent
 	if err := json.Unmarshal(b, &out); err != nil {
 		t.Errorf("Unmarshal err: %v, want nil", err)
 	}
@@ -675,7 +675,7 @@ func TestHexDecode(t *testing.T) {
 		out: "encoding/hex: odd length hex string",
 	}}
 	for _, tc := range testcase {
-		out, err := sqlparser.NewHexLiteral(tc.in).HexDecode()
+		out, err := sql_parser.NewHexLiteral(tc.in).HexDecode()
 		if err != nil {
 			if err.Error() != tc.out {
 				t.Errorf("Decode(%q): %v, want %s", tc.in, err, tc.out)
@@ -708,11 +708,11 @@ func TestCompliantName(t *testing.T) {
 		out: "_ab",
 	}}
 	for _, tc := range testcases {
-		out := sqlparser.NewColIdent(tc.in).CompliantName()
+		out := sql_parser.NewColIdent(tc.in).CompliantName()
 		if out != tc.out {
 			t.Errorf("ColIdent(%s).CompliantNamt: %s, want %s", tc.in, out, tc.out)
 		}
-		out = sqlparser.NewTableIdent(tc.in).CompliantName()
+		out = sql_parser.NewTableIdent(tc.in).CompliantName()
 		if out != tc.out {
 			t.Errorf("TableIdent(%s).CompliantNamt: %s, want %s", tc.in, out, tc.out)
 		}
@@ -720,7 +720,7 @@ func TestCompliantName(t *testing.T) {
 }
 
 func TestColumns_FindColumn(t *testing.T) {
-	cols := sqlparser.Columns{sqlparser.NewColIdent("a"), sqlparser.NewColIdent("c"), sqlparser.NewColIdent("b"), sqlparser.NewColIdent("0")}
+	cols := sql_parser.Columns{sql_parser.NewColIdent("a"), sql_parser.NewColIdent("c"), sql_parser.NewColIdent("b"), sql_parser.NewColIdent("0")}
 
 	testcases := []struct {
 		in  string
@@ -742,7 +742,7 @@ func TestColumns_FindColumn(t *testing.T) {
 		}}
 
 	for _, tc := range testcases {
-		val := cols.FindColumn(sqlparser.NewColIdent(tc.in))
+		val := cols.FindColumn(sql_parser.NewColIdent(tc.in))
 		if val != tc.out {
 			t.Errorf("FindColumn(%s): %d, want %d", tc.in, val, tc.out)
 		}
@@ -791,7 +791,7 @@ func TestSplitStatementToPieces(t *testing.T) {
 				tcase.output = tcase.input
 			}
 
-			stmtPieces, err := sqlparser.SplitStatementToPieces(tcase.input)
+			stmtPieces, err := sql_parser.SplitStatementToPieces(tcase.input)
 			require.NoError(t, err)
 
 			out := strings.Join(stmtPieces, ";")
@@ -801,20 +801,20 @@ func TestSplitStatementToPieces(t *testing.T) {
 }
 
 func TestTypeConversion(t *testing.T) {
-	ct1 := &sqlparser.ColumnType{Type: "BIGINT"}
-	ct2 := &sqlparser.ColumnType{Type: "bigint"}
+	ct1 := &sql_parser.ColumnType{Type: "BIGINT"}
+	ct2 := &sql_parser.ColumnType{Type: "bigint"}
 	assert.Equal(t, ct1.SQLType(), ct2.SQLType())
 }
 
 func TestDefaultStatus(t *testing.T) {
 	assert.Equal(t,
-		sqlparser.String(&sqlparser.Default{ColName: "status"}),
+		sql_parser.String(&sql_parser.Default{ColName: "status"}),
 		"default(`status`)")
 }
 
 func TestShowTableStatus(t *testing.T) {
 	query := "Show Table Status FROM customer"
-	tree, err := sqlparser.Parse(query)
+	tree, err := sql_parser.Parse(query)
 	require.NoError(t, err)
 	require.NotNil(t, tree)
 }
@@ -827,9 +827,9 @@ func BenchmarkStringTraces(b *testing.B) {
 				queries = queries[:10000]
 			}
 
-			parsed := make([]sqlparser.Statement, 0, len(queries))
+			parsed := make([]sql_parser.Statement, 0, len(queries))
 			for _, q := range queries {
-				pp, err := sqlparser.Parse(q)
+				pp, err := sql_parser.Parse(q)
 				if err != nil {
 					b.Fatal(err)
 				}
@@ -841,7 +841,7 @@ func BenchmarkStringTraces(b *testing.B) {
 
 			for i := 0; i < b.N; i++ {
 				for _, stmt := range parsed {
-					_ = sqlparser.String(stmt)
+					_ = sql_parser.String(stmt)
 				}
 			}
 		})

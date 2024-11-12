@@ -14,51 +14,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/sqltypes"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 func TestEncodable(t *testing.T) {
 	tcases := []struct {
-		in  sqlparser.Encodable
+		in  sql_parser.Encodable
 		out string
 	}{{
-		in: sqlparser.InsertValues{{
-			sqltypes.NewInt64(1),
-			sqltypes.NewVarBinary("foo('a')"),
+		in: sql_parser.InsertValues{{
+			sql_types.NewInt64(1),
+			sql_types.NewVarBinary("foo('a')"),
 		}, {
-			sqltypes.NewInt64(2),
-			sqltypes.NewVarBinary("bar(`b`)"),
+			sql_types.NewInt64(2),
+			sql_types.NewVarBinary("bar(`b`)"),
 		}},
 		out: "(1, 'foo(\\'a\\')'), (2, 'bar(`b`)')",
 	}, {
 		// Single column.
-		in: &sqlparser.TupleEqualityList{
-			Columns: []sqlparser.ColIdent{sqlparser.NewColIdent("pk")},
-			Rows: [][]sqltypes.Value{
-				{sqltypes.NewInt64(1)},
-				{sqltypes.NewVarBinary("aa")},
+		in: &sql_parser.TupleEqualityList{
+			Columns: []sql_parser.ColIdent{sql_parser.NewColIdent("pk")},
+			Rows: [][]sql_types.Value{
+				{sql_types.NewInt64(1)},
+				{sql_types.NewVarBinary("aa")},
 			},
 		},
 		out: "pk in (1, 'aa')",
 	}, {
 		// Multiple columns.
-		in: &sqlparser.TupleEqualityList{
-			Columns: []sqlparser.ColIdent{sqlparser.NewColIdent("pk1"), sqlparser.NewColIdent("pk2")},
-			Rows: [][]sqltypes.Value{
+		in: &sql_parser.TupleEqualityList{
+			Columns: []sql_parser.ColIdent{sql_parser.NewColIdent("pk1"), sql_parser.NewColIdent("pk2")},
+			Rows: [][]sql_types.Value{
 				{
-					sqltypes.NewInt64(1),
-					sqltypes.NewVarBinary("aa"),
+					sql_types.NewInt64(1),
+					sql_types.NewVarBinary("aa"),
 				},
 				{
-					sqltypes.NewInt64(2),
-					sqltypes.NewVarBinary("bb"),
+					sql_types.NewInt64(2),
+					sql_types.NewVarBinary("bb"),
 				},
 			},
 		},

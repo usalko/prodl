@@ -14,118 +14,118 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqltypes
+package sql_types
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 func TestTypeValues(t *testing.T) {
 	testcases := []struct {
-		defined  sqltypes.Type
+		defined  sql_types.Type
 		expected int
 	}{{
-		defined:  sqltypes.Null,
+		defined:  sql_types.Null,
 		expected: 0,
 	}, {
-		defined:  sqltypes.Int8,
-		expected: 1 | sqltypes.FlagIsIntegral,
+		defined:  sql_types.Int8,
+		expected: 1 | sql_types.FlagIsIntegral,
 	}, {
-		defined:  sqltypes.Uint8,
-		expected: 2 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Uint8,
+		expected: 2 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Int16,
-		expected: 3 | sqltypes.FlagIsIntegral,
+		defined:  sql_types.Int16,
+		expected: 3 | sql_types.FlagIsIntegral,
 	}, {
-		defined:  sqltypes.Uint16,
-		expected: 4 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Uint16,
+		expected: 4 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Int24,
-		expected: 5 | sqltypes.FlagIsIntegral,
+		defined:  sql_types.Int24,
+		expected: 5 | sql_types.FlagIsIntegral,
 	}, {
-		defined:  sqltypes.Uint24,
-		expected: 6 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Uint24,
+		expected: 6 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Int32,
-		expected: 7 | sqltypes.FlagIsIntegral,
+		defined:  sql_types.Int32,
+		expected: 7 | sql_types.FlagIsIntegral,
 	}, {
-		defined:  sqltypes.Uint32,
-		expected: 8 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Uint32,
+		expected: 8 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Int64,
-		expected: 9 | sqltypes.FlagIsIntegral,
+		defined:  sql_types.Int64,
+		expected: 9 | sql_types.FlagIsIntegral,
 	}, {
-		defined:  sqltypes.Uint64,
-		expected: 10 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Uint64,
+		expected: 10 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Float32,
-		expected: 11 | sqltypes.FlagIsFloat,
+		defined:  sql_types.Float32,
+		expected: 11 | sql_types.FlagIsFloat,
 	}, {
-		defined:  sqltypes.Float64,
-		expected: 12 | sqltypes.FlagIsFloat,
+		defined:  sql_types.Float64,
+		expected: 12 | sql_types.FlagIsFloat,
 	}, {
-		defined:  sqltypes.Timestamp,
-		expected: 13 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Timestamp,
+		expected: 13 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Date,
-		expected: 14 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Date,
+		expected: 14 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Time,
-		expected: 15 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Time,
+		expected: 15 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Datetime,
-		expected: 16 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Datetime,
+		expected: 16 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Year,
-		expected: 17 | sqltypes.FlagIsIntegral | sqltypes.FlagIsUnsigned,
+		defined:  sql_types.Year,
+		expected: 17 | sql_types.FlagIsIntegral | sql_types.FlagIsUnsigned,
 	}, {
-		defined:  sqltypes.Decimal,
+		defined:  sql_types.Decimal,
 		expected: 18,
 	}, {
-		defined:  sqltypes.Text,
-		expected: 19 | sqltypes.FlagIsQuoted | sqltypes.FlagIsText,
+		defined:  sql_types.Text,
+		expected: 19 | sql_types.FlagIsQuoted | sql_types.FlagIsText,
 	}, {
-		defined:  sqltypes.Blob,
-		expected: 20 | sqltypes.FlagIsQuoted | sqltypes.FlagIsBinary,
+		defined:  sql_types.Blob,
+		expected: 20 | sql_types.FlagIsQuoted | sql_types.FlagIsBinary,
 	}, {
-		defined:  sqltypes.VarChar,
-		expected: 21 | sqltypes.FlagIsQuoted | sqltypes.FlagIsText,
+		defined:  sql_types.VarChar,
+		expected: 21 | sql_types.FlagIsQuoted | sql_types.FlagIsText,
 	}, {
-		defined:  sqltypes.VarBinary,
-		expected: 22 | sqltypes.FlagIsQuoted | sqltypes.FlagIsBinary,
+		defined:  sql_types.VarBinary,
+		expected: 22 | sql_types.FlagIsQuoted | sql_types.FlagIsBinary,
 	}, {
-		defined:  sqltypes.Char,
-		expected: 23 | sqltypes.FlagIsQuoted | sqltypes.FlagIsText,
+		defined:  sql_types.Char,
+		expected: 23 | sql_types.FlagIsQuoted | sql_types.FlagIsText,
 	}, {
-		defined:  sqltypes.Binary,
-		expected: 24 | sqltypes.FlagIsQuoted | sqltypes.FlagIsBinary,
+		defined:  sql_types.Binary,
+		expected: 24 | sql_types.FlagIsQuoted | sql_types.FlagIsBinary,
 	}, {
-		defined:  sqltypes.Bit,
-		expected: 25 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Bit,
+		expected: 25 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Enum,
-		expected: 26 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Enum,
+		expected: 26 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Set,
-		expected: 27 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Set,
+		expected: 27 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Geometry,
-		expected: 29 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.Geometry,
+		expected: 29 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.TypeJSON,
-		expected: 30 | sqltypes.FlagIsQuoted,
+		defined:  sql_types.TypeJSON,
+		expected: 30 | sql_types.FlagIsQuoted,
 	}, {
-		defined:  sqltypes.Expression,
+		defined:  sql_types.Expression,
 		expected: 31,
 	}, {
-		defined:  sqltypes.HexNum,
-		expected: 32 | sqltypes.FlagIsText,
+		defined:  sql_types.HexNum,
+		expected: 32 | sql_types.FlagIsText,
 	}, {
-		defined:  sqltypes.HexVal,
-		expected: 33 | sqltypes.FlagIsText,
+		defined:  sql_types.HexVal,
+		expected: 33 | sql_types.FlagIsText,
 	}}
 	for _, tcase := range testcases {
 		if int(tcase.defined) != tcase.expected {
@@ -137,51 +137,51 @@ func TestTypeValues(t *testing.T) {
 // TestCategory verifies that the type categorizations
 // are non-overlapping and complete.
 func TestCategory(t *testing.T) {
-	alltypes := []sqltypes.Type{
-		sqltypes.Null,
-		sqltypes.Int8,
-		sqltypes.Uint8,
-		sqltypes.Int16,
-		sqltypes.Uint16,
-		sqltypes.Int24,
-		sqltypes.Uint24,
-		sqltypes.Int32,
-		sqltypes.Uint32,
-		sqltypes.Int64,
-		sqltypes.Uint64,
-		sqltypes.Float32,
-		sqltypes.Float64,
-		sqltypes.Timestamp,
-		sqltypes.Date,
-		sqltypes.Time,
-		sqltypes.Datetime,
-		sqltypes.Year,
-		sqltypes.Decimal,
-		sqltypes.Text,
-		sqltypes.Blob,
-		sqltypes.VarChar,
-		sqltypes.VarBinary,
-		sqltypes.Char,
-		sqltypes.Binary,
-		sqltypes.Bit,
-		sqltypes.Enum,
-		sqltypes.Set,
-		sqltypes.Geometry,
-		sqltypes.TypeJSON,
-		sqltypes.Expression,
-		sqltypes.HexNum,
-		sqltypes.HexVal,
+	alltypes := []sql_types.Type{
+		sql_types.Null,
+		sql_types.Int8,
+		sql_types.Uint8,
+		sql_types.Int16,
+		sql_types.Uint16,
+		sql_types.Int24,
+		sql_types.Uint24,
+		sql_types.Int32,
+		sql_types.Uint32,
+		sql_types.Int64,
+		sql_types.Uint64,
+		sql_types.Float32,
+		sql_types.Float64,
+		sql_types.Timestamp,
+		sql_types.Date,
+		sql_types.Time,
+		sql_types.Datetime,
+		sql_types.Year,
+		sql_types.Decimal,
+		sql_types.Text,
+		sql_types.Blob,
+		sql_types.VarChar,
+		sql_types.VarBinary,
+		sql_types.Char,
+		sql_types.Binary,
+		sql_types.Bit,
+		sql_types.Enum,
+		sql_types.Set,
+		sql_types.Geometry,
+		sql_types.TypeJSON,
+		sql_types.Expression,
+		sql_types.HexNum,
+		sql_types.HexVal,
 	}
 	for _, typ := range alltypes {
 		matched := false
-		if sqltypes.IsSigned(typ) {
-			if !sqltypes.IsIntegral(typ) {
+		if sql_types.IsSigned(typ) {
+			if !sql_types.IsIntegral(typ) {
 				t.Errorf("Signed type %v is not an integral", typ)
 			}
 			matched = true
 		}
-		if sqltypes.IsUnsigned(typ) {
-			if !sqltypes.IsIntegral(typ) {
+		if sql_types.IsUnsigned(typ) {
+			if !sql_types.IsIntegral(typ) {
 				t.Errorf("Unsigned type %v is not an integral", typ)
 			}
 			if matched {
@@ -189,19 +189,19 @@ func TestCategory(t *testing.T) {
 			}
 			matched = true
 		}
-		if sqltypes.IsFloat(typ) {
+		if sql_types.IsFloat(typ) {
 			if matched {
 				t.Errorf("%v matched more than one category", typ)
 			}
 			matched = true
 		}
-		if sqltypes.IsQuoted(typ) {
+		if sql_types.IsQuoted(typ) {
 			if matched {
 				t.Errorf("%v matched more than one category", typ)
 			}
 			matched = true
 		}
-		if typ == sqltypes.Null || typ == sqltypes.Decimal || typ == sqltypes.Expression || typ == sqltypes.Bit || typ == sqltypes.HexNum || typ == sqltypes.HexVal {
+		if typ == sql_types.Null || typ == sql_types.Decimal || typ == sql_types.Expression || typ == sql_types.Bit || typ == sql_types.HexNum || typ == sql_types.HexVal {
 			if matched {
 				t.Errorf("%v matched more than one category", typ)
 			}
@@ -214,67 +214,67 @@ func TestCategory(t *testing.T) {
 }
 
 func TestIsFunctions(t *testing.T) {
-	if sqltypes.IsIntegral(sqltypes.Null) {
+	if sql_types.IsIntegral(sql_types.Null) {
 		t.Error("Null: IsIntegral, must be false")
 	}
-	if !sqltypes.IsIntegral(sqltypes.Int64) {
+	if !sql_types.IsIntegral(sql_types.Int64) {
 		t.Error("Int64: !IsIntegral, must be true")
 	}
-	if sqltypes.IsSigned(sqltypes.Uint64) {
+	if sql_types.IsSigned(sql_types.Uint64) {
 		t.Error("Uint64: IsSigned, must be false")
 	}
-	if !sqltypes.IsSigned(sqltypes.Int64) {
+	if !sql_types.IsSigned(sql_types.Int64) {
 		t.Error("Int64: !IsSigned, must be true")
 	}
-	if sqltypes.IsUnsigned(sqltypes.Int64) {
+	if sql_types.IsUnsigned(sql_types.Int64) {
 		t.Error("Int64: IsUnsigned, must be false")
 	}
-	if !sqltypes.IsUnsigned(sqltypes.Uint64) {
+	if !sql_types.IsUnsigned(sql_types.Uint64) {
 		t.Error("Uint64: !IsUnsigned, must be true")
 	}
-	if sqltypes.IsFloat(sqltypes.Int64) {
+	if sql_types.IsFloat(sql_types.Int64) {
 		t.Error("Int64: IsFloat, must be false")
 	}
-	if !sqltypes.IsFloat(sqltypes.Float64) {
+	if !sql_types.IsFloat(sql_types.Float64) {
 		t.Error("Uint64: !IsFloat, must be true")
 	}
-	if sqltypes.IsQuoted(sqltypes.Int64) {
+	if sql_types.IsQuoted(sql_types.Int64) {
 		t.Error("Int64: IsQuoted, must be false")
 	}
-	if !sqltypes.IsQuoted(sqltypes.Binary) {
+	if !sql_types.IsQuoted(sql_types.Binary) {
 		t.Error("Binary: !IsQuoted, must be true")
 	}
-	if sqltypes.IsText(sqltypes.Int64) {
+	if sql_types.IsText(sql_types.Int64) {
 		t.Error("Int64: IsText, must be false")
 	}
-	if !sqltypes.IsText(sqltypes.Char) {
+	if !sql_types.IsText(sql_types.Char) {
 		t.Error("Char: !IsText, must be true")
 	}
-	if sqltypes.IsBinary(sqltypes.Int64) {
+	if sql_types.IsBinary(sql_types.Int64) {
 		t.Error("Int64: IsBinary, must be false")
 	}
-	if !sqltypes.IsBinary(sqltypes.Binary) {
+	if !sql_types.IsBinary(sql_types.Binary) {
 		t.Error("Char: !IsBinary, must be true")
 	}
-	if !sqltypes.IsNumber(sqltypes.Int64) {
+	if !sql_types.IsNumber(sql_types.Int64) {
 		t.Error("Int64: !isNumber, must be true")
 	}
 }
 
 func TestTypeToMySQL(t *testing.T) {
-	v, f := sqltypes.TypeToMySQL(sqltypes.Bit)
+	v, f := sql_types.TypeToMySQL(sql_types.Bit)
 	if v != 16 {
 		t.Errorf("Bit: %d, want 16", v)
 	}
-	if f != sqltypes.MysqlUnsigned {
-		t.Errorf("Bit flag: %x, want %x", f, sqltypes.MysqlUnsigned)
+	if f != sql_types.MysqlUnsigned {
+		t.Errorf("Bit flag: %x, want %x", f, sql_types.MysqlUnsigned)
 	}
-	v, f = sqltypes.TypeToMySQL(sqltypes.Date)
+	v, f = sql_types.TypeToMySQL(sql_types.Date)
 	if v != 10 {
 		t.Errorf("Bit: %d, want 10", v)
 	}
-	if f != sqltypes.MysqlBinary {
-		t.Errorf("Bit flag: %x, want %x", f, sqltypes.MysqlBinary)
+	if f != sql_types.MysqlBinary {
+		t.Errorf("Bit flag: %x, want %x", f, sql_types.MysqlBinary)
 	}
 }
 
@@ -282,129 +282,129 @@ func TestMySQLToType(t *testing.T) {
 	testcases := []struct {
 		intype  int64
 		inflags int64
-		outtype sqltypes.Type
+		outtype sql_types.Type
 	}{{
 		intype:  1,
-		outtype: sqltypes.Int8,
+		outtype: sql_types.Int8,
 	}, {
 		intype:  1,
-		inflags: sqltypes.MysqlUnsigned,
-		outtype: sqltypes.Uint8,
+		inflags: sql_types.MysqlUnsigned,
+		outtype: sql_types.Uint8,
 	}, {
 		intype:  2,
-		outtype: sqltypes.Int16,
+		outtype: sql_types.Int16,
 	}, {
 		intype:  2,
-		inflags: sqltypes.MysqlUnsigned,
-		outtype: sqltypes.Uint16,
+		inflags: sql_types.MysqlUnsigned,
+		outtype: sql_types.Uint16,
 	}, {
 		intype:  3,
-		outtype: sqltypes.Int32,
+		outtype: sql_types.Int32,
 	}, {
 		intype:  3,
-		inflags: sqltypes.MysqlUnsigned,
-		outtype: sqltypes.Uint32,
+		inflags: sql_types.MysqlUnsigned,
+		outtype: sql_types.Uint32,
 	}, {
 		intype:  4,
-		outtype: sqltypes.Float32,
+		outtype: sql_types.Float32,
 	}, {
 		intype:  5,
-		outtype: sqltypes.Float64,
+		outtype: sql_types.Float64,
 	}, {
 		intype:  6,
-		outtype: sqltypes.Null,
+		outtype: sql_types.Null,
 	}, {
 		intype:  7,
-		outtype: sqltypes.Timestamp,
+		outtype: sql_types.Timestamp,
 	}, {
 		intype:  8,
-		outtype: sqltypes.Int64,
+		outtype: sql_types.Int64,
 	}, {
 		intype:  8,
-		inflags: sqltypes.MysqlUnsigned,
-		outtype: sqltypes.Uint64,
+		inflags: sql_types.MysqlUnsigned,
+		outtype: sql_types.Uint64,
 	}, {
 		intype:  9,
-		outtype: sqltypes.Int24,
+		outtype: sql_types.Int24,
 	}, {
 		intype:  9,
-		inflags: sqltypes.MysqlUnsigned,
-		outtype: sqltypes.Uint24,
+		inflags: sql_types.MysqlUnsigned,
+		outtype: sql_types.Uint24,
 	}, {
 		intype:  10,
-		outtype: sqltypes.Date,
+		outtype: sql_types.Date,
 	}, {
 		intype:  11,
-		outtype: sqltypes.Time,
+		outtype: sql_types.Time,
 	}, {
 		intype:  12,
-		outtype: sqltypes.Datetime,
+		outtype: sql_types.Datetime,
 	}, {
 		intype:  13,
-		outtype: sqltypes.Year,
+		outtype: sql_types.Year,
 	}, {
 		intype:  16,
-		outtype: sqltypes.Bit,
+		outtype: sql_types.Bit,
 	}, {
 		intype:  245,
-		outtype: sqltypes.TypeJSON,
+		outtype: sql_types.TypeJSON,
 	}, {
 		intype:  246,
-		outtype: sqltypes.Decimal,
+		outtype: sql_types.Decimal,
 	}, {
 		intype:  249,
-		outtype: sqltypes.Text,
+		outtype: sql_types.Text,
 	}, {
 		intype:  250,
-		outtype: sqltypes.Text,
+		outtype: sql_types.Text,
 	}, {
 		intype:  251,
-		outtype: sqltypes.Text,
+		outtype: sql_types.Text,
 	}, {
 		intype:  252,
-		outtype: sqltypes.Text,
+		outtype: sql_types.Text,
 	}, {
 		intype:  252,
-		inflags: sqltypes.MysqlBinary,
-		outtype: sqltypes.Blob,
+		inflags: sql_types.MysqlBinary,
+		outtype: sql_types.Blob,
 	}, {
 		intype:  253,
-		outtype: sqltypes.VarChar,
+		outtype: sql_types.VarChar,
 	}, {
 		intype:  253,
-		inflags: sqltypes.MysqlBinary,
-		outtype: sqltypes.VarBinary,
+		inflags: sql_types.MysqlBinary,
+		outtype: sql_types.VarBinary,
 	}, {
 		intype:  254,
-		outtype: sqltypes.Char,
+		outtype: sql_types.Char,
 	}, {
 		intype:  254,
-		inflags: sqltypes.MysqlBinary,
-		outtype: sqltypes.Binary,
+		inflags: sql_types.MysqlBinary,
+		outtype: sql_types.Binary,
 	}, {
 		intype:  254,
-		inflags: sqltypes.MysqlEnum,
-		outtype: sqltypes.Enum,
+		inflags: sql_types.MysqlEnum,
+		outtype: sql_types.Enum,
 	}, {
 		intype:  254,
-		inflags: sqltypes.MysqlSet,
-		outtype: sqltypes.Set,
+		inflags: sql_types.MysqlSet,
+		outtype: sql_types.Set,
 	}, {
 		intype:  255,
-		outtype: sqltypes.Geometry,
+		outtype: sql_types.Geometry,
 	}, {
 		// Binary flag must be ignored.
 		intype:  8,
-		inflags: sqltypes.MysqlUnsigned | sqltypes.MysqlBinary,
-		outtype: sqltypes.Uint64,
+		inflags: sql_types.MysqlUnsigned | sql_types.MysqlBinary,
+		outtype: sql_types.Uint64,
 	}, {
 		// Unsigned flag must be ignored
 		intype:  252,
-		inflags: sqltypes.MysqlUnsigned | sqltypes.MysqlBinary,
-		outtype: sqltypes.Blob,
+		inflags: sql_types.MysqlUnsigned | sql_types.MysqlBinary,
+		outtype: sql_types.Blob,
 	}}
 	for _, tcase := range testcases {
-		got, err := sqltypes.MySQLToType(tcase.intype, tcase.inflags)
+		got, err := sql_types.MySQLToType(tcase.intype, tcase.inflags)
 		if err != nil {
 			t.Error(err)
 		}
@@ -415,7 +415,7 @@ func TestMySQLToType(t *testing.T) {
 }
 
 func TestTypeError(t *testing.T) {
-	_, err := sqltypes.MySQLToType(50, 0)
+	_, err := sql_types.MySQLToType(50, 0)
 	want := "unsupported type: 50"
 	if err == nil || err.Error() != want {
 		t.Errorf("MySQLToType: %v, want %s", err, want)
@@ -423,22 +423,22 @@ func TestTypeError(t *testing.T) {
 }
 
 func TestTypeEquivalenceCheck(t *testing.T) {
-	if !sqltypes.AreTypesEquivalent(sqltypes.Int16, sqltypes.Int16) {
+	if !sql_types.AreTypesEquivalent(sql_types.Int16, sql_types.Int16) {
 		t.Errorf("Int16 and Int16 are same types.")
 	}
-	if sqltypes.AreTypesEquivalent(sqltypes.Int16, sqltypes.Int24) {
+	if sql_types.AreTypesEquivalent(sql_types.Int16, sql_types.Int24) {
 		t.Errorf("Int16 and Int24 are not same types.")
 	}
-	if !sqltypes.AreTypesEquivalent(sqltypes.VarChar, sqltypes.VarBinary) {
+	if !sql_types.AreTypesEquivalent(sql_types.VarChar, sql_types.VarBinary) {
 		t.Errorf("VarChar in binlog and VarBinary in schema are equivalent types.")
 	}
-	if sqltypes.AreTypesEquivalent(sqltypes.VarBinary, sqltypes.VarChar) {
+	if sql_types.AreTypesEquivalent(sql_types.VarBinary, sql_types.VarChar) {
 		t.Errorf("VarBinary in binlog and VarChar in schema are not equivalent types.")
 	}
-	if !sqltypes.AreTypesEquivalent(sqltypes.Int16, sqltypes.Uint16) {
+	if !sql_types.AreTypesEquivalent(sql_types.Int16, sql_types.Uint16) {
 		t.Errorf("Int16 in binlog and Uint16 in schema are equivalent types.")
 	}
-	if sqltypes.AreTypesEquivalent(sqltypes.Uint16, sqltypes.Int16) {
+	if sql_types.AreTypesEquivalent(sql_types.Uint16, sql_types.Int16) {
 		t.Errorf("Uint16 in binlog and Int16 in schema are not equivalent types.")
 	}
 }
@@ -446,54 +446,54 @@ func TestTypeEquivalenceCheck(t *testing.T) {
 func TestPrintTypeChecks(t *testing.T) {
 	var funcs = []struct {
 		name string
-		f    func(p sqltypes.Type) bool
+		f    func(p sql_types.Type) bool
 	}{
-		{"IsSigned", sqltypes.IsSigned},
-		{"IsFloat", sqltypes.IsFloat},
-		{"IsUnsigned", sqltypes.IsUnsigned},
-		{"IsIntegral", sqltypes.IsIntegral},
-		{"IsText", sqltypes.IsText},
-		{"IsNumber", sqltypes.IsNumber},
-		{"IsQuoted", sqltypes.IsQuoted},
-		{"IsBinary", sqltypes.IsBinary},
-		{"IsDate", sqltypes.IsDate},
-		{"IsNull", sqltypes.IsNull},
+		{"IsSigned", sql_types.IsSigned},
+		{"IsFloat", sql_types.IsFloat},
+		{"IsUnsigned", sql_types.IsUnsigned},
+		{"IsIntegral", sql_types.IsIntegral},
+		{"IsText", sql_types.IsText},
+		{"IsNumber", sql_types.IsNumber},
+		{"IsQuoted", sql_types.IsQuoted},
+		{"IsBinary", sql_types.IsBinary},
+		{"IsDate", sql_types.IsDate},
+		{"IsNull", sql_types.IsNull},
 	}
-	var types = []sqltypes.Type{
-		sqltypes.Null,
-		sqltypes.Int8,
-		sqltypes.Uint8,
-		sqltypes.Int16,
-		sqltypes.Uint16,
-		sqltypes.Int24,
-		sqltypes.Uint24,
-		sqltypes.Int32,
-		sqltypes.Uint32,
-		sqltypes.Int64,
-		sqltypes.Uint64,
-		sqltypes.Float32,
-		sqltypes.Float64,
-		sqltypes.Timestamp,
-		sqltypes.Date,
-		sqltypes.Time,
-		sqltypes.Datetime,
-		sqltypes.Year,
-		sqltypes.Decimal,
-		sqltypes.Text,
-		sqltypes.Blob,
-		sqltypes.VarChar,
-		sqltypes.VarBinary,
-		sqltypes.Char,
-		sqltypes.Binary,
-		sqltypes.Bit,
-		sqltypes.Enum,
-		sqltypes.Set,
-		sqltypes.Geometry,
-		sqltypes.TypeJSON,
-		sqltypes.Expression,
-		sqltypes.HexNum,
-		sqltypes.HexVal,
-		sqltypes.Tuple,
+	var types = []sql_types.Type{
+		sql_types.Null,
+		sql_types.Int8,
+		sql_types.Uint8,
+		sql_types.Int16,
+		sql_types.Uint16,
+		sql_types.Int24,
+		sql_types.Uint24,
+		sql_types.Int32,
+		sql_types.Uint32,
+		sql_types.Int64,
+		sql_types.Uint64,
+		sql_types.Float32,
+		sql_types.Float64,
+		sql_types.Timestamp,
+		sql_types.Date,
+		sql_types.Time,
+		sql_types.Datetime,
+		sql_types.Year,
+		sql_types.Decimal,
+		sql_types.Text,
+		sql_types.Blob,
+		sql_types.VarChar,
+		sql_types.VarBinary,
+		sql_types.Char,
+		sql_types.Binary,
+		sql_types.Bit,
+		sql_types.Enum,
+		sql_types.Set,
+		sql_types.Geometry,
+		sql_types.TypeJSON,
+		sql_types.Expression,
+		sql_types.HexNum,
+		sql_types.HexVal,
+		sql_types.Tuple,
 	}
 
 	for _, f := range funcs {

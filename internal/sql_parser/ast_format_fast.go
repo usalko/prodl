@@ -15,13 +15,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
 	"strings"
 
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 // formatFast formats the node.
@@ -1242,7 +1242,7 @@ func (node *ShowFilter) formatFast(buf *TrackedBuffer) {
 	}
 	if node.Like != "" {
 		buf.WriteString(" like ")
-		sqltypes.BufEncodeStringSQL(buf.Builder, node.Like)
+		sql_types.BufEncodeStringSQL(buf.Builder, node.Like)
 	} else {
 		buf.WriteString(" where ")
 		node.Filter.formatFast(buf)
@@ -1652,7 +1652,7 @@ func (node *ExistsExpr) formatFast(buf *TrackedBuffer) {
 func (node *Literal) formatFast(buf *TrackedBuffer) {
 	switch node.Type {
 	case StrVal:
-		sqltypes.MakeTrusted(sqltypes.VarBinary, node.Bytes()).EncodeSQL(buf)
+		sql_types.MakeTrusted(sql_types.VarBinary, node.Bytes()).EncodeSQL(buf)
 	case IntVal, FloatVal, DecimalVal, HexNum:
 		buf.WriteString(node.Val)
 	case HexVal:

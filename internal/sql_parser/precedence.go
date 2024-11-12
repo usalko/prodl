@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 // Precendence is used to know the precedence between operators,
 // so we can introduce parens when needed in the String representation of the AST
@@ -43,8 +43,8 @@ const (
 
 // precedenceFor returns the precedence of an expression.
 //
-// * NOTE: If you change anything here, update sql.y to keep them consistent.
-//   Also make sure to add the new constructs to random_expr.go so we have test coverage for the new expressions *
+//   - NOTE: If you change anything here, update sql.y to keep them consistent.
+//     Also make sure to add the new constructs to random_expr.go so we have test coverage for the new expressions *
 func precedenceFor(in Expr) Precendence {
 	switch node := in.(type) {
 	case *OrExpr:

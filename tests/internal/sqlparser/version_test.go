@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestConvertMySQLVersion(t *testing.T) {
@@ -50,7 +50,7 @@ func TestConvertMySQLVersion(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version, func(t *testing.T) {
-			output, err := sqlparser.ConvertMySQLVersionToCommentVersion(tcase.version)
+			output, err := sql_parser.ConvertMySQLVersionToCommentVersion(tcase.version)
 			if tcase.error != "" {
 				require.EqualError(t, err, tcase.error)
 			} else {

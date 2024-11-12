@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 %{
-package sqlparser
+package sql_parser
 
 func setParseTree(yylex yyLexer, stmt Statement) {
   yylex.(*Tokenizer).ParseTree = stmt

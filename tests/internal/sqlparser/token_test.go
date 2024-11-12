@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestLiteralID(t *testing.T) {
@@ -31,53 +31,53 @@ func TestLiteralID(t *testing.T) {
 		out string
 	}{{
 		in:  "`aa`",
-		id:  sqlparser.ID,
+		id:  sql_parser.ID,
 		out: "aa",
 	}, {
 		in:  "```a```",
-		id:  sqlparser.ID,
+		id:  sql_parser.ID,
 		out: "`a`",
 	}, {
 		in:  "`a``b`",
-		id:  sqlparser.ID,
+		id:  sql_parser.ID,
 		out: "a`b",
 	}, {
 		in:  "`a``b`c",
-		id:  sqlparser.ID,
+		id:  sql_parser.ID,
 		out: "a`b",
 	}, {
 		in:  "`a``b",
-		id:  sqlparser.LEX_ERROR,
+		id:  sql_parser.LEX_ERROR,
 		out: "a`b",
 	}, {
 		in:  "`a``b``",
-		id:  sqlparser.LEX_ERROR,
+		id:  sql_parser.LEX_ERROR,
 		out: "a`b`",
 	}, {
 		in:  "``",
-		id:  sqlparser.LEX_ERROR,
+		id:  sql_parser.LEX_ERROR,
 		out: "",
 	}, {
 		in:  "@x",
-		id:  sqlparser.AT_ID,
+		id:  sql_parser.AT_ID,
 		out: "x",
 	}, {
 		in:  "@@x",
-		id:  sqlparser.AT_AT_ID,
+		id:  sql_parser.AT_AT_ID,
 		out: "x",
 	}, {
 		in:  "@@`x y`",
-		id:  sqlparser.AT_AT_ID,
+		id:  sql_parser.AT_AT_ID,
 		out: "x y",
 	}, {
 		in:  "@@`@x @y`",
-		id:  sqlparser.AT_AT_ID,
+		id:  sql_parser.AT_AT_ID,
 		out: "@x @y",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			tkn := sqlparser.NewStringTokenizer(tcase.in)
+			tkn := sql_parser.NewStringTokenizer(tcase.in)
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
 			require.Equal(t, tcase.out, string(out))
@@ -86,9 +86,9 @@ func TestLiteralID(t *testing.T) {
 }
 
 func tokenName(id int) string {
-	if id == sqlparser.STRING {
+	if id == sql_parser.STRING {
 		return "STRING"
-	} else if id == sqlparser.LEX_ERROR {
+	} else if id == sql_parser.LEX_ERROR {
 		return "LEX_ERROR"
 	}
 	return fmt.Sprintf("%d", id)
@@ -101,57 +101,57 @@ func TestString(t *testing.T) {
 		want string
 	}{{
 		in:   "''",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "",
 	}, {
 		in:   "''''",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "'",
 	}, {
 		in:   "'hello'",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "hello",
 	}, {
 		in:   "'\\n'",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "\n",
 	}, {
 		in:   "'\\nhello\\n'",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "\nhello\n",
 	}, {
 		in:   "'a''b'",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "a'b",
 	}, {
 		in:   "'a\\'b'",
-		id:   sqlparser.STRING,
+		id:   sql_parser.STRING,
 		want: "a'b",
 	}, {
 		in:   "'\\'",
-		id:   sqlparser.LEX_ERROR,
+		id:   sql_parser.LEX_ERROR,
 		want: "'",
 	}, {
 		in:   "'",
-		id:   sqlparser.LEX_ERROR,
+		id:   sql_parser.LEX_ERROR,
 		want: "",
 	}, {
 		in:   "'hello\\'",
-		id:   sqlparser.LEX_ERROR,
+		id:   sql_parser.LEX_ERROR,
 		want: "hello'",
 	}, {
 		in:   "'hello",
-		id:   sqlparser.LEX_ERROR,
+		id:   sql_parser.LEX_ERROR,
 		want: "hello",
 	}, {
 		in:   "'hello\\",
-		id:   sqlparser.LEX_ERROR,
+		id:   sql_parser.LEX_ERROR,
 		want: "hello",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			id, got := sqlparser.NewStringTokenizer(tcase.in).Scan()
+			id, got := sql_parser.NewStringTokenizer(tcase.in).Scan()
 			require.Equal(t, tcase.id, id, "Scan(%q) = (%s), want (%s)", tcase.in, tokenName(id), tokenName(tcase.id))
 			require.Equal(t, tcase.want, string(got))
 		})
@@ -196,7 +196,7 @@ func TestSplitStatement(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			sql, rem, err := sqlparser.SplitStatement(tcase.in)
+			sql, rem, err := sql_parser.SplitStatement(tcase.in)
 			if err != nil {
 				t.Errorf("EndOfStatementPosition(%s): ERROR: %v", tcase.in, err)
 				return
@@ -221,25 +221,25 @@ func TestVersion(t *testing.T) {
 	}{{
 		version: "50709",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sqlparser.FROM, sqlparser.IN, sqlparser.EXISTS, 0},
+		id:      []int{sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
 	}, {
 		version: "80101",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sqlparser.FROM, sqlparser.IN, sqlparser.EXISTS, 0},
+		id:      []int{sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
 	}, {
 		version: "80201",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sqlparser.SELECT, sqlparser.FROM, sqlparser.IN, sqlparser.EXISTS, 0},
+		id:      []int{sql_parser.SELECT, sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
 	}, {
 		version: "80102",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sqlparser.SELECT, sqlparser.FROM, sqlparser.IN, sqlparser.EXISTS, 0},
+		id:      []int{sql_parser.SELECT, sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version+"_"+tcase.in, func(t *testing.T) {
-			sqlparser.MySQLVersion = tcase.version
-			tok := sqlparser.NewStringTokenizer(tcase.in)
+			sql_parser.MySQLVersion = tcase.version
+			tok := sql_parser.NewStringTokenizer(tcase.in)
 			for _, expectedID := range tcase.id {
 				id, _ := tok.Scan()
 				require.Equal(t, expectedID, id)
@@ -265,7 +265,7 @@ func TestExtractMySQLComment(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version, func(t *testing.T) {
-			output, _ := sqlparser.ExtractMysqlComment(tcase.comment)
+			output, _ := sql_parser.ExtractMysqlComment(tcase.comment)
 			require.Equal(t, tcase.version, output)
 		})
 	}
@@ -278,38 +278,38 @@ func TestIntegerAndID(t *testing.T) {
 		out string
 	}{{
 		in: "334",
-		id: sqlparser.INTEGRAL,
+		id: sql_parser.INTEGRAL,
 	}, {
 		in: "33.4",
-		id: sqlparser.DECIMAL,
+		id: sql_parser.DECIMAL,
 	}, {
 		in: "0x33",
-		id: sqlparser.HEXNUM,
+		id: sql_parser.HEXNUM,
 	}, {
 		in: "33e4",
-		id: sqlparser.FLOAT,
+		id: sql_parser.FLOAT,
 	}, {
 		in: "33.4e-3",
-		id: sqlparser.FLOAT,
+		id: sql_parser.FLOAT,
 	}, {
 		in: "33t4",
-		id: sqlparser.ID,
+		id: sql_parser.ID,
 	}, {
 		in: "0x2et3",
-		id: sqlparser.ID,
+		id: sql_parser.ID,
 	}, {
 		in:  "3e2t3",
-		id:  sqlparser.LEX_ERROR,
+		id:  sql_parser.LEX_ERROR,
 		out: "3e2",
 	}, {
 		in:  "3.2t",
-		id:  sqlparser.LEX_ERROR,
+		id:  sql_parser.LEX_ERROR,
 		out: "3.2",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			tkn := sqlparser.NewStringTokenizer(tcase.in)
+			tkn := sql_parser.NewStringTokenizer(tcase.in)
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
 			expectedOut := tcase.out

@@ -14,12 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 // This file contains types that are 'Encodable'.
@@ -32,7 +32,7 @@ type Encodable interface {
 
 // InsertValues is a custom SQL encoder for the values of
 // an insert statement.
-type InsertValues [][]sqltypes.Value
+type InsertValues [][]sql_types.Value
 
 // EncodeSQL performs the SQL encoding for InsertValues.
 func (iv InsertValues) EncodeSQL(buf *strings.Builder) {
@@ -55,7 +55,7 @@ func (iv InsertValues) EncodeSQL(buf *strings.Builder) {
 // for tables that have composite primary keys.
 type TupleEqualityList struct {
 	Columns []ColIdent
-	Rows    [][]sqltypes.Value
+	Rows    [][]sql_types.Value
 }
 
 // EncodeSQL generates the where clause constraints for the tuple

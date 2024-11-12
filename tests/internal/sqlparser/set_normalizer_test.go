@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestNormalizeSetExpr(t *testing.T) {
@@ -76,15 +76,15 @@ func TestNormalizeSetExpr(t *testing.T) {
 				tt.expected = tt.in
 			}
 
-			statement, err := sqlparser.Parse("set " + tt.in)
+			statement, err := sql_parser.Parse("set " + tt.in)
 			require.NoError(t, err)
-			rewriter := sqlparser.SetNormalizer{}
-			out, err := rewriter.NormalizeSetExpr(statement.(*sqlparser.Set).Exprs[0])
+			rewriter := sql_parser.SetNormalizer{}
+			out, err := rewriter.NormalizeSetExpr(statement.(*sql_parser.Set).Exprs[0])
 			if tt.err != "" {
 				require.EqualError(t, err, tt.err)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, tt.expected, sqlparser.String(out))
+				require.Equal(t, tt.expected, sql_parser.String(out))
 			}
 		})
 	}

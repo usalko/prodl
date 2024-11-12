@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ import (
 	"strings"
 
 	"github.com/usalko/sent/internal/coerrors"
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 // Walk calls visit on every node.
@@ -200,102 +200,102 @@ func (ct *ColumnType) DescribeType() string {
 	return buf.String()
 }
 
-// SQLType returns the sqltypes type code for the given column
-func (ct *ColumnType) SQLType() sqltypes.Type {
+// SQLType returns the sql_types type code for the given column
+func (ct *ColumnType) SQLType() sql_types.Type {
 	switch strings.ToLower(ct.Type) {
 	case keywordStrings[TINYINT]:
 		if ct.Unsigned {
-			return sqltypes.Uint8
+			return sql_types.Uint8
 		}
-		return sqltypes.Int8
+		return sql_types.Int8
 	case keywordStrings[SMALLINT]:
 		if ct.Unsigned {
-			return sqltypes.Uint16
+			return sql_types.Uint16
 		}
-		return sqltypes.Int16
+		return sql_types.Int16
 	case keywordStrings[MEDIUMINT]:
 		if ct.Unsigned {
-			return sqltypes.Uint24
+			return sql_types.Uint24
 		}
-		return sqltypes.Int24
+		return sql_types.Int24
 	case keywordStrings[INT], keywordStrings[INTEGER]:
 		if ct.Unsigned {
-			return sqltypes.Uint32
+			return sql_types.Uint32
 		}
-		return sqltypes.Int32
+		return sql_types.Int32
 	case keywordStrings[BIGINT]:
 		if ct.Unsigned {
-			return sqltypes.Uint64
+			return sql_types.Uint64
 		}
-		return sqltypes.Int64
+		return sql_types.Int64
 	case keywordStrings[BOOL], keywordStrings[BOOLEAN]:
-		return sqltypes.Uint8
+		return sql_types.Uint8
 	case keywordStrings[TEXT]:
-		return sqltypes.Text
+		return sql_types.Text
 	case keywordStrings[TINYTEXT]:
-		return sqltypes.Text
+		return sql_types.Text
 	case keywordStrings[MEDIUMTEXT]:
-		return sqltypes.Text
+		return sql_types.Text
 	case keywordStrings[LONGTEXT]:
-		return sqltypes.Text
+		return sql_types.Text
 	case keywordStrings[BLOB]:
-		return sqltypes.Blob
+		return sql_types.Blob
 	case keywordStrings[TINYBLOB]:
-		return sqltypes.Blob
+		return sql_types.Blob
 	case keywordStrings[MEDIUMBLOB]:
-		return sqltypes.Blob
+		return sql_types.Blob
 	case keywordStrings[LONGBLOB]:
-		return sqltypes.Blob
+		return sql_types.Blob
 	case keywordStrings[CHAR]:
-		return sqltypes.Char
+		return sql_types.Char
 	case keywordStrings[VARCHAR]:
-		return sqltypes.VarChar
+		return sql_types.VarChar
 	case keywordStrings[BINARY]:
-		return sqltypes.Binary
+		return sql_types.Binary
 	case keywordStrings[VARBINARY]:
-		return sqltypes.VarBinary
+		return sql_types.VarBinary
 	case keywordStrings[DATE]:
-		return sqltypes.Date
+		return sql_types.Date
 	case keywordStrings[TIME]:
-		return sqltypes.Time
+		return sql_types.Time
 	case keywordStrings[DATETIME]:
-		return sqltypes.Datetime
+		return sql_types.Datetime
 	case keywordStrings[TIMESTAMP]:
-		return sqltypes.Timestamp
+		return sql_types.Timestamp
 	case keywordStrings[YEAR]:
-		return sqltypes.Year
+		return sql_types.Year
 	case keywordStrings[FLOAT_TYPE]:
-		return sqltypes.Float32
+		return sql_types.Float32
 	case keywordStrings[DOUBLE]:
-		return sqltypes.Float64
+		return sql_types.Float64
 	case keywordStrings[DECIMAL]:
-		return sqltypes.Decimal
+		return sql_types.Decimal
 	case keywordStrings[BIT]:
-		return sqltypes.Bit
+		return sql_types.Bit
 	case keywordStrings[ENUM]:
-		return sqltypes.Enum
+		return sql_types.Enum
 	case keywordStrings[SET]:
-		return sqltypes.Set
+		return sql_types.Set
 	case keywordStrings[JSON]:
-		return sqltypes.TypeJSON
+		return sql_types.TypeJSON
 	case keywordStrings[GEOMETRY]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[POINT]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[LINESTRING]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[POLYGON]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[GEOMETRYCOLLECTION]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[MULTIPOINT]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[MULTILINESTRING]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	case keywordStrings[MULTIPOLYGON]:
-		return sqltypes.Geometry
+		return sql_types.Geometry
 	}
-	return sqltypes.Null
+	return sql_types.Null
 }
 
 // AddQueryHint adds the given string to list of comment.
@@ -671,7 +671,7 @@ func (node ColIdent) IsEmpty() bool {
 }
 
 // String returns the unescaped column name. It must
-// not be used for SQL generation. Use sqlparser.String
+// not be used for SQL generation. Use sql_parser.String
 // instead. The Stringer conformance is for usage
 // in templates.
 func (node ColIdent) String() string {
@@ -742,7 +742,7 @@ func (node TableIdent) IsEmpty() bool {
 }
 
 // String returns the unescaped table name. It must
-// not be used for SQL generation. Use sqlparser.String
+// not be used for SQL generation. Use sql_parser.String
 // instead. The Stringer conformance is for usage
 // in templates.
 func (node TableIdent) String() string {
@@ -1676,7 +1676,7 @@ const (
 
 // encodeSQLString encodes the string as a SQL string.
 func encodeSQLString(val string) string {
-	return sqltypes.EncodeStringSQL(val)
+	return sql_types.EncodeStringSQL(val)
 }
 
 // ToString prints the list of table expressions as a string

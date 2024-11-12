@@ -7,5 +7,6 @@ import (
 )
 
 func TestPrintTypeChecks(t *testing.T) {
+	
 	cmd.Execute()
 }

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 /*
 This is the Vitess AST. This file should only contain pure struct declarations,

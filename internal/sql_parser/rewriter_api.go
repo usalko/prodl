@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 // The rewriter was heavily inspired by https://github.com/golang/tools/blob/master/go/ast/astutil/rewrite.go
 
@@ -33,7 +33,6 @@ package sqlparser
 //
 // Only fields that refer to AST nodes are considered children;
 // i.e., fields of basic types (strings, []byte, etc.) are ignored.
-//
 func Rewrite(node SQLNode, pre, post ApplyFunc) (result SQLNode) {
 	parent := &RootNode{node}
 

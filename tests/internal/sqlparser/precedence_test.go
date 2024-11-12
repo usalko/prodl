@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
@@ -23,23 +23,23 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
-func readable(node sqlparser.Expr) string {
+func readable(node sql_parser.Expr) string {
 	switch node := node.(type) {
-	case *sqlparser.OrExpr:
+	case *sql_parser.OrExpr:
 		return fmt.Sprintf("(%s or %s)", readable(node.Left), readable(node.Right))
-	case *sqlparser.AndExpr:
+	case *sql_parser.AndExpr:
 		return fmt.Sprintf("(%s and %s)", readable(node.Left), readable(node.Right))
-	case *sqlparser.XorExpr:
+	case *sql_parser.XorExpr:
 		return fmt.Sprintf("(%s xor %s)", readable(node.Left), readable(node.Right))
-	case *sqlparser.BinaryExpr:
+	case *sql_parser.BinaryExpr:
 		return fmt.Sprintf("(%s %s %s)", readable(node.Left), node.Operator.ToString(), readable(node.Right))
-	case *sqlparser.IsExpr:
+	case *sql_parser.IsExpr:
 		return fmt.Sprintf("(%s %s)", readable(node.Left), node.Right.ToString())
 	default:
-		return sqlparser.String(node)
+		return sql_parser.String(node)
 	}
 }
 
@@ -55,12 +55,12 @@ func TestAndOrPrecedence(t *testing.T) {
 		output: "(a = b or (c = d and e = f))",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sqlparser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sqlparser.Select).Where.Expr)
+		expr := readable(tree.(*sql_parser.Select).Where.Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -68,13 +68,13 @@ func TestAndOrPrecedence(t *testing.T) {
 }
 
 func TestNotInSubqueryPrecedence(t *testing.T) {
-	tree, err := sqlparser.Parse("select * from a where not id in (select 42)")
+	tree, err := sql_parser.Parse("select * from a where not id in (select 42)")
 	require.NoError(t, err)
-	not := tree.(*sqlparser.Select).Where.Expr.(*sqlparser.NotExpr)
-	cmp := not.Expr.(*sqlparser.ComparisonExpr)
-	subq := cmp.Right.(*sqlparser.Subquery)
+	not := tree.(*sql_parser.Select).Where.Expr.(*sql_parser.NotExpr)
+	cmp := not.Expr.(*sql_parser.ComparisonExpr)
+	subq := cmp.Right.(*sql_parser.Subquery)
 
-	extracted := &sqlparser.ExtractedSubquery{
+	extracted := &sql_parser.ExtractedSubquery{
 		Original:  cmp,
 		OpCode:    1,
 		Subquery:  subq,
@@ -89,14 +89,14 @@ func TestNotInSubqueryPrecedence(t *testing.T) {
 }
 
 func TestSubqueryPrecedence(t *testing.T) {
-	tree, err := sqlparser.Parse("select * from a where id in (select 42) and false")
+	tree, err := sql_parser.Parse("select * from a where id in (select 42) and false")
 	require.NoError(t, err)
-	where := tree.(*sqlparser.Select).Where
-	andExpr := where.Expr.(*sqlparser.AndExpr)
-	cmp := andExpr.Left.(*sqlparser.ComparisonExpr)
-	subq := cmp.Right.(*sqlparser.Subquery)
+	where := tree.(*sql_parser.Select).Where
+	andExpr := where.Expr.(*sql_parser.AndExpr)
+	cmp := andExpr.Left.(*sql_parser.ComparisonExpr)
+	subq := cmp.Right.(*sql_parser.Subquery)
 
-	extracted := &sqlparser.ExtractedSubquery{
+	extracted := &sql_parser.ExtractedSubquery{
 		Original:  andExpr.Left,
 		OpCode:    1,
 		Subquery:  subq,
@@ -122,12 +122,12 @@ func TestPlusStarPrecedence(t *testing.T) {
 		output: "((1 * 2) + 3)",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sqlparser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sqlparser.Select).SelectExprs[0].(*sqlparser.AliasedExpr).Expr)
+		expr := readable(tree.(*sql_parser.Select).SelectExprs[0].(*sql_parser.AliasedExpr).Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -149,12 +149,12 @@ func TestIsPrecedence(t *testing.T) {
 		output: "((a = 1 and b = 2) is true)",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sqlparser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sqlparser.Select).Where.Expr)
+		expr := readable(tree.(*sql_parser.Select).Where.Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -203,9 +203,9 @@ func TestParens(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.in, func(t *testing.T) {
-			stmt, err := sqlparser.Parse("select " + tc.in)
+			stmt, err := sql_parser.Parse("select " + tc.in)
 			require.NoError(t, err)
-			out := sqlparser.String(stmt)
+			out := sql_parser.String(stmt)
 			require.Equal(t, "select "+tc.expected+" from dual", out)
 		})
 	}
@@ -225,14 +225,14 @@ func TestRandom(t *testing.T) {
 		}
 		// Given a random expression
 		randomExpr := g.expression()
-		inputQ := "select " + sqlparser.String(randomExpr) + " from t"
+		inputQ := "select " + sql_parser.String(randomExpr) + " from t"
 
 		// When it's parsed and unparsed
-		parsedInput, err := sqlparser.Parse(inputQ)
+		parsedInput, err := sql_parser.Parse(inputQ)
 		require.NoError(t, err, inputQ)
 
 		// Then the unparsing should be the same as the input query
-		outputOfParseResult := sqlparser.String(parsedInput)
+		outputOfParseResult := sql_parser.String(parsedInput)
 		require.Equal(t, outputOfParseResult, inputQ)
 	}
 }

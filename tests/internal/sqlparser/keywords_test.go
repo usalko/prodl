@@ -1,4 +1,4 @@
-package sqlparser
+package sql_parser
 
 import (
 	"bufio"
@@ -9,12 +9,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestKeywordTable(t *testing.T) {
-	for _, kw := range sqlparser.GetKeywords() {
-		lookup, ok := sqlparser.KeywordLookup(kw.Name)
+	for _, kw := range sql_parser.GetKeywords() {
+		lookup, ok := sql_parser.KeywordLookup(kw.Name)
 		require.Truef(t, ok, "keyword %q failed to match", kw.Name)
 		require.Equalf(t, lookup, kw.Id, "keyword %q matched to %d (expected %d)", kw.Name, lookup, kw.Id)
 	}
@@ -49,7 +49,7 @@ func TestCompatibility(t *testing.T) {
 			word = "`" + word + "`"
 		}
 		sql := fmt.Sprintf("create table %s(c1 int)", word)
-		_, err := sqlparser.ParseStrictDDL(sql)
+		_, err := sql_parser.ParseStrictDDL(sql)
 		if err != nil {
 			t.Errorf("%s is not compatible with mysql", word)
 		}

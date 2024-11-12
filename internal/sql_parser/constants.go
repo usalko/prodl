@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 // String constants to be used in ast.
 const (
@@ -367,7 +367,7 @@ const (
 	ReadWrite
 )
 
-//Constants for Enum type - IsolationLevel
+// Constants for Enum type - IsolationLevel
 const (
 	ReadUncommitted IsolationLevel = iota
 	ReadCommitted

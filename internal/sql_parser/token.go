@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 
-	"github.com/usalko/sent/internal/sqltypes"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 const (
@@ -584,7 +584,7 @@ func (tkn *Tokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ 
 				// String terminates mid escape character.
 				return LEX_ERROR, buffer.String()
 			}
-			if decodedChar := sqltypes.SQLDecodeMap[byte(tkn.cur())]; decodedChar == sqltypes.DontEscape {
+			if decodedChar := sql_types.SQLDecodeMap[byte(tkn.cur())]; decodedChar == sql_types.DontEscape {
 				ch = tkn.cur()
 			} else {
 				ch = uint16(decodedChar)

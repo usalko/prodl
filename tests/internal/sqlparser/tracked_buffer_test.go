@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sqlparser
+package sql_parser
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sqlparser"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func TestCanonicalOutput(t *testing.T) {
@@ -164,16 +164,16 @@ func TestCanonicalOutput(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
-			tree, err := sqlparser.Parse(tc.input)
+			tree, err := sql_parser.Parse(tc.input)
 			require.NoError(t, err, tc.input)
 
-			out := sqlparser.CanonicalString(tree)
+			out := sql_parser.CanonicalString(tree)
 			require.Equal(t, tc.canonical, out, "bad serialization")
 
 			// Make sure we've generated a valid query!
-			rereadStmt, err := sqlparser.Parse(out)
+			rereadStmt, err := sql_parser.Parse(out)
 			require.NoError(t, err, out)
-			out = sqlparser.CanonicalString(rereadStmt)
+			out = sql_parser.CanonicalString(rereadStmt)
 			require.Equal(t, tc.canonical, out, "bad serialization")
 		})
 	}
