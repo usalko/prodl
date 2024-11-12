@@ -29,25 +29,25 @@ func TestStreamReader(t *testing.T) {
 	respBody, err := os.Open(fileName)
 	check(err, "File %s open error", fileName)
 
-	zr := zip_stream.NewReader(respBody)
+	reader := zip_stream.NewReader(respBody)
 
 	for {
-		e, err := zr.GetNextEntry()
+		entry, err := reader.GetNextEntry()
 		if err == io.EOF {
 			break
 		}
 		check(err, "unable to get next entry")
 
-		log.Println("entry name: ", e.Name)
-		log.Println("entry comment: ", e.Comment)
-		log.Println("entry reader version: ", e.ReaderVersion)
-		log.Println("entry modify time: ", e.Modified)
-		log.Println("entry compressed size: ", e.CompressedSize64)
-		log.Println("entry uncompressed size: ", e.UncompressedSize64)
-		log.Println("entry is a dir: ", e.IsDir())
+		log.Println("entry name: ", entry.Name)
+		log.Println("entry comment: ", entry.Comment)
+		log.Println("entry reader version: ", entry.ReaderVersion)
+		log.Println("entry modify time: ", entry.Modified)
+		log.Println("entry compressed size: ", entry.CompressedSize64)
+		log.Println("entry uncompressed size: ", entry.UncompressedSize64)
+		log.Println("entry is a dir: ", entry.IsDir())
 
-		if !e.IsDir() {
-			rc, err := e.Open()
+		if !entry.IsDir() {
+			rc, err := entry.Open()
 			if err != nil {
 				log.Fatalf("unable to open zip file: %s", err)
 			}
@@ -58,7 +58,7 @@ func TestStreamReader(t *testing.T) {
 
 			log.Println("file length:", len(content))
 
-			if uint64(len(content)) != e.UncompressedSize64 {
+			if uint64(len(content)) != entry.UncompressedSize64 {
 				log.Fatalf("read zip file length not equal with UncompressedSize64")
 			}
 			if err := rc.Close(); err != nil {
