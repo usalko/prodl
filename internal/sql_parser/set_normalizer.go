@@ -19,7 +19,7 @@ package sql_parser
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/coerrors"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 type SetNormalizer struct {
@@ -45,7 +45,7 @@ func (n *SetNormalizer) NormalizeSetExpr(in *SetExpr) (*SetExpr, error) {
 	switch in.Name.at { // using switch so we can use break
 	case DoubleAt:
 		if in.Scope != ImplicitScope {
-			return nil, coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "cannot use scope and @@")
+			return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "cannot use scope and @@")
 		}
 		switch {
 		case strings.HasPrefix(in.Name.Lowered(), "session."):
@@ -64,7 +64,7 @@ func (n *SetNormalizer) NormalizeSetExpr(in *SetExpr) (*SetExpr, error) {
 		return in, nil
 	case SingleAt:
 		if in.Scope != ImplicitScope {
-			return nil, coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "cannot mix scope and user defined variables")
+			return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "cannot mix scope and user defined variables")
 		}
 		return in, nil
 	case NoAt:

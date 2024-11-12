@@ -24,7 +24,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/usalko/sent/internal/coerrors"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 // MySQLServerVersion is what Vitess will present as it's version during the connection handshake,
@@ -100,7 +100,7 @@ func Parse2(sql string) (Statement, BindVars, error) {
 			tokenizer.ParseTree = tokenizer.partialDDL
 			return tokenizer.ParseTree, tokenizer.BindVars, nil
 		}
-		return nil, nil, coerrors.New(coerrors.Code_INVALID_ARGUMENT, tokenizer.LastError.Error())
+		return nil, nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.LastError.Error())
 	}
 	if tokenizer.ParseTree == nil {
 		return nil, nil, ErrEmpty
@@ -153,7 +153,7 @@ func ConvertMySQLVersionToCommentVersion(version string) (string, error) {
 		idx++
 	}
 	if idx == 0 {
-		return "", coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "MySQL version not correctly setup - %s.", version)
+		return "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "MySQL version not correctly setup - %s.", version)
 	}
 
 	return fmt.Sprintf("%01d%02d%02d", res[0], res[1], res[2]), nil
@@ -234,7 +234,7 @@ func parseNext(tokenizer *Tokenizer, strict bool) (Statement, error) {
 }
 
 // ErrEmpty is a sentinel error returned when parsing empty statements.
-var ErrEmpty = coerrors.NewErrorf(coerrors.Code_INVALID_ARGUMENT, coerrors.EmptyQuery, "query was empty")
+var ErrEmpty = sql_parser_errors.NewErrorf(sql_parser_errors.Code_INVALID_ARGUMENT, sql_parser_errors.EmptyQuery, "query was empty")
 
 // SplitStatement returns the first sql statement up to either a ; or EOF
 // and the remainder from the given buffer

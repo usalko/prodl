@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package coerrors
+package sql_parser_errors
 
 import (
 	"errors"
@@ -26,11 +26,11 @@ import (
 
 	"context"
 
-	"github.com/usalko/sent/internal/coerrors"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 func TestWrapNil(t *testing.T) {
-	got := coerrors.Wrap(nil, "no error")
+	got := sql_parser_errors.Wrap(nil, "no error")
 	if got != nil {
 		t.Errorf("Wrap(nil, \"no error\"): got %#v, expected nil", got)
 	}
@@ -43,17 +43,17 @@ func TestWrap(t *testing.T) {
 		wantMessage string
 		wantCode    int32
 	}{
-		{io.EOF, "read error", "read error: EOF", coerrors.Code_UNKNOWN},
-		{coerrors.New(coerrors.Code_ALREADY_EXISTS, "oops"), "client error", "client error: oops", coerrors.Code_ALREADY_EXISTS},
+		{io.EOF, "read error", "read error: EOF", sql_parser_errors.Code_UNKNOWN},
+		{sql_parser_errors.New(sql_parser_errors.Code_ALREADY_EXISTS, "oops"), "client error", "client error: oops", sql_parser_errors.Code_ALREADY_EXISTS},
 	}
 
 	for _, tt := range tests {
-		got := coerrors.Wrap(tt.err, tt.message)
+		got := sql_parser_errors.Wrap(tt.err, tt.message)
 		if got.Error() != tt.wantMessage {
 			t.Errorf("Wrap(%v, %q): got: [%v], want [%v]", tt.err, tt.message, got, tt.wantMessage)
 		}
-		if coerrors.Code(got) != tt.wantCode {
-			t.Errorf("Wrap(%v, %v): got: [%v], want [%v]", tt.err, tt, coerrors.Code(got), tt.wantCode)
+		if sql_parser_errors.Code(got) != tt.wantCode {
+			t.Errorf("Wrap(%v, %v): got: [%v], want [%v]", tt.err, tt, sql_parser_errors.Code(got), tt.wantCode)
 		}
 	}
 }
@@ -63,7 +63,7 @@ type nilError struct{}
 func (nilError) Error() string { return "nil error" }
 
 func TestRootCause(t *testing.T) {
-	x := coerrors.New(coerrors.Code_FAILED_PRECONDITION, "error")
+	x := sql_parser_errors.New(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
 	tests := []struct {
 		err  error
 		want error
@@ -85,7 +85,7 @@ func TestRootCause(t *testing.T) {
 		want: io.EOF,
 	}, {
 		// caused error returns cause
-		err:  coerrors.Wrap(io.EOF, "ignored"),
+		err:  sql_parser_errors.Wrap(io.EOF, "ignored"),
 		want: io.EOF,
 	}, {
 		err:  x, // return from errors.New
@@ -93,7 +93,7 @@ func TestRootCause(t *testing.T) {
 	}}
 
 	for i, tt := range tests {
-		got := coerrors.RootCause(tt.err)
+		got := sql_parser_errors.RootCause(tt.err)
 		if !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("test %d: got %#v, want %#v", i+1, got, tt.want)
 		}
@@ -101,7 +101,7 @@ func TestRootCause(t *testing.T) {
 }
 
 func TestCause(t *testing.T) {
-	x := coerrors.New(coerrors.Code_FAILED_PRECONDITION, "error")
+	x := sql_parser_errors.New(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
 	tests := []struct {
 		err  error
 		want error
@@ -115,7 +115,7 @@ func TestCause(t *testing.T) {
 		want: nil,
 	}, {
 		// caused error returns cause
-		err:  coerrors.Wrap(io.EOF, "ignored"),
+		err:  sql_parser_errors.Wrap(io.EOF, "ignored"),
 		want: io.EOF,
 	}, {
 		err:  x, // return from errors.New
@@ -123,7 +123,7 @@ func TestCause(t *testing.T) {
 	}}
 
 	for i, tt := range tests {
-		got := coerrors.Cause(tt.err)
+		got := sql_parser_errors.Cause(tt.err)
 		if !reflect.DeepEqual(got, tt.want) {
 			t.Errorf("test %d: got %#v, want %#v", i+1, got, tt.want)
 		}
@@ -131,7 +131,7 @@ func TestCause(t *testing.T) {
 }
 
 func TestWrapfNil(t *testing.T) {
-	got := coerrors.Wrapf(nil, "no error")
+	got := sql_parser_errors.Wrapf(nil, "no error")
 	if got != nil {
 		t.Errorf("Wrapf(nil, \"no error\"): got %#v, expected nil", got)
 	}
@@ -144,12 +144,12 @@ func TestWrapf(t *testing.T) {
 		want    string
 	}{
 		{io.EOF, "read error", "read error: EOF"},
-		{coerrors.Wrapf(io.EOF, "read error without format specifiers"), "client error", "client error: read error without format specifiers: EOF"},
-		{coerrors.Wrapf(io.EOF, "read error with %d format specifier", 1), "client error", "client error: read error with 1 format specifier: EOF"},
+		{sql_parser_errors.Wrapf(io.EOF, "read error without format specifiers"), "client error", "client error: read error without format specifiers: EOF"},
+		{sql_parser_errors.Wrapf(io.EOF, "read error with %d format specifier", 1), "client error", "client error: read error with 1 format specifier: EOF"},
 	}
 
 	for _, tt := range tests {
-		got := coerrors.Wrapf(tt.err, tt.message).Error()
+		got := sql_parser_errors.Wrapf(tt.err, tt.message).Error()
 		if got != tt.want {
 			t.Errorf("Wrapf(%v, %q): got: %v, want %v", tt.err, tt.message, got, tt.want)
 		}
@@ -161,8 +161,8 @@ func TestErrorf(t *testing.T) {
 		err  error
 		want string
 	}{
-		{coerrors.Errorf(coerrors.Code_DATA_LOSS, "read error without format specifiers"), "read error without format specifiers"},
-		{coerrors.Errorf(coerrors.Code_DATA_LOSS, "read error with %d format specifier", 1), "read error with 1 format specifier"},
+		{sql_parser_errors.Errorf(sql_parser_errors.Code_DATA_LOSS, "read error without format specifiers"), "read error without format specifiers"},
+		{sql_parser_errors.Errorf(sql_parser_errors.Code_DATA_LOSS, "read error with %d format specifier", 1), "read error with 1 format specifier"},
 	}
 
 	for _, tt := range tests {
@@ -174,7 +174,7 @@ func TestErrorf(t *testing.T) {
 }
 
 func innerMost() error {
-	return coerrors.Wrap(io.ErrNoProgress, "oh noes")
+	return sql_parser_errors.Wrap(io.ErrNoProgress, "oh noes")
 }
 
 func middle() error {
@@ -193,8 +193,8 @@ func TestStackFormat(t *testing.T) {
 	assertContains(t, got, "middle", false)
 	assertContains(t, got, "outer", false)
 
-	coerrors.LogErrStacks = true
-	defer func() { coerrors.LogErrStacks = false }()
+	sql_parser_errors.LogErrStacks = true
+	defer func() { sql_parser_errors.LogErrStacks = false }()
 	got = fmt.Sprintf("%v", err)
 	assertContains(t, got, "innerMost", true)
 	assertContains(t, got, "middle", true)
@@ -210,10 +210,10 @@ func TestErrorEquality(t *testing.T) {
 		nil,
 		io.EOF,
 		errors.New("EOF"),
-		coerrors.New(coerrors.Code_ALREADY_EXISTS, "EOF"),
-		coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "EOF"),
-		coerrors.Wrap(io.EOF, "EOF"),
-		coerrors.Wrapf(io.EOF, "EOF%d", 2),
+		sql_parser_errors.New(sql_parser_errors.Code_ALREADY_EXISTS, "EOF"),
+		sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "EOF"),
+		sql_parser_errors.Wrap(io.EOF, "EOF"),
+		sql_parser_errors.Wrapf(io.EOF, "EOF%d", 2),
 	}
 
 	for i := range vals {
@@ -227,17 +227,17 @@ func TestCreation(t *testing.T) {
 	testcases := []struct {
 		in, want int32
 	}{{
-		in:   coerrors.Code_CANCELED,
-		want: coerrors.Code_CANCELED,
+		in:   sql_parser_errors.Code_CANCELED,
+		want: sql_parser_errors.Code_CANCELED,
 	}, {
-		in:   coerrors.Code_UNKNOWN,
-		want: coerrors.Code_UNKNOWN,
+		in:   sql_parser_errors.Code_UNKNOWN,
+		want: sql_parser_errors.Code_UNKNOWN,
 	}}
 	for _, tcase := range testcases {
-		if got := coerrors.Code(coerrors.New(tcase.in, "")); got != tcase.want {
+		if got := sql_parser_errors.Code(sql_parser_errors.New(tcase.in, "")); got != tcase.want {
 			t.Errorf("Code(New(%v)): %v, want %v", tcase.in, got, tcase.want)
 		}
-		if got := coerrors.Code(coerrors.Errorf(tcase.in, "")); got != tcase.want {
+		if got := sql_parser_errors.Code(sql_parser_errors.Errorf(tcase.in, "")); got != tcase.want {
 			t.Errorf("Code(Errorf(%v)): %v, want %v", tcase.in, got, tcase.want)
 		}
 	}
@@ -249,36 +249,36 @@ func TestCode(t *testing.T) {
 		want int32
 	}{{
 		in:   nil,
-		want: coerrors.Code_OK,
+		want: sql_parser_errors.Code_OK,
 	}, {
 		in:   errors.New("generic"),
-		want: coerrors.Code_UNKNOWN,
+		want: sql_parser_errors.Code_UNKNOWN,
 	}, {
-		in:   coerrors.New(coerrors.Code_CANCELED, "generic"),
-		want: coerrors.Code_CANCELED,
+		in:   sql_parser_errors.New(sql_parser_errors.Code_CANCELED, "generic"),
+		want: sql_parser_errors.Code_CANCELED,
 	}, {
 		in:   context.Canceled,
-		want: coerrors.Code_CANCELED,
+		want: sql_parser_errors.Code_CANCELED,
 	}, {
 		in:   context.DeadlineExceeded,
-		want: coerrors.Code_DEADLINE_EXCEEDED,
+		want: sql_parser_errors.Code_DEADLINE_EXCEEDED,
 	}}
 	for _, tcase := range testcases {
-		if got := coerrors.Code(tcase.in); got != tcase.want {
+		if got := sql_parser_errors.Code(tcase.in); got != tcase.want {
 			t.Errorf("Code(%v): %v, want %v", tcase.in, got, tcase.want)
 		}
 	}
 }
 
 func TestWrapping(t *testing.T) {
-	err1 := coerrors.Errorf(coerrors.Code_UNAVAILABLE, "foo")
-	err2 := coerrors.Wrapf(err1, "bar")
-	err3 := coerrors.Wrapf(err2, "baz")
+	err1 := sql_parser_errors.Errorf(sql_parser_errors.Code_UNAVAILABLE, "foo")
+	err2 := sql_parser_errors.Wrapf(err1, "bar")
+	err3 := sql_parser_errors.Wrapf(err2, "baz")
 	errorWithoutStack := fmt.Sprintf("%v", err3)
 
-	coerrors.LogErrStacks = true
+	sql_parser_errors.LogErrStacks = true
 	errorWithStack := fmt.Sprintf("%v", err3)
-	coerrors.LogErrStacks = false
+	sql_parser_errors.LogErrStacks = false
 
 	assertEquals(t, err3.Error(), "baz: bar: foo")
 	assertContains(t, errorWithoutStack, "foo", true)

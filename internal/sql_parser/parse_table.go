@@ -17,7 +17,7 @@ limitations under the License.
 package sql_parser
 
 import (
-	"github.com/usalko/sent/internal/coerrors"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 // ParseTable parses the input as a qualified table name.
@@ -33,7 +33,7 @@ func ParseTable(input string) (keyspace, table string, err error) {
 	default:
 		table = KeywordString(token)
 		if table == "" {
-			return "", "", coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
+			return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 		}
 	}
 
@@ -45,7 +45,7 @@ func ParseTable(input string) (keyspace, table string, err error) {
 	case 0:
 		return keyspace, table, nil
 	default:
-		return "", "", coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
+		return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 	}
 
 	// Seen '.', want ID
@@ -56,7 +56,7 @@ func ParseTable(input string) (keyspace, table string, err error) {
 	default:
 		table = KeywordString(token)
 		if table == "" {
-			return "", "", coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
+			return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 		}
 	}
 
@@ -66,6 +66,6 @@ func ParseTable(input string) (keyspace, table string, err error) {
 	case 0:
 		return keyspace, table, nil
 	default:
-		return "", "", coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
+		return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 	}
 }

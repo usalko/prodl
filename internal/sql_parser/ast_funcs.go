@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/usalko/sent/internal/coerrors"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
 )
 
@@ -317,12 +317,12 @@ func (node *ParsedComments) AddQueryHint(queryHint string) (Comments, error) {
 		for _, comment := range node.comments {
 			if strings.HasPrefix(comment, queryOptimizerPrefix) {
 				if hasQueryHint {
-					return nil, coerrors.New(coerrors.Code_INTERNAL, "Must have only one query hint")
+					return nil, sql_parser_errors.New(sql_parser_errors.Code_INTERNAL, "Must have only one query hint")
 				}
 				hasQueryHint = true
 				idx := strings.Index(comment, "*/")
 				if idx == -1 {
-					return nil, coerrors.New(coerrors.Code_INTERNAL, "Query hint comment is malformed")
+					return nil, sql_parser_errors.New(sql_parser_errors.Code_INTERNAL, "Query hint comment is malformed")
 				}
 				if strings.Contains(comment, queryHint) {
 					newComments = append(Comments{comment}, newComments...)
@@ -391,7 +391,7 @@ func (node *AliasedTableExpr) TableName() (TableName, error) {
 
 	tableName, ok := node.Expr.(TableName)
 	if !ok {
-		return TableName{}, coerrors.Errorf(coerrors.Code_INTERNAL, "BUG: the AST has changed. This should not be possible")
+		return TableName{}, sql_parser_errors.Errorf(sql_parser_errors.Code_INTERNAL, "BUG: the AST has changed. This should not be possible")
 	}
 
 	return tableName, nil
@@ -541,7 +541,7 @@ func (node *Literal) HexDecode() ([]byte, error) {
 func (node *Literal) encodeHexValToMySQLQueryFormat() ([]byte, error) {
 	nb := node.Bytes()
 	if node.Type != HexVal {
-		return nb, coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "Literal value is not a HexVal")
+		return nb, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "Literal value is not a HexVal")
 	}
 
 	// Let's make this idempotent in case it's called more than once

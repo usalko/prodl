@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package coerrors provides simple error handling primitives for Vitess
+// Package sql_parser_errors provides simple error handling primitives for Vitess
 //
-// In all Vitess code, errors should be propagated using coerrors.Wrapf()
+// In all Vitess code, errors should be propagated using sql_parser_errors.Wrapf()
 // and not fmt.Errorf(). This makes sure that stacktraces are kept and
 // propagated correctly.
 //
-// New errors should be created using coerrors.New or coerrors.Errorf
+// New errors should be created using sql_parser_errors.New or sql_parser_errors.Errorf
 //
 // Vitess uses canonical error codes for error reporting. This is based
 // on years of industry experience with error reporting. This idea is
@@ -41,49 +41,50 @@ limitations under the License.
 // using gRPC's error propagation mechanism and decoded back to
 // the original code on the other end.
 //
-// Retrieving the cause of an error
+// # Retrieving the cause of an error
 //
-// Using coerrors.Wrap constructs a stack of errors, adding context to the
+// Using sql_parser_errors.Wrap constructs a stack of errors, adding context to the
 // preceding error, instead of simply building up a string.
 // Depending on the nature of the error it may be necessary to reverse the
 // operation of errors.Wrap to retrieve the original error for inspection.
 // Any error value which implements this interface
 //
-//     type causer interface {
-//             Cause() error
-//     }
+//	type causer interface {
+//	        Cause() error
+//	}
 //
-// can be inspected by coerrors.Cause and coerrors.RootCause.
+// can be inspected by sql_parser_errors.Cause and sql_parser_errors.RootCause.
 //
-// * coerrors.Cause will find the immediate cause if one is available, or nil
-//   if the error is not a `causer` or if no cause is available.
-// * coerrors.RootCause will recursively retrieve
-//   the topmost error which does not implement causer, which is assumed to be
-//   the original cause. For example:
+//   - sql_parser_errors.Cause will find the immediate cause if one is available, or nil
+//     if the error is not a `causer` or if no cause is available.
+//
+//   - sql_parser_errors.RootCause will recursively retrieve
+//     the topmost error which does not implement causer, which is assumed to be
+//     the original cause. For example:
 //
 //     switch err := errors.RootCause(err).(type) {
 //     case *MyError:
-//             // handle specifically
+//     // handle specifically
 //     default:
-//             // unknown error
+//     // unknown error
 //     }
 //
 // causer interface is not exported by this package, but is considered a part
 // of stable public API.
 //
-// Formatted printing of errors
+// # Formatted printing of errors
 //
 // All error values returned from this package implement fmt.Formatter and can
 // be formatted by the fmt package. The following verbs are supported
 //
-//     %s    print the error. If the error has a Cause it will be
-//           printed recursively
-//     %v    extended format. Each Frame of the error's StackTrace will
-//           be printed in detail.
+//	%s    print the error. If the error has a Cause it will be
+//	      printed recursively
+//	%v    extended format. Each Frame of the error's StackTrace will
+//	      be printed in detail.
 //
 // Most but not all of the code in this file was originally copied from
 // https://github.com/pkg/errors/blob/v0.8.0/errors.go
-package coerrors
+package sql_parser_errors
 
 import (
 	"fmt"
@@ -246,9 +247,9 @@ func panicIfError(_ int, err error) {
 // An error value has a cause if it implements the following
 // interface:
 //
-//     type causer interface {
-//            Cause() error
-//     }
+//	type causer interface {
+//	       Cause() error
+//	}
 //
 // If the error does not implement Cause, the original error will
 // be returned. If the error is nil, nil will be returned without further
@@ -263,14 +264,14 @@ func RootCause(err error) error {
 	}
 }
 
-//
 // Cause will return the immediate cause, if possible.
 // An error value has a cause if it implements the following
 // interface:
 //
-//     type causer interface {
-//            Cause() error
-//     }
+//	type causer interface {
+//	       Cause() error
+//	}
+//
 // If the error does not implement Cause, nil will be returned
 func Cause(err error) error {
 	type causer interface {
@@ -302,7 +303,7 @@ func Equals(a, b error) bool {
 }
 
 // Print is meant to print the vtError object in test failures.
-// For comparing two coerrors, use Equals() instead.
+// For comparing two sql_parser_errors, use Equals() instead.
 func Print(err error) string {
 	return fmt.Sprintf("%v: %v\n", Code(err), err.Error())
 }

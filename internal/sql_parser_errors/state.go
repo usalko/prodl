@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package coerrors
+package sql_parser_errors
 
 // State is error state
 type State int

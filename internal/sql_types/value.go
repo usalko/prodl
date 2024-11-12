@@ -27,8 +27,8 @@ import (
 	"strings"
 
 	"github.com/usalko/sent/internal/bytes2"
-	"github.com/usalko/sent/internal/coerrors"
 	"github.com/usalko/sent/internal/hack"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 var (
@@ -245,7 +245,7 @@ func (v Value) RawStr() string {
 func (v Value) ToBytes() ([]byte, error) {
 	switch v.typ {
 	case Expression:
-		return nil, coerrors.New(coerrors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
+		return nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
 	case HexVal:
 		return v.decodeHexVal()
 	case HexNum:
@@ -484,7 +484,7 @@ func (v *Value) UnmarshalJSON(b []byte) error {
 // an INSERT was performed with x'A1' having been specified as a value
 func (v *Value) decodeHexVal() ([]byte, error) {
 	if len(v.val) < 3 || (v.val[0] != 'x' && v.val[0] != 'X') || v.val[1] != '\'' || v.val[len(v.val)-1] != '\'' {
-		return nil, coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid hex value: %v", v.val)
+		return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid hex value: %v", v.val)
 	}
 	hexBytes := v.val[2 : len(v.val)-1]
 	decodedHexBytes, err := hex.DecodeString(string(hexBytes))
@@ -499,7 +499,7 @@ func (v *Value) decodeHexVal() ([]byte, error) {
 // an INSERT was performed with 0xA1 having been specified as a value
 func (v *Value) decodeHexNum() ([]byte, error) {
 	if len(v.val) < 3 || v.val[0] != '0' || v.val[1] != 'x' {
-		return nil, coerrors.Errorf(coerrors.Code_INVALID_ARGUMENT, "invalid hex number: %v", v.val)
+		return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid hex number: %v", v.val)
 	}
 	hexBytes := v.val[2:]
 	decodedHexBytes, err := hex.DecodeString(string(hexBytes))

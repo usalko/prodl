@@ -1,4 +1,4 @@
-package coerrors
+package sql_parser_errors
 
 const (
 	// OK is returned on success.
