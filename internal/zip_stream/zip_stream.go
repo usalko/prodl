@@ -12,12 +12,12 @@ import (
 	"io"
 	"sync"
 	"time"
+
+	"github.com/usalko/hexsi"
+	"github.com/usalko/hexsi/ft"
 )
 
 const (
-	// Gzip files signatures
-	gzipHeaderIdentifier     = 0x1F8B
-	gzipMeltHeaderIdentifier = 0x1F9E
 	// Zip files signatures
 	headerIdentifierLen      = 4
 	fileHeaderLen            = 26
@@ -300,10 +300,9 @@ func (reader *ZipStreamReader) GetNextEntry() (*Entry, error) {
 		return nil, fmt.Errorf("unable to read header identifier: %w", err)
 	}
 
-	shortHeaderID := binary.LittleEndian.Uint16(headerIDBuf)
-	if shortHeaderID == gzipHeaderIdentifier ||
-		shortHeaderID == gzipMeltHeaderIdentifier {
-		panic("Gzip!!!")
+	fileType, _ := hexsi.DetectFileType(headerIDBuf)
+	if *fileType == ft.GZIP {
+		panic(fmt.Errorf("unsupported archive format"))
 	}
 
 	headerID := binary.LittleEndian.Uint32(headerIDBuf)
