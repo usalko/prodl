@@ -1,4 +1,4 @@
-package zip_stream
+package archive_stream_tests
 
 import (
 	"archive/zip"
@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/usalko/sent/internal/zip_stream"
+	"github.com/usalko/sent/internal/archive_stream"
 )
 
 func check(err error, msgs ...any) {
@@ -29,7 +29,7 @@ func TestStreamReader(t *testing.T) {
 	respBody, err := os.Open(fileName)
 	check(err, "File %s open error", fileName)
 
-	reader := zip_stream.NewReader(respBody)
+	reader := archive_stream.NewReader(respBody)
 
 	for {
 		entry, err := reader.GetNextEntry()
@@ -86,7 +86,7 @@ func TestNewReader(t *testing.T) {
 		fileMap[zf.Name] = zf
 	}
 
-	z := zip_stream.NewReader(f)
+	z := archive_stream.NewReader(f)
 
 	for {
 		entry, err := z.GetNextEntry()

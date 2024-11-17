@@ -1,4 +1,4 @@
-package zip_stream
+package archive_stream
 
 import (
 	"archive/zip"
@@ -78,19 +78,19 @@ func (entry *Entry) Open() (io.ReadCloser, error) {
 	}, nil
 }
 
-type ZipStreamReader struct {
+type ArchiveStreamReader struct {
 	reader       io.Reader
 	localFileEnd bool
 	curEntry     *Entry
 }
 
-func NewReader(_reader io.Reader) *ZipStreamReader {
-	return &ZipStreamReader{
+func NewReader(_reader io.Reader) *ArchiveStreamReader {
+	return &ArchiveStreamReader{
 		reader: _reader,
 	}
 }
 
-func (reader *ZipStreamReader) readEntry() (*Entry, error) {
+func (reader *ArchiveStreamReader) readEntry() (*Entry, error) {
 
 	buf := make([]byte, fileHeaderLen)
 	if _, err := io.ReadFull(reader.reader, buf); err != nil {
@@ -247,7 +247,7 @@ parseExtras:
 	return entry, nil
 }
 
-func (reader *ZipStreamReader) GetNextEntry() (*Entry, error) {
+func (reader *ArchiveStreamReader) GetNextEntry() (*Entry, error) {
 	if reader.localFileEnd {
 		return nil, io.EOF
 	}

@@ -1,11 +1,11 @@
-package zip_stream
+package archive_stream_tests
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/zip_stream"
+	"github.com/usalko/sent/internal/archive_stream"
 )
 
 func TestReadBuf(t *testing.T) {
@@ -17,7 +17,7 @@ func TestReadBuf(t *testing.T) {
 		0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 	}
 
-	lb := zip_stream.ReadBuf(buf)
+	lb := archive_stream.ReadBuf(buf)
 
 	if !strings.HasSuffix("01", fmt.Sprintf("%x", lb.Uint8())) {
 		t.Fatalf("uint8 read err")

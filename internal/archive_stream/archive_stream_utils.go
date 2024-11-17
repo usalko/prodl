@@ -1,4 +1,4 @@
-package zip_stream
+package archive_stream
 
 import (
 	"encoding/binary"
