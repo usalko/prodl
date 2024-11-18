@@ -52,6 +52,11 @@ type Entry struct {
 	eof                        bool
 }
 
+var SUPPORTED_FORMATS map[ft.FileType]bool = map[ft.FileType]bool{
+	ft.GZIP: false,
+	ft.ZIP:  true,
+}
+
 func (entry *Entry) hasDataDescriptor() bool {
 	return entry.Flags&8 != 0
 }
@@ -301,8 +306,10 @@ func (reader *ArchiveStreamReader) GetNextEntry() (*Entry, error) {
 	}
 
 	fileType, _ := hexsi.DetectFileType(headerIDBuf)
-	if *fileType == ft.GZIP {
-		panic(fmt.Errorf("unsupported archive format"))
+	if fileType != nil {
+		if _, ok := SUPPORTED_FORMATS[*fileType]; !ok {
+			return nil, fmt.Errorf("unsupported archive format")
+		}
 	}
 
 	headerID := binary.LittleEndian.Uint32(headerIDBuf)
