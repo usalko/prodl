@@ -2,103 +2,90 @@ package archive_stream
 
 import (
 	"archive/zip"
+
 	"bytes"
-	"compress/flate"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"hash"
-	"hash/crc32"
 	"io"
-	"sync"
 	"time"
 
 	"github.com/usalko/hexsi"
 	"github.com/usalko/hexsi/ft"
 )
 
-const (
-	// Zip files signatures
-	headerIdentifierLen      = 4
-	fileHeaderLen            = 26
-	dataDescriptorLen        = 16 // four uint32: descriptor signature, crc32, compressed size, size
-	fileHeaderSignature      = 0x04034b50
-	directoryHeaderSignature = 0x02014b50
-	directoryEndSignature    = 0x06054b50
-	dataDescriptorSignature  = 0x08074b50
-
-	// Extra header IDs.
-	// See http://mdfs.net/Docs/Comp/Archiving/Zip/ExtraField
-	Zip64ExtraID       = 0x0001 // Zip64 extended information
-	NtFsExtraID        = 0x000a // NTFS
-	UnixExtraID        = 0x000d // UNIX
-	ExtTimeExtraID     = 0x5455 // Extended timestamp
-	InfoZipUnixExtraID = 0x5855 // Info-ZIP Unix extension
-
-)
-
-const (
-	CompressMethodStored   = 0
-	CompressMethodDeflated = 8
-)
-
-type Entry struct {
-	zip.FileHeader
-	reader                     io.Reader
-	limitedReader              io.Reader
-	zip64                      bool
-	hasReadNum                 uint64
-	hasDataDescriptorSignature bool
-	eof                        bool
-}
-
 var SUPPORTED_FORMATS map[ft.FileType]bool = map[ft.FileType]bool{
 	ft.GZIP: false,
 	ft.ZIP:  true,
 }
 
-func (entry *Entry) hasDataDescriptor() bool {
-	return entry.Flags&8 != 0
+type ArchiveEntryState struct {
+	reader                     io.Reader
+	limitedReader              io.Reader
+	readNum                    uint64
+	hasDataDescriptorSignature bool
+	eof                        bool
 }
 
-// IsDir just simply check whether the entry name ends with "/"
-func (entry *Entry) IsDir() bool {
-	return len(entry.Name) > 0 && entry.Name[len(entry.Name)-1] == '/'
+func (entry *ArchiveEntryState) isHasDataDescriptorSignature() bool {
+	return entry.hasDataDescriptorSignature
 }
 
-func (entry *Entry) Open() (io.ReadCloser, error) {
-	if entry.eof {
-		return nil, errors.New("this file has read to end")
-	}
-	decomp := decompressor(entry.Method)
-	if decomp == nil {
-		return nil, zip.ErrAlgorithm
-	}
-	rc := decomp(entry.limitedReader)
+func (entry *ArchiveEntryState) getReadNum() uint64 {
+	return entry.readNum
+}
 
-	return &checksumReader{
-		rc:    rc,
-		hash:  crc32.NewIEEE(),
-		entry: entry,
-	}, nil
+func (entry *ArchiveEntryState) setEof(eof bool) {
+	entry.eof = eof
+}
+
+func (entry *ArchiveEntryState) isEof() bool {
+	return entry.eof
+}
+
+func (entry *ArchiveEntryState) getUncompressedSize64() uint64 {
+	return 0
+}
+
+func (entry *ArchiveEntryState) getLimitedReader() io.Reader {
+	return entry.limitedReader
+}
+
+type ArchiveEntry interface {
+	IsDir() bool
+	Open() (io.ReadCloser, error)
+
+	isHasDataDescriptorSignature() bool
+	getReadNum() uint64
+	setEof(eof bool)
+	isEof() bool
+	getUncompressedSize64() uint64
+	getLimitedReader() io.Reader
+	readDataDescriptor(r io.Reader) error
+
+	addReadNum(n uint64)
+	getReader() io.Reader
+	getCrc32() uint32
+	GetName() string
 }
 
 type ArchiveStreamReader struct {
-	reader       io.Reader
+	inputReader  io.Reader
 	localFileEnd bool
-	curEntry     *Entry
+	curEntry     ArchiveEntry
+	fileType     ft.FileType
 }
 
-func NewReader(_reader io.Reader) *ArchiveStreamReader {
+func NewReader(reader io.Reader) *ArchiveStreamReader {
 	return &ArchiveStreamReader{
-		reader: _reader,
+		inputReader: reader,
 	}
 }
 
-func (reader *ArchiveStreamReader) readEntry() (*Entry, error) {
+func (reader *ArchiveStreamReader) readEntry() (ArchiveEntry, error) {
 
 	buf := make([]byte, fileHeaderLen)
-	if _, err := io.ReadFull(reader.reader, buf); err != nil {
+	if _, err := io.ReadFull(reader.inputReader, buf); err != nil {
 		return nil, fmt.Errorf("unable to read local file header: %w", err)
 	}
 
@@ -115,7 +102,7 @@ func (reader *ArchiveStreamReader) readEntry() (*Entry, error) {
 	filenameLen := int(lr.Uint16())
 	extraAreaLen := int(lr.Uint16())
 
-	entry := &Entry{
+	entry := &ZipEntry{
 		FileHeader: zip.FileHeader{
 			ReaderVersion:      readerVersion,
 			Flags:              flags,
@@ -128,13 +115,15 @@ func (reader *ArchiveStreamReader) readEntry() (*Entry, error) {
 			CompressedSize64:   uint64(compressedSize),
 			UncompressedSize64: uint64(uncompressedSize),
 		},
-		reader:     reader.reader,
-		hasReadNum: 0,
-		eof:        false,
+		ArchiveEntryState: ArchiveEntryState{
+			reader:  reader.inputReader,
+			readNum: 0,
+			eof:     false,
+		},
 	}
 
 	nameAndExtraBuf := make([]byte, filenameLen+extraAreaLen)
-	if _, err := io.ReadFull(reader.reader, nameAndExtraBuf); err != nil {
+	if _, err := io.ReadFull(reader.inputReader, nameAndExtraBuf); err != nil {
 		return nil, fmt.Errorf("unable to read entry name and extra area: %w", err)
 	}
 
@@ -247,36 +236,36 @@ parseExtras:
 		return nil, zip.ErrFormat
 	}
 
-	entry.limitedReader = io.LimitReader(reader.reader, int64(entry.CompressedSize64))
+	entry.limitedReader = io.LimitReader(reader.inputReader, int64(entry.CompressedSize64))
 
 	return entry, nil
 }
 
-func (reader *ArchiveStreamReader) GetNextEntry() (*Entry, error) {
+func (reader *ArchiveStreamReader) GetNextEntry() (ArchiveEntry, error) {
 	if reader.localFileEnd {
 		return nil, io.EOF
 	}
-	if reader.curEntry != nil && !reader.curEntry.eof {
-		if reader.curEntry.hasReadNum <= reader.curEntry.UncompressedSize64 {
-			if _, err := io.Copy(io.Discard, reader.curEntry.limitedReader); err != nil {
+	if reader.curEntry != nil && !reader.curEntry.isEof() {
+		if reader.curEntry.getReadNum() <= reader.curEntry.getUncompressedSize64() {
+			if _, err := io.Copy(io.Discard, reader.curEntry.getLimitedReader()); err != nil {
 				return nil, fmt.Errorf("read previous file data fail: %w", err)
 			}
-			if reader.curEntry.hasDataDescriptor() {
-				if err := readDataDescriptor(reader.reader, reader.curEntry); err != nil {
+			if reader.curEntry.isHasDataDescriptorSignature() {
+				if err := reader.curEntry.readDataDescriptor(reader.inputReader); err != nil {
 					return nil, fmt.Errorf("read previous entry's data descriptor fail: %w", err)
 				}
 			}
 		} else {
-			if !reader.curEntry.hasDataDescriptor() {
+			if !reader.curEntry.isHasDataDescriptorSignature() {
 				return nil, errors.New("parse error, read position exceed entry")
 			}
 
-			readDataLen := reader.curEntry.hasReadNum - reader.curEntry.UncompressedSize64
+			readDataLen := reader.curEntry.getReadNum() - reader.curEntry.getUncompressedSize64()
 			if readDataLen > dataDescriptorLen {
 				return nil, errors.New("parse error, read position exceed entry")
 			} else if readDataLen > dataDescriptorLen-4 {
-				if reader.curEntry.hasDataDescriptorSignature {
-					if _, err := io.Copy(io.Discard, io.LimitReader(reader.reader, int64(dataDescriptorLen-readDataLen))); err != nil {
+				if reader.curEntry.isHasDataDescriptorSignature() {
+					if _, err := io.Copy(io.Discard, io.LimitReader(reader.inputReader, int64(dataDescriptorLen-readDataLen))); err != nil {
 						return nil, fmt.Errorf("read previous entry's data descriptor fail: %w", err)
 					}
 				} else {
@@ -284,7 +273,7 @@ func (reader *ArchiveStreamReader) GetNextEntry() (*Entry, error) {
 				}
 			} else {
 				buf := make([]byte, dataDescriptorLen-readDataLen)
-				if _, err := io.ReadFull(reader.reader, buf); err != nil {
+				if _, err := io.ReadFull(reader.inputReader, buf); err != nil {
 					return nil, fmt.Errorf("read previous entry's data descriptor fail: %w", err)
 				}
 				buf = buf[len(buf)-4:]
@@ -294,186 +283,36 @@ func (reader *ArchiveStreamReader) GetNextEntry() (*Entry, error) {
 				if headerID == fileHeaderSignature ||
 					headerID == directoryHeaderSignature ||
 					headerID == directoryEndSignature {
-					reader.reader = io.MultiReader(bytes.NewReader(buf), reader.reader)
+					reader.inputReader = io.MultiReader(bytes.NewReader(buf), reader.inputReader)
 				}
 			}
 		}
-		reader.curEntry.eof = true
+		reader.curEntry.setEof(true)
 	}
 	headerIDBuf := make([]byte, headerIdentifierLen)
-	if _, err := io.ReadFull(reader.reader, headerIDBuf); err != nil {
+	if _, err := io.ReadFull(reader.inputReader, headerIDBuf); err != nil {
 		return nil, fmt.Errorf("unable to read header identifier: %w", err)
 	}
 
 	fileType, _ := hexsi.DetectFileType(headerIDBuf)
 	if fileType != nil {
+		reader.fileType = *fileType
 		if _, ok := SUPPORTED_FORMATS[*fileType]; !ok {
 			return nil, fmt.Errorf("unsupported archive format")
 		}
-	}
-
-	headerID := binary.LittleEndian.Uint32(headerIDBuf)
-	if headerID != fileHeaderSignature {
+	} else {
+		headerID := binary.LittleEndian.Uint32(headerIDBuf)
 		if headerID == directoryHeaderSignature || headerID == directoryEndSignature {
 			reader.localFileEnd = true
 			return nil, io.EOF
 		}
 		return nil, zip.ErrFormat
 	}
+
 	entry, err := reader.readEntry()
 	if err != nil {
-		return nil, fmt.Errorf("unable to read zip file header: %w", err)
+		return nil, fmt.Errorf("unable to read file header: %w", err)
 	}
 	reader.curEntry = entry
 	return entry, nil
 }
-
-var (
-	decompressors sync.Map // map[uint16]Decompressor
-)
-
-func init() {
-	decompressors.Store(zip.Store, zip.Decompressor(io.NopCloser))
-	decompressors.Store(zip.Deflate, zip.Decompressor(newFlateReader))
-}
-
-func decompressor(method uint16) zip.Decompressor {
-	di, ok := decompressors.Load(method)
-	if !ok {
-		return nil
-	}
-	return di.(zip.Decompressor)
-}
-
-var flateReaderPool sync.Pool
-
-func newFlateReader(r io.Reader) io.ReadCloser {
-	fr, ok := flateReaderPool.Get().(io.ReadCloser)
-	if ok {
-		fr.(flate.Resetter).Reset(r, nil)
-	} else {
-		fr = flate.NewReader(r)
-	}
-	return &pooledFlateReader{fr: fr}
-}
-
-type pooledFlateReader struct {
-	mu sync.Mutex // guards Close and Read
-	fr io.ReadCloser
-}
-
-func (reader *pooledFlateReader) Read(p []byte) (n int, err error) {
-	reader.mu.Lock()
-	defer reader.mu.Unlock()
-	if reader.fr == nil {
-		return 0, errors.New("Read after Close")
-	}
-	return reader.fr.Read(p)
-}
-
-func (reader *pooledFlateReader) Close() error {
-	reader.mu.Lock()
-	defer reader.mu.Unlock()
-	var err error
-	if reader.fr != nil {
-		err = reader.fr.Close()
-		flateReaderPool.Put(reader.fr)
-		reader.fr = nil
-	}
-	return err
-}
-
-func readDataDescriptor(r io.Reader, entry *Entry) error {
-	var buf [dataDescriptorLen]byte
-	// From the spec: "Although not originally assigned a
-	// signature, the value 0x08074b50 has commonly been adopted
-	// as a signature value for the data descriptor record.
-	// Implementers should be aware that ZIP files may be
-	// encountered with or without this signature marking data
-	// descriptors and should account for either case when reading
-	// ZIP files to ensure compatibility."
-	//
-	// dataDescriptorLen includes the size of the signature but
-	// first read just those 4 bytes to see if it exists.
-	n, err := io.ReadFull(r, buf[:4])
-	entry.hasReadNum += uint64(n)
-	if err != nil {
-		return err
-	}
-	off := 0
-	maybeSig := ReadBuf(buf[:4])
-	if maybeSig.Uint32() != dataDescriptorSignature {
-		// No data descriptor signature. Keep these four
-		// bytes.
-		off += 4
-	} else {
-		entry.hasDataDescriptorSignature = true
-	}
-	n, err = io.ReadFull(r, buf[off:12])
-	entry.hasReadNum += uint64(n)
-	if err != nil {
-		return err
-	}
-	entry.eof = true
-	b := ReadBuf(buf[:12])
-	if b.Uint32() != entry.CRC32 {
-		return zip.ErrChecksum
-	}
-
-	// The two sizes that follow here can be either 32 bits or 64 bits
-	// but the spec is not very clear on this and different
-	// interpretations has been made causing incompatibilities. We
-	// already have the sizes from the central directory so we can
-	// just ignore these.
-
-	return nil
-}
-
-type checksumReader struct {
-	rc    io.ReadCloser
-	hash  hash.Hash32
-	nread uint64 // number of bytes read so far
-	entry *Entry
-	err   error // sticky error
-}
-
-func (reader *checksumReader) Read(buff []byte) (n int, err error) {
-	if reader.err != nil {
-		return 0, reader.err
-	}
-	n, err = reader.rc.Read(buff)
-	reader.hash.Write(buff[:n])
-	reader.nread += uint64(n)
-	reader.entry.hasReadNum += uint64(n)
-	if err == nil {
-		return
-	}
-	if err == io.EOF {
-		if reader.nread != reader.entry.UncompressedSize64 {
-			return 0, io.ErrUnexpectedEOF
-		}
-		if reader.entry.hasDataDescriptor() {
-			if err1 := readDataDescriptor(reader.entry.reader, reader.entry); err1 != nil {
-				if err1 == io.EOF {
-					err = io.ErrUnexpectedEOF
-				} else {
-					err = err1
-				}
-			} else if reader.hash.Sum32() != reader.entry.CRC32 {
-				err = zip.ErrChecksum
-			}
-		} else {
-			// If there's not a data descriptor, we still compare
-			// the CRC32 of what we've read against the file header
-			// or TOC's CRC32, if it seems like it was set.
-			reader.entry.eof = true
-			if reader.entry.CRC32 != 0 && reader.hash.Sum32() != reader.entry.CRC32 {
-				err = zip.ErrChecksum
-			}
-		}
-	}
-	reader.err = err
-	return
-}
-
-func (r *checksumReader) Close() error { return r.rc.Close() }
