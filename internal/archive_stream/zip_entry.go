@@ -85,7 +85,7 @@ func (entry *ZipEntry) isHasDataDescriptorSignature() bool {
 
 // readDataDescriptor implements ArchiveEntry.
 func (entry *ZipEntry) readDataDescriptor(r io.Reader) error {
-	var buf [dataDescriptorLen]byte
+	var buf [sipDataDescriptorLen]byte
 	// From the spec: "Although not originally assigned a
 	// signature, the value 0x08074b50 has commonly been adopted
 	// as a signature value for the data descriptor record.
@@ -103,7 +103,7 @@ func (entry *ZipEntry) readDataDescriptor(r io.Reader) error {
 	}
 	off := 0
 	maybeSig := ReadBuf(buf[:4])
-	if maybeSig.Uint32() != dataDescriptorSignature {
+	if maybeSig.Uint32() != zipDataDescriptorSignature {
 		// No data descriptor signature. Keep these four
 		// bytes.
 		off += 4
@@ -137,13 +137,13 @@ func (entry *ZipEntry) setEof(eof bool) {
 
 const (
 	// Zip files signatures
-	headerIdentifierLen      = 4
-	fileHeaderLen            = 26
-	dataDescriptorLen        = 16 // four uint32: descriptor signature, crc32, compressed size, size
-	fileHeaderSignature      = 0x04034b50
-	directoryHeaderSignature = 0x02014b50
-	directoryEndSignature    = 0x06054b50
-	dataDescriptorSignature  = 0x08074b50
+	zipHeaderIdentifierLen      = 4
+	zipFileHeaderLen            = 26
+	sipDataDescriptorLen        = 16 // four uint32: descriptor signature, crc32, compressed size, size
+	zipFileHeaderSignature      = 0x04034b50
+	zipDirectoryHeaderSignature = 0x02014b50
+	zipDirectoryEndSignature    = 0x06054b50
+	zipDataDescriptorSignature  = 0x08074b50
 
 	// Extra header IDs.
 	// See http://mdfs.net/Docs/Comp/Archiving/Zip/ExtraField
