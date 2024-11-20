@@ -10,8 +10,8 @@ import (
 	"io"
 	"time"
 
-	"github.com/usalko/hexsi"
-	"github.com/usalko/hexsi/ft"
+	"github.com/usalko/hexi"
+	"github.com/usalko/hexi/ft"
 )
 
 var SUPPORTED_FORMATS map[ft.FileType]bool = map[ft.FileType]bool{
@@ -25,30 +25,6 @@ type ArchiveEntryState struct {
 	readNum                    uint64
 	hasDataDescriptorSignature bool
 	eof                        bool
-}
-
-func (entry *ArchiveEntryState) isHasDataDescriptorSignature() bool {
-	return entry.hasDataDescriptorSignature
-}
-
-func (entry *ArchiveEntryState) getReadNum() uint64 {
-	return entry.readNum
-}
-
-func (entry *ArchiveEntryState) setEof(eof bool) {
-	entry.eof = eof
-}
-
-func (entry *ArchiveEntryState) isEof() bool {
-	return entry.eof
-}
-
-func (entry *ArchiveEntryState) getUncompressedSize64() uint64 {
-	return 0
-}
-
-func (entry *ArchiveEntryState) getLimitedReader() io.Reader {
-	return entry.limitedReader
 }
 
 type ArchiveEntry interface {
@@ -72,8 +48,8 @@ type ArchiveEntry interface {
 type ArchiveStreamReader struct {
 	inputReader  io.Reader
 	localFileEnd bool
-	curEntry     ArchiveEntry
-	fileType     ft.FileType
+	currentEntry ArchiveEntry
+	archiveType  ft.FileType
 }
 
 func NewReader(reader io.Reader) *ArchiveStreamReader {
@@ -245,26 +221,26 @@ func (reader *ArchiveStreamReader) GetNextEntry() (ArchiveEntry, error) {
 	if reader.localFileEnd {
 		return nil, io.EOF
 	}
-	if reader.curEntry != nil && !reader.curEntry.isEof() {
-		if reader.curEntry.getReadNum() <= reader.curEntry.getUncompressedSize64() {
-			if _, err := io.Copy(io.Discard, reader.curEntry.getLimitedReader()); err != nil {
+	if reader.currentEntry != nil && !reader.currentEntry.isEof() {
+		if reader.currentEntry.getReadNum() <= reader.currentEntry.getUncompressedSize64() {
+			if _, err := io.Copy(io.Discard, reader.currentEntry.getLimitedReader()); err != nil {
 				return nil, fmt.Errorf("read previous file data fail: %w", err)
 			}
-			if reader.curEntry.isHasDataDescriptorSignature() {
-				if err := reader.curEntry.readDataDescriptor(reader.inputReader); err != nil {
+			if reader.currentEntry.isHasDataDescriptorSignature() {
+				if err := reader.currentEntry.readDataDescriptor(reader.inputReader); err != nil {
 					return nil, fmt.Errorf("read previous entry's data descriptor fail: %w", err)
 				}
 			}
 		} else {
-			if !reader.curEntry.isHasDataDescriptorSignature() {
+			if !reader.currentEntry.isHasDataDescriptorSignature() {
 				return nil, errors.New("parse error, read position exceed entry")
 			}
 
-			readDataLen := reader.curEntry.getReadNum() - reader.curEntry.getUncompressedSize64()
+			readDataLen := reader.currentEntry.getReadNum() - reader.currentEntry.getUncompressedSize64()
 			if readDataLen > dataDescriptorLen {
 				return nil, errors.New("parse error, read position exceed entry")
 			} else if readDataLen > dataDescriptorLen-4 {
-				if reader.curEntry.isHasDataDescriptorSignature() {
+				if reader.currentEntry.isHasDataDescriptorSignature() {
 					if _, err := io.Copy(io.Discard, io.LimitReader(reader.inputReader, int64(dataDescriptorLen-readDataLen))); err != nil {
 						return nil, fmt.Errorf("read previous entry's data descriptor fail: %w", err)
 					}
@@ -287,32 +263,45 @@ func (reader *ArchiveStreamReader) GetNextEntry() (ArchiveEntry, error) {
 				}
 			}
 		}
-		reader.curEntry.setEof(true)
+		reader.currentEntry.setEof(true)
 	}
 	headerIDBuf := make([]byte, headerIdentifierLen)
 	if _, err := io.ReadFull(reader.inputReader, headerIDBuf); err != nil {
 		return nil, fmt.Errorf("unable to read header identifier: %w", err)
 	}
 
-	fileType, _ := hexsi.DetectFileType(headerIDBuf)
-	if fileType != nil {
-		reader.fileType = *fileType
-		if _, ok := SUPPORTED_FORMATS[*fileType]; !ok {
-			return nil, fmt.Errorf("unsupported archive format")
+	if reader.archiveType == 0 { // File header
+		fileType, _ := hexi.DetectFileType(headerIDBuf)
+		if fileType == nil || !isSupportedFormat(*fileType) {
+			return nil, fmt.Errorf("unsupported archive format, supported formats are: %s, %s", hexi.FileTypeShortName(ft.GZIP), hexi.FileTypeShortName(ft.ZIP))
 		}
-	} else {
+		reader.archiveType = *fileType
+	}
+
+	switch reader.archiveType {
+	case ft.GZIP:
+
+	case ft.ZIP:
 		headerID := binary.LittleEndian.Uint32(headerIDBuf)
 		if headerID == directoryHeaderSignature || headerID == directoryEndSignature {
 			reader.localFileEnd = true
 			return nil, io.EOF
 		}
-		return nil, zip.ErrFormat
+	default:
+		return nil, fmt.Errorf("unimplemented file format %s", hexi.FileTypeShortName(reader.archiveType))
 	}
 
 	entry, err := reader.readEntry()
 	if err != nil {
 		return nil, fmt.Errorf("unable to read file header: %w", err)
 	}
-	reader.curEntry = entry
+	reader.currentEntry = entry
 	return entry, nil
+}
+
+func isSupportedFormat(fileType ft.FileType) bool {
+	if _, ok := SUPPORTED_FORMATS[fileType]; !ok {
+		return false
+	}
+	return true
 }
