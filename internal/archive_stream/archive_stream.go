@@ -2,6 +2,7 @@ package archive_stream
 
 import (
 	"archive/zip"
+	"compress/gzip"
 
 	"bytes"
 	"encoding/binary"
@@ -62,7 +63,21 @@ func (reader *ArchiveStreamReader) readEntry() (ArchiveEntry, error) {
 
 	switch reader.archiveType {
 	case ft.GZIP:
-		return nil, fmt.Errorf("unimplemented")
+		entry := &GzipEntry{
+			Header: gzip.Header{
+				Comment: "",
+				Extra:   []byte{},
+				ModTime: time.Time{},
+				Name:    "",
+				OS:      0xff,
+			},
+			ArchiveEntryState: ArchiveEntryState{
+				reader:  reader.inputReader,
+				readNum: 0,
+				eof:     false,
+			},
+		}
+		return entry, nil
 	case ft.ZIP:
 		buf := make([]byte, zipFileHeaderLen)
 		if _, err := io.ReadFull(reader.inputReader, buf); err != nil {

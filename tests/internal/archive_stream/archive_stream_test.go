@@ -49,11 +49,11 @@ func TestStreamReader(t *testing.T) {
 		if !entry.IsDir() {
 			rc, err := entry.Open()
 			if err != nil {
-				log.Fatalf("unable to open zip file: %s", err)
+				log.Fatalf("unable to open gzip file: %s", err)
 			}
 			content, err := io.ReadAll(rc)
 			if err != nil {
-				log.Fatalf("read zip file content fail: %s", err)
+				log.Fatalf("read gzip file content fail: %s", err)
 			}
 
 			log.Println("file length:", len(content))
@@ -62,7 +62,7 @@ func TestStreamReader(t *testing.T) {
 			// 	log.Fatalf("read zip file length not equal with UncompressedSize64")
 			// }
 			if err := rc.Close(); err != nil {
-				log.Fatalf("close zip entry reader fail: %s", err)
+				log.Fatalf("close gzip entry reader fail: %s", err)
 			}
 		}
 	}
