@@ -19,6 +19,7 @@ package sql_parser
 import (
 	"strings"
 
+	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_types"
 )
 
@@ -54,7 +55,7 @@ func (iv InsertValues) EncodeSQL(buf *strings.Builder) {
 // TupleEqualityList is for generating equality constraints
 // for tables that have composite primary keys.
 type TupleEqualityList struct {
-	Columns []ColIdent
+	Columns []ast.ColIdent
 	Rows    [][]sql_types.Value
 }
 
@@ -69,7 +70,7 @@ func (tpl *TupleEqualityList) EncodeSQL(buf *strings.Builder) {
 }
 
 func (tpl *TupleEqualityList) encodeAsIn(buf *strings.Builder) {
-	Append(buf, tpl.Columns[0])
+	ast.Append(buf, tpl.Columns[0])
 	buf.WriteString(" in (")
 	for i, r := range tpl.Rows {
 		if i != 0 {
@@ -90,7 +91,7 @@ func (tpl *TupleEqualityList) encodeAsEquality(buf *strings.Builder) {
 			if j != 0 {
 				buf.WriteString(" and ")
 			}
-			Append(buf, c)
+			ast.Append(buf, c)
 			buf.WriteString(" = ")
 			r[j].EncodeSQL(buf)
 		}

@@ -24,6 +24,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
@@ -84,7 +85,7 @@ func yyParsePooled(yylex yyLexer) int {
 // bind variables that were found in the original SQL query. If a DDL statement
 // is partially parsed but still contains a syntax error, the
 // error is ignored and the DDL is returned anyway.
-func Parse2(sql string) (Statement, BindVars, error) {
+func Parse2(sql string) (ast.Statement, BindVars, error) {
 	tokenizer := NewStringTokenizer(sql)
 	if yyParsePooled(tokenizer) != 0 {
 		if tokenizer.partialDDL != nil {
@@ -92,9 +93,9 @@ func Parse2(sql string) (Statement, BindVars, error) {
 				return nil, nil, fmt.Errorf("extra characters encountered after end of DDL: '%s'", string(val))
 			}
 			switch x := tokenizer.partialDDL.(type) {
-			case DBDDLStatement:
+			case ast.DBDDLStatement:
 				x.SetFullyParsed(false)
-			case DDLStatement:
+			case ast.DDLStatement:
 				x.SetFullyParsed(false)
 			}
 			tokenizer.ParseTree = tokenizer.partialDDL
@@ -119,6 +120,31 @@ func checkParserVersionFlag() {
 			}
 		})
 	}
+}
+
+// TableFromStatement returns the qualified table name for the query.
+// This works only for select statements.
+func TableFromStatement(sql string) (ast.TableName, error) {
+	stmt, err := Parse(sql)
+	if err != nil {
+		return ast.TableName{}, err
+	}
+	sel, ok := stmt.(*ast.Select)
+	if !ok {
+		return ast.TableName{}, fmt.Errorf("unrecognized statement: %s", sql)
+	}
+	if len(sel.From) != 1 {
+		return ast.TableName{}, fmt.Errorf("table expression is complex")
+	}
+	aliased, ok := sel.From[0].(*ast.AliasedTableExpr)
+	if !ok {
+		return ast.TableName{}, fmt.Errorf("table expression is complex")
+	}
+	tableName, ok := aliased.Expr.(ast.TableName)
+	if !ok {
+		return ast.TableName{}, fmt.Errorf("table expression is complex")
+	}
+	return tableName, nil
 }
 
 // ConvertMySQLVersionToCommentVersion converts the MySQL version into comment version format.
@@ -160,24 +186,24 @@ func ConvertMySQLVersionToCommentVersion(version string) (string, error) {
 }
 
 // ParseExpr parses an expression and transforms it to an AST
-func ParseExpr(sql string) (Expr, error) {
+func ParseExpr(sql string) (ast.Expr, error) {
 	stmt, err := Parse("select " + sql)
 	if err != nil {
 		return nil, err
 	}
-	aliasedExpr := stmt.(*Select).SelectExprs[0].(*AliasedExpr)
+	aliasedExpr := stmt.(*ast.Select).SelectExprs[0].(*ast.AliasedExpr)
 	return aliasedExpr.Expr, err
 }
 
 // Parse behaves like Parse2 but does not return a set of bind variables
-func Parse(sql string) (Statement, error) {
+func Parse(sql string) (ast.Statement, error) {
 	stmt, _, err := Parse2(sql)
 	return stmt, err
 }
 
 // ParseStrictDDL is the same as Parse except it errors on
 // partially parsed DDL statements.
-func ParseStrictDDL(sql string) (Statement, error) {
+func ParseStrictDDL(sql string) (ast.Statement, error) {
 	tokenizer := NewStringTokenizer(sql)
 	if yyParsePooled(tokenizer) != 0 {
 		return nil, tokenizer.LastError
@@ -190,7 +216,7 @@ func ParseStrictDDL(sql string) (Statement, error) {
 
 // ParseTokenizer is a raw interface to parse from the given tokenizer.
 // This does not used pooled parsers, and should not be used in general.
-func ParseTokenizer(tokenizer *Tokenizer) int {
+func ParseTokenizer(tokenizer ast.Tokenizer) int {
 	return yyParse(tokenizer)
 }
 
@@ -199,7 +225,7 @@ func ParseTokenizer(tokenizer *Tokenizer) int {
 // The tokenizer will always read up to the end of the statement, allowing for
 // the next call to ParseNext to parse any subsequent SQL statements. When
 // there are no more statements to parse, a error of io.EOF is returned.
-func ParseNext(tokenizer *Tokenizer) (Statement, error) {
+func ParseNext(tokenizer ast.Tokenizer) (ast.Statement, error) {
 	return parseNext(tokenizer, false)
 }
 

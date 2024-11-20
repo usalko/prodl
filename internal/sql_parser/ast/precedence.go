@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package ast
 
 // Precendence is used to know the precedence between operators,
 // so we can introduce parens when needed in the String representation of the AST

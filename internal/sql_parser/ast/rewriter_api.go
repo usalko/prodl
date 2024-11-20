@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package ast
 
 // The rewriter was heavily inspired by https://github.com/golang/tools/blob/master/go/ast/astutil/rewrite.go
 
@@ -49,11 +49,6 @@ func Rewrite(node SQLNode, pre, post ApplyFunc) (result SQLNode) {
 	a.rewriteSQLNode(parent, node, replacer)
 
 	return parent.SQLNode
-}
-
-// RootNode is the root node of the AST when rewriting. It is the first element of the tree.
-type RootNode struct {
-	SQLNode
 }
 
 // An ApplyFunc is invoked by Rewrite for each node n, even if n is nil,

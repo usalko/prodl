@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package mysql
 
 import (
 	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_types"
 )
 
@@ -35,12 +36,12 @@ type Tokenizer struct {
 	SkipSpecialComments bool
 	SkipToEnd           bool
 	LastError           error
-	ParseTree           Statement
+	ParseTree           ast.Statement
 	BindVars            map[string]struct{}
 
 	lastToken      string
 	posVarIndex    int
-	partialDDL     Statement
+	partialDDL     ast.Statement
 	nesting        int
 	multi          bool
 	specialComment *Tokenizer
@@ -62,7 +63,7 @@ func NewStringTokenizer(sql string) *Tokenizer {
 
 // Lex returns the next token form the Tokenizer.
 // This function is used by go yacc.
-func (tkn *Tokenizer) Lex(lval *yySymType) int {
+func (tkn *Tokenizer) Lex(lval *mysqSymType) int {
 	if tkn.SkipToEnd {
 		return tkn.skipStatement()
 	}

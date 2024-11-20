@@ -17,39 +17,39 @@ limitations under the License.
 %{
 package sql_parser
 
-func setParseTree(yylex yyLexer, stmt Statement) {
-  yylex.(*Tokenizer).ParseTree = stmt
+func setParseTree(psqlex psqLexer, stmt Statement) {
+  psqlex.(*Tokenizer).ParseTree = stmt
 }
 
-func setAllowComments(yylex yyLexer, allow bool) {
-  yylex.(*Tokenizer).AllowComments = allow
+func setAllowComments(psqlex psqLexer, allow bool) {
+  psqlex.(*Tokenizer).AllowComments = allow
 }
 
-func setDDL(yylex yyLexer, node Statement) {
-  yylex.(*Tokenizer).partialDDL = node
+func setDDL(psqlex psqLexer, node Statement) {
+  psqlex.(*Tokenizer).partialDDL = node
 }
 
-func incNesting(yylex yyLexer) bool {
-  yylex.(*Tokenizer).nesting++
-  if yylex.(*Tokenizer).nesting == 200 {
+func incNesting(psqlex psqLexer) bool {
+  psqlex.(*Tokenizer).nesting++
+  if psqlex.(*Tokenizer).nesting == 200 {
     return true
   }
   return false
 }
 
-func decNesting(yylex yyLexer) {
-  yylex.(*Tokenizer).nesting--
+func decNesting(psqlex psqLexer) {
+  psqlex.(*Tokenizer).nesting--
 }
 
 // skipToEnd forces the lexer to end prematurely. Not all SQL statements
 // are supported by the Parser, thus calling skipToEnd will make the lexer
 // return EOF early.
-func skipToEnd(yylex yyLexer) {
-  yylex.(*Tokenizer).SkipToEnd = true
+func skipToEnd(psqlex psqLexer) {
+  psqlex.(*Tokenizer).SkipToEnd = true
 }
 
-func bindVariable(yylex yyLexer, bvar string) {
-  yylex.(*Tokenizer).BindVars[bvar] = struct{}{}
+func bindVariable(psqlex psqLexer, bvar string) {
+  psqlex.(*Tokenizer).BindVars[bvar] = struct{}{}
 }
 
 %}
@@ -530,7 +530,7 @@ func bindVariable(yylex yyLexer, bvar string) {
 any_command:
   command semicolon_opt
   {
-    setParseTree(yylex, $1)
+    setParseTree(psqlex, $1)
   }
 
 semicolon_opt:
@@ -576,7 +576,7 @@ command:
 | deallocate_statement
 | /*empty*/
 {
-  setParseTree(yylex, nil)
+  setParseTree(psqlex, nil)
 }
 
 id_or_var:
@@ -1105,50 +1105,50 @@ create_table_prefix:
   CREATE comment_opt temp_opt TABLE not_exists_opt table_name
   {
     $$ = &CreateTable{Comments: Comments($2).Parsed(), Table: $6, IfNotExists: $5, Temp: $3}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 
 alter_table_prefix:
   ALTER comment_opt TABLE table_name
   {
     $$ = &AlterTable{Comments: Comments($2).Parsed(), Table: $4}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 
 create_index_prefix:
   CREATE comment_opt INDEX id_or_var using_opt ON table_name
   {
     $$ = &AlterTable{Table: $7, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$4, Type:string($3)}, Options:$5}}}}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 | CREATE comment_opt FULLTEXT INDEX id_or_var using_opt ON table_name
   {
     $$ = &AlterTable{Table: $8, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Fulltext:true}, Options:$6}}}}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 | CREATE comment_opt SPATIAL INDEX id_or_var using_opt ON table_name
   {
     $$ = &AlterTable{Table: $8, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Spatial:true}, Options:$6}}}}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 | CREATE comment_opt UNIQUE INDEX id_or_var using_opt ON table_name
   {
     $$ = &AlterTable{Table: $8, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Unique:true}, Options:$6}}}}
-    setDDL(yylex, $$)
+    setDDL(psqlex, $$)
   }
 
 create_database_prefix:
   CREATE comment_opt database_or_schema comment_opt not_exists_opt table_id
   {
     $$ = &CreateDatabase{Comments: Comments($4).Parsed(), DBName: $6, IfNotExists: $5}
-    setDDL(yylex,$$)
+    setDDL(psqlex,$$)
   }
 
 alter_database_prefix:
   ALTER comment_opt database_or_schema
   {
     $$ = &AlterDatabase{}
-    setDDL(yylex,$$)
+    setDDL(psqlex,$$)
   }
 
 database_or_schema:
@@ -1291,7 +1291,7 @@ table_column_list:
     $$.AddConstraint($3)
   }
 
-// collate_opt has to be in the first rule so that we don't have a shift reduce conflict when seeing a COLLATE
+// collate_opt has to be in the first rule so that we don\'t have a shift reduce conflict when seeing a COLLATE
 // with column_attribute_list_opt. Always shifting there would have meant that we would have always ended up using the
 // second rule in the grammar whenever COLLATE was specified.
 // We now have a shift reduce conflict between COLLATE and collate_opt. Shifting there is fine. Essentially, we have
@@ -1560,7 +1560,7 @@ text_literal
 | VALUE_ARG
   {
     $$ = NewArgument($1[1:])
-    bindVariable(yylex, $1[1:])
+    bindVariable(psqlex, $1[1:])
   }
 | underscore_charsets  BIT_LITERAL %prec UNARY
   {
@@ -1580,7 +1580,7 @@ text_literal
   }
 | underscore_charsets VALUE_ARG %prec UNARY
   {
-    bindVariable(yylex, $2[1:])
+    bindVariable(psqlex, $2[1:])
     $$ = &IntroducerExpr{CharacterSet: $1, Expr: NewArgument($2[1:])}
   }
 
@@ -1794,7 +1794,7 @@ text_literal_or_arg:
 | VALUE_ARG
   {
     $$ = NewArgument($1[1:])
-    bindVariable(yylex, $1[1:])
+    bindVariable(psqlex, $1[1:])
   }
 
 keys:
@@ -4365,12 +4365,12 @@ for_channel_opt:
 
 comment_opt:
   {
-    setAllowComments(yylex, true)
+    setAllowComments(psqlex, true)
   }
   comment_list
   {
     $$ = $2
-    setAllowComments(yylex, false)
+    setAllowComments(psqlex, false)
   }
 
 comment_list:
@@ -5252,7 +5252,7 @@ col_tuple:
 | LIST_ARG
   {
     $$ = ListArg($1[2:])
-    bindVariable(yylex, $1[2:])
+    bindVariable(psqlex, $1[2:])
   }
 
 subquery:
@@ -5685,7 +5685,7 @@ func_datetime_precision:
 | openb VALUE_ARG closeb
   {
     $$ = NewArgument($2[1:])
-    bindVariable(yylex, $2[1:])
+    bindVariable(psqlex, $2[1:])
   }
 
 /*
@@ -5891,7 +5891,7 @@ num_val:
   {
     // TODO(sougou): Deprecate this construct.
     if $1.Lowered() != "value" {
-      yylex.Error("expecting value after next")
+      psqlex.Error("expecting value after next")
       return 1
     }
     $$ = NewIntLiteral("1")
@@ -5903,7 +5903,7 @@ num_val:
 | VALUE_ARG VALUES
   {
     $$ = NewArgument($1[1:])
-    bindVariable(yylex, $1[1:])
+    bindVariable(psqlex, $1[1:])
   }
 
 group_by_opt:
@@ -7092,8 +7092,8 @@ non_reserved_keyword:
 openb:
   '('
   {
-    if incNesting(yylex) {
-      yylex.Error("max nesting level reached")
+    if incNesting(psqlex) {
+      psqlex.Error("max nesting level reached")
       return 1
     }
   }
@@ -7101,23 +7101,23 @@ openb:
 closeb:
   ')'
   {
-    decNesting(yylex)
+    decNesting(psqlex)
   }
 
 skip_to_end:
 {
-  skipToEnd(yylex)
+  skipToEnd(psqlex)
 }
 
 ddl_skip_to_end:
   {
-    skipToEnd(yylex)
+    skipToEnd(psqlex)
   }
 | openb
   {
-    skipToEnd(yylex)
+    skipToEnd(psqlex)
   }
 | reserved_sql_id
   {
-    skipToEnd(yylex)
+    skipToEnd(psqlex)
   }

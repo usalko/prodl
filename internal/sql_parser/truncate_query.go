@@ -18,6 +18,8 @@ package sql_parser
 
 import (
 	"flag"
+
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 var (
@@ -29,7 +31,7 @@ var (
 )
 
 func truncateQuery(query string, max int) string {
-	sql, comments := SplitMarginComments(query)
+	sql, comments := ast.SplitMarginComments(query)
 
 	if max == 0 || len(sql) <= max {
 		return comments.Leading + sql + comments.Trailing

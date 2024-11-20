@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/usalko/sent/internal/archive_stream"
+	"github.com/usalko/sent/internal/sql_parser"
 )
 
 func check(err error, msgs ...any) {
@@ -36,25 +38,24 @@ func TestNopProcessing(t *testing.T) {
 		}
 		check(err, "unable to get next entry")
 
-		// log.Println("entry name: ", entry.Name)
-		// log.Println("entry comment: ", entry.Comment)
-		// log.Println("entry reader version: ", entry.ReaderVersion)
-		// log.Println("entry modify time: ", entry.Modified)
-		// log.Println("entry compressed size: ", entry.CompressedSize64)
-		// log.Println("entry uncompressed size: ", entry.UncompressedSize64)
-		log.Println("entry is a dir: ", entry.IsDir())
-
 		if !entry.IsDir() {
 			rc, err := entry.Open()
 			if err != nil {
 				log.Fatalf("unable to open gzip file: %s", err)
 			}
-			content, err := io.ReadAll(rc)
-			if err != nil {
+			chunk := [4096]byte{}
+			readLength, err := io.ReadAtLeast(rc, chunk[:], 4096)
+
+			if readLength == 0 && err != nil {
 				log.Fatalf("read gzip file content fail: %s", err)
 			}
 
-			log.Println("file length:", len(content))
+			log.Println("read length:", readLength)
+
+			stmt, err := sql_parser.Parse(bytes.NewBuffer(chunk[:readLength]).String())
+			check(err)
+
+			log.Println("Sql statement", stmt)
 
 			// if uint64(len(content)) != entry.UncompressedSize64 {
 			// 	log.Fatalf("read zip file length not equal with UncompressedSize64")

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package ast
 
 /*
 This is the Vitess AST. This file should only contain pure struct declarations,
@@ -27,6 +27,11 @@ related to these structs live in ast_funcs.go
 type SQLNode interface {
 	Format(buf *TrackedBuffer)
 	formatFast(buf *TrackedBuffer)
+}
+
+// RootNode is the root node of the AST when rewriting. It is the first element of the tree.
+type RootNode struct {
+	SQLNode
 }
 
 // Statements
@@ -2722,7 +2727,7 @@ type ColIdent struct {
 	// last field in the struct.
 	_            [0]struct{ _ []byte }
 	val, lowered string
-	at           AtCount
+	At           AtCount
 }
 
 // TableIdent is a case sensitive SQL identifier. It will be escaped with
@@ -2733,7 +2738,7 @@ type TableIdent struct {
 
 // AtCount return the '@' count present in ColIdent Name
 func (node ColIdent) AtCount() AtCount {
-	return node.at
+	return node.At
 }
 
 func (IsolationLevel) iChar() {}

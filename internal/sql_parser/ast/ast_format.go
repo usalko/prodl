@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package ast
 
 import (
 	"strings"
@@ -1627,10 +1627,10 @@ func (node ColIdent) Format(buf *TrackedBuffer) {
 	if node.IsEmpty() {
 		return
 	}
-	for i := NoAt; i < node.at; i++ {
+	for i := NoAt; i < node.At; i++ {
 		buf.WriteByte('@')
 	}
-	formatID(buf, node.val, node.at)
+	formatID(buf, node.val, node.At)
 }
 
 // Format formats the node.

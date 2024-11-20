@@ -19,6 +19,7 @@ package sql_parser
 import (
 	"strings"
 
+	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
@@ -26,8 +27,8 @@ type SetNormalizer struct {
 	err error
 }
 
-func (n *SetNormalizer) rewriteSetComingUp(cursor *Cursor) bool {
-	set, ok := cursor.node.(*Set)
+func (n *SetNormalizer) rewriteSetComingUp(cursor *ast.Cursor) bool {
+	set, ok := cursor.Node().(*ast.Set)
 	if ok {
 		for i, expr := range set.Exprs {
 			exp, err := n.NormalizeSetExpr(expr)
@@ -41,48 +42,48 @@ func (n *SetNormalizer) rewriteSetComingUp(cursor *Cursor) bool {
 	return true
 }
 
-func (n *SetNormalizer) NormalizeSetExpr(in *SetExpr) (*SetExpr, error) {
-	switch in.Name.at { // using switch so we can use break
-	case DoubleAt:
-		if in.Scope != ImplicitScope {
+func (n *SetNormalizer) NormalizeSetExpr(in *ast.SetExpr) (*ast.SetExpr, error) {
+	switch in.Name.At { // using switch so we can use break
+	case ast.DoubleAt:
+		if in.Scope != ast.ImplicitScope {
 			return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "cannot use scope and @@")
 		}
 		switch {
 		case strings.HasPrefix(in.Name.Lowered(), "session."):
 			in.Name = createColumn(in.Name.Lowered()[8:])
-			in.Scope = SessionScope
+			in.Scope = ast.SessionScope
 		case strings.HasPrefix(in.Name.Lowered(), "global."):
 			in.Name = createColumn(in.Name.Lowered()[7:])
-			in.Scope = GlobalScope
+			in.Scope = ast.GlobalScope
 		case strings.HasPrefix(in.Name.Lowered(), "vitess_metadata."):
 			in.Name = createColumn(in.Name.Lowered()[16:])
-			in.Scope = VitessMetadataScope
+			in.Scope = ast.VitessMetadataScope
 		default:
-			in.Name.at = NoAt
-			in.Scope = SessionScope
+			in.Name.At = ast.NoAt
+			in.Scope = ast.SessionScope
 		}
 		return in, nil
-	case SingleAt:
-		if in.Scope != ImplicitScope {
+	case ast.SingleAt:
+		if in.Scope != ast.ImplicitScope {
 			return nil, sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "cannot mix scope and user defined variables")
 		}
 		return in, nil
-	case NoAt:
+	case ast.NoAt:
 		switch in.Scope {
-		case ImplicitScope:
-			in.Scope = SessionScope
-		case LocalScope:
-			in.Scope = SessionScope
+		case ast.ImplicitScope:
+			in.Scope = ast.SessionScope
+		case ast.LocalScope:
+			in.Scope = ast.SessionScope
 		}
 		return in, nil
 	}
 	panic("this should never happen")
 }
 
-func createColumn(str string) ColIdent {
+func createColumn(str string) ast.ColIdent {
 	size := len(str)
 	if str[0] == '`' && str[size-1] == '`' {
 		str = str[1 : size-1]
 	}
-	return NewColIdent(str)
+	return ast.NewColIdent(str)
 }

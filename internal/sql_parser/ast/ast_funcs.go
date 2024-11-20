@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
+package ast
 
 import (
 	"bytes"
@@ -661,7 +661,7 @@ func NewSelect(comments Comments, exprs SelectExprs, selectOptions []string, int
 func NewColIdentWithAt(str string, at AtCount) ColIdent {
 	return ColIdent{
 		val: str,
-		at:  at,
+		At:  at,
 	}
 }
 
@@ -676,7 +676,7 @@ func (node ColIdent) IsEmpty() bool {
 // in templates.
 func (node ColIdent) String() string {
 	atStr := ""
-	for i := NoAt; i < node.at; i++ {
+	for i := NoAt; i < node.At; i++ {
 		atStr += "@"
 	}
 	return atStr + node.val
