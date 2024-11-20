@@ -10,67 +10,80 @@ type GzipEntry struct {
 	ArchiveEntryState
 }
 
+type GzipEntryCloser struct {
+	io.Reader
+	gzipEntry *GzipEntry
+}
+
+func (gzipEntryCloser GzipEntryCloser) Close() error {
+	gzipEntryCloser.gzipEntry.eof = true
+	return nil
+}
+
 // GetName implements ArchiveEntry.
-func (g *GzipEntry) GetName() string {
-	return g.Header.Name
+func (entry *GzipEntry) GetName() string {
+	return entry.Header.Name
 }
 
 // IsDir implements ArchiveEntry.
-func (g *GzipEntry) IsDir() bool {
+func (entry *GzipEntry) IsDir() bool {
 	return false
 }
 
 // Open implements ArchiveEntry.
-func (g *GzipEntry) Open() (io.ReadCloser, error) {
-	panic("unimplemented")
+func (entry *GzipEntry) Open() (io.ReadCloser, error) {
+	return GzipEntryCloser{
+		Reader:    entry.reader,
+		gzipEntry: entry,
+	}, nil
 }
 
 // addReadNum implements ArchiveEntry.
-func (g *GzipEntry) addReadNum(n uint64) {
-	panic("unimplemented")
+func (entry *GzipEntry) addReadNum(n uint64) {
+	entry.readNum += n
 }
 
 // getCrc32 implements ArchiveEntry.
-func (g *GzipEntry) getCrc32() uint32 {
-	panic("unimplemented")
+func (entry *GzipEntry) getCrc32() uint32 {
+	return 0
 }
 
 // getLimitedReader implements ArchiveEntry.
-func (g *GzipEntry) getLimitedReader() io.Reader {
-	panic("unimplemented")
+func (entry *GzipEntry) getLimitedReader() io.Reader {
+	return io.LimitReader(entry.reader, 0)
 }
 
 // getReadNum implements ArchiveEntry.
-func (g *GzipEntry) getReadNum() uint64 {
-	panic("unimplemented")
+func (entry *GzipEntry) getReadNum() uint64 {
+	return entry.readNum
 }
 
 // getReader implements ArchiveEntry.
-func (g *GzipEntry) getReader() io.Reader {
-	panic("unimplemented")
+func (entry *GzipEntry) getReader() io.Reader {
+	return entry.reader
 }
 
 // getUncompressedSize64 implements ArchiveEntry.
-func (g *GzipEntry) getUncompressedSize64() uint64 {
-	panic("unimplemented")
+func (entry *GzipEntry) getUncompressedSize64() uint64 {
+	return 0
 }
 
 // isEof implements ArchiveEntry.
-func (g *GzipEntry) isEof() bool {
-	panic("unimplemented")
+func (entry *GzipEntry) isEof() bool {
+	return entry.eof
 }
 
 // isHasDataDescriptorSignature implements ArchiveEntry.
-func (g *GzipEntry) isHasDataDescriptorSignature() bool {
-	panic("unimplemented")
+func (entry *GzipEntry) isHasDataDescriptorSignature() bool {
+	return true
 }
 
 // readDataDescriptor implements ArchiveEntry.
-func (g *GzipEntry) readDataDescriptor(r io.Reader) error {
-	panic("unimplemented")
+func (entry *GzipEntry) readDataDescriptor(r io.Reader) error {
+	return nil
 }
 
 // setEof implements ArchiveEntry.
-func (g *GzipEntry) setEof(eof bool) {
-	panic("unimplemented")
+func (entry *GzipEntry) setEof(eof bool) {
+	entry.eof = eof
 }

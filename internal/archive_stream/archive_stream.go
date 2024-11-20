@@ -59,20 +59,18 @@ func NewReader(reader io.Reader) *ArchiveStreamReader {
 	}
 }
 
-func (reader *ArchiveStreamReader) readEntry() (ArchiveEntry, error) {
+func (reader *ArchiveStreamReader) readEntry(buf []byte) (ArchiveEntry, error) {
 
 	switch reader.archiveType {
 	case ft.GZIP:
+		gzipReader, err := gzip.NewReader(io.MultiReader(bytes.NewReader(buf), reader.inputReader))
+		if err != nil {
+			return nil, err
+		}
 		entry := &GzipEntry{
-			Header: gzip.Header{
-				Comment: "",
-				Extra:   []byte{},
-				ModTime: time.Time{},
-				Name:    "",
-				OS:      0xff,
-			},
+			Header: gzipReader.Header,
 			ArchiveEntryState: ArchiveEntryState{
-				reader:  reader.inputReader,
+				reader:  gzipReader,
 				readNum: 0,
 				eof:     false,
 			},
@@ -290,6 +288,9 @@ func (reader *ArchiveStreamReader) GetNextEntry() (ArchiveEntry, error) {
 
 	headerIDBuf := make([]byte, zipHeaderIdentifierLen)
 	if _, err := io.ReadFull(reader.inputReader, headerIDBuf); err != nil {
+		if reader.archiveType == ft.GZIP {
+			return nil, io.EOF
+		}
 		return nil, fmt.Errorf("unable to read header identifier: %w", err)
 	}
 
@@ -314,7 +315,7 @@ func (reader *ArchiveStreamReader) GetNextEntry() (ArchiveEntry, error) {
 		return nil, fmt.Errorf("unimplemented file format %s", hexi.FileTypeShortName(reader.archiveType))
 	}
 
-	entry, err := reader.readEntry()
+	entry, err := reader.readEntry(headerIDBuf)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read file header: %w", err)
 	}
