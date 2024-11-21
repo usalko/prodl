@@ -1518,7 +1518,7 @@ func EqualsRefOfCheckConstraintDefinition(a, b *CheckConstraintDefinition) bool 
 
 // EqualsColIdent does deep equals between the two objects.
 func EqualsColIdent(a, b ColIdent) bool {
-	return a.val == b.val &&
+	return a.Val == b.Val &&
 		a.lowered == b.lowered &&
 		a.At == b.At
 }
@@ -3262,7 +3262,7 @@ func EqualsTableExprs(a, b TableExprs) bool {
 
 // EqualsTableIdent does deep equals between the two objects.
 func EqualsTableIdent(a, b TableIdent) bool {
-	return a.v == b.v
+	return a.V == b.V
 }
 
 // EqualsTableName does deep equals between the two objects.
@@ -3584,7 +3584,7 @@ func EqualsRefOfWith(a, b *With) bool {
 		return false
 	}
 	return a.Recursive == b.Recursive &&
-		EqualsSliceOfRefOfCommonTableExpr(a.ctes, b.ctes)
+		EqualsSliceOfRefOfCommonTableExpr(a.Ctes, b.Ctes)
 }
 
 // EqualsRefOfXorExpr does deep equals between the two objects.
@@ -5450,7 +5450,7 @@ func EqualsRefOfColIdent(a, b *ColIdent) bool {
 	if a == nil || b == nil {
 		return false
 	}
-	return a.val == b.val &&
+	return a.Val == b.Val &&
 		a.lowered == b.lowered &&
 		a.At == b.At
 }
@@ -5735,7 +5735,7 @@ func EqualsRefOfTableIdent(a, b *TableIdent) bool {
 	if a == nil || b == nil {
 		return false
 	}
-	return a.v == b.v
+	return a.V == b.V
 }
 
 // EqualsRefOfTableName does deep equals between the two objects.

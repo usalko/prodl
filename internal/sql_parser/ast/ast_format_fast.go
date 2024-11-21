@@ -195,12 +195,12 @@ func (node *With) formatFast(buf *TrackedBuffer) {
 	if node.Recursive {
 		buf.WriteString("recursive ")
 	}
-	ctesLength := len(node.ctes)
+	ctesLength := len(node.Ctes)
 	for i := 0; i < ctesLength-1; i++ {
-		node.ctes[i].formatFast(buf)
+		node.Ctes[i].formatFast(buf)
 		buf.WriteString(", ")
 	}
-	node.ctes[ctesLength-1].formatFast(buf)
+	node.Ctes[ctesLength-1].formatFast(buf)
 }
 
 // formatFast formats the node.
@@ -1017,35 +1017,35 @@ func (ct *ColumnType) formatFast(buf *TrackedBuffer) {
 			buf.WriteByte(' ')
 			ct.Options.SecondaryEngineAttribute.formatFast(buf)
 		}
-		if ct.Options.KeyOpt == colKeyPrimary {
+		if ct.Options.KeyOpt == ColKeyPrimary {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[PRIMARY])
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeyUnique {
+		if ct.Options.KeyOpt == ColKeyUnique {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[UNIQUE])
 		}
-		if ct.Options.KeyOpt == colKeyUniqueKey {
+		if ct.Options.KeyOpt == ColKeyUniqueKey {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[UNIQUE])
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeySpatialKey {
+		if ct.Options.KeyOpt == ColKeySpatialKey {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[SPATIAL])
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeyFulltextKey {
+		if ct.Options.KeyOpt == ColKeyFulltextKey {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[FULLTEXT])
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKey {
+		if ct.Options.KeyOpt == ColKey {
 			buf.WriteByte(' ')
 			buf.WriteString(keywordStrings[KEY])
 		}
@@ -1251,7 +1251,7 @@ func (node *ShowFilter) formatFast(buf *TrackedBuffer) {
 
 // formatFast formats the node.
 func (node *Use) formatFast(buf *TrackedBuffer) {
-	if node.DBName.v != "" {
+	if node.DBName.V != "" {
 		buf.WriteString("use ")
 		node.DBName.formatFast(buf)
 	} else {
@@ -2149,12 +2149,12 @@ func (node ColIdent) formatFast(buf *TrackedBuffer) {
 	for i := NoAt; i < node.At; i++ {
 		buf.WriteByte('@')
 	}
-	formatID(buf, node.val, node.At)
+	formatID(buf, node.Val, node.At)
 }
 
 // formatFast formats the node.
 func (node TableIdent) formatFast(buf *TrackedBuffer) {
-	formatID(buf, node.v, NoAt)
+	formatID(buf, node.V, NoAt)
 }
 
 // formatFast formats the node.

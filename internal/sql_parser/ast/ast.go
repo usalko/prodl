@@ -143,7 +143,7 @@ type (
 
 	// With contains the lists of common table expression and specifies if it is recursive or not
 	With struct {
-		ctes      []*CommonTableExpr
+		Ctes      []*CommonTableExpr
 		Recursive bool
 	}
 
@@ -2726,14 +2726,14 @@ type ColIdent struct {
 	// with itself. It consumes no space as long as it's not the
 	// last field in the struct.
 	_            [0]struct{ _ []byte }
-	val, lowered string
+	Val, lowered string
 	At           AtCount
 }
 
 // TableIdent is a case sensitive SQL identifier. It will be escaped with
 // backquotes if necessary.
 type TableIdent struct {
-	v string
+	V string
 }
 
 // AtCount return the '@' count present in ColIdent Name

@@ -241,7 +241,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 // Some of these operators don\'t conflict in our situation. Nevertheless,
 // it's better to have these listed in the correct order. Also, we don\'t
 // support all operators yet.
-// * NOTE: If you change anything here, update precedence.go as well *
+// * NOTE: ast.If you change anything here, update precedence.go as well *
 %nonassoc <str> LOWER_THAN_CHARSET
 %nonassoc <str> CHARSET
 // Resolve column attribute ambiguity.
@@ -349,11 +349,11 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 // Flush tokens
 %token <str> NO_WRITE_TO_BINLOG LOGS ERROR GENERAL HOSTS OPTIMIZER_COSTS USER_RESOURCES SLOW CHANNEL RELAY EXPORT
 
-// TableOptions tokens
+// ast.TableOptions tokens
 %token <str> AVG_ROW_LENGTH CONNECTION CHECKSUM DELAY_KEY_WRITE ENCRYPTION ENGINE INSERT_METHOD MAX_ROWS MIN_ROWS PACK_KEYS PASSWORD
 %token <str> FIXED DYNAMIC COMPRESSED REDUNDANT COMPACT ROW_FORMAT STATS_AUTO_RECALC STATS_PERSISTENT STATS_SAMPLE_PAGES STORAGE MEMORY DISK
 
-// Partitions tokens
+// ast.Partitions tokens
 %token <str> PARTITIONS LINEAR RANGE LIST SUBPARTITION SUBPARTITIONS HASH
 
 %type <partitionByType> range_or_list
@@ -587,20 +587,20 @@ command:
 id_or_var:
   ID
   {
-    $$ = ast.ast.NewColIdentWithAt(string($1), NoAt)
+    $$ = ast.NewColIdentWithAt(string($1), ast.NoAt)
   }
 | AT_ID
   {
-    $$ = ast.ast.NewColIdentWithAt(string($1), SingleAt)
+    $$ = ast.NewColIdentWithAt(string($1), ast.SingleAt)
   }
 | AT_AT_ID
   {
-    $$ = ast.ast.NewColIdentWithAt(string($1), DoubleAt)
+    $$ = ast.NewColIdentWithAt(string($1), ast.DoubleAt)
   }
 
 id_or_var_opt:
   {
-    $$ = ast.ast.NewColIdentWithAt("", NoAt)
+    $$ = ast.NewColIdentWithAt("", ast.NoAt)
   }
 | id_or_var
   {
@@ -616,17 +616,17 @@ do_statement:
 load_statement:
   LOAD DATA skip_to_end
   {
-    $$ = &Load{}
+    $$ = &ast.Load{}
   }
 
 with_clause:
   WITH with_list
   {
-	$$ = &With{ctes: $2, Recursive: false}
+	$$ = &ast.With{Ctes: $2, Recursive: false}
   }
 | WITH RECURSIVE with_list
   {
-	$$ = &With{ctes: $3, Recursive: true}
+	$$ = &ast.With{Ctes: $3, Recursive: true}
   }
 
 with_clause_opt:
@@ -645,13 +645,13 @@ with_list:
   }
 | common_table_expr
   {
-	$$ = []*CommonTableExpr{$1}
+	$$ = []*ast.CommonTableExpr{$1}
   }
 
 common_table_expr:
   table_id column_list_opt AS subquery
   {
-	$$ = &CommonTableExpr{TableID: $1, Columns: $2, Subquery: $4}
+	$$ = &ast.CommonTableExpr{TableID: $1, Columns: $2, Subquery: $4}
   }
 
 query_expression_parens:
@@ -665,11 +665,11 @@ query_expression_parens:
   }
 | openb query_expression locking_clause closeb
   {
-    setLockInSelect($2, $3)
+    ast.SetLockInSelect($2, $3)
     $$ = $2
   }
 
-// TODO; (Manan, Ritwiz) : Use this in create, insert statements
+// TODO; (Manan, Ritwiz) : ast.Use this in create, insert statements
 //query_expression_or_parens:
 //	query_expression
 //	{
@@ -677,7 +677,7 @@ query_expression_parens:
 //	}
 //	| query_expression locking_clause
 //	{
-//		setLockInSelect($1, $2)
+//		ast.SetLockInSelect($1, $2)
 //		$$ = $1
 //	}
 //	| query_expression_parens
@@ -729,7 +729,7 @@ query_expression:
   }
 | SELECT comment_opt cache_opt NEXT num_val for_from table_name
   {
-	$$ = NewSelect(Comments($2), SelectExprs{&Nextval{Expr: $5}}, []string{$3}/*options*/, nil, TableExprs{&AliasedTableExpr{Expr: $7}}, nil/*where*/, nil/*groupBy*/, nil/*having*/)
+	$$ = ast.NewSelect(ast.Comments($2), ast.SelectExprs{&ast.Nextval{Expr: $5}}, []string{$3}/*options*/, nil, ast.TableExprs{&ast.AliasedTableExpr{Expr: $7}}, nil/*where*/, nil/*groupBy*/, nil/*having*/)
   }
 
 query_expression_body:
@@ -761,7 +761,7 @@ query_expression
   }
 | query_expression locking_clause
   {
-	setLockInSelect($1, $2)
+	ast.SetLockInSelect($1, $2)
 	$$ = $1
   }
 | query_expression_parens
@@ -804,13 +804,13 @@ select_stmt_with_into:
 stream_statement:
   STREAM comment_opt select_expression FROM table_name
   {
-    $$ = &Stream{Comments: ast.Comments($2).Parsed(), SelectExpr: $3, Table: $5}
+    $$ = &ast.Stream{Comments: ast.Comments($2).Parsed(), SelectExpr: $3, Table: $5}
   }
 
 vstream_statement:
   VSTREAM comment_opt select_expression FROM table_name where_expression_opt limit_opt
   {
-    $$ = &VStream{Comments: ast.Comments($2).Parsed(), SelectExpr: $3, Table: $5, Where: NewWhere(WhereClause, $6), Limit: $7}
+    $$ = &ast.VStream{Comments: ast.Comments($2).Parsed(), SelectExpr: $3, Table: $5, Where: ast.NewWhere(ast.WhereClause, $6), Limit: $7}
   }
 
 // query_primary is an unparenthesized SELECT with no order by clause or beyond.
@@ -818,11 +818,11 @@ query_primary:
 //  1         2            3              4                    5             6                7           8
   SELECT comment_opt select_options select_expression_list into_clause from_opt where_expression_opt group_by_opt having_opt
   {
-    $$ = NewSelect(Comments($2), $4/*SelectExprs*/, $3/*options*/, $5/*into*/, $6/*from*/, NewWhere(WhereClause, $7), GroupBy($8), NewWhere(HavingClause, $9))
+    $$ = ast.NewSelect(ast.Comments($2), $4/*SelectExprs*/, $3/*options*/, $5/*into*/, $6/*from*/, ast.NewWhere(ast.WhereClause, $7), ast.GroupBy($8), ast.NewWhere(ast.HavingClause, $9))
   }
 | SELECT comment_opt select_options select_expression_list from_opt where_expression_opt group_by_opt having_opt
   {
-    $$ = NewSelect(Comments($2), $4/*SelectExprs*/, $3/*options*/, nil, $5/*from*/, NewWhere(WhereClause, $6), GroupBy($7), NewWhere(HavingClause, $8))
+    $$ = ast.NewSelect(ast.Comments($2), $4/*SelectExprs*/, $3/*options*/, nil, $5/*from*/, ast.NewWhere(ast.WhereClause, $6), ast.GroupBy($7), ast.NewWhere(ast.HavingClause, $8))
   }
 
 
@@ -830,59 +830,59 @@ query_primary:
 insert_statement:
   insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
   {
-    // insert_data returns a *Insert pre-filled with Columns & Values
+    // insert_data returns a *ast.Insert pre-filled with Columns & Values
     ins := $6
     ins.Action = $1
-    ins.Comments = Comments($2).Parsed()
+    ins.Comments = ast.Comments($2).Parsed()
     ins.Ignore = $3
     ins.Table = $4
     ins.Partitions = $5
-    ins.OnDup = OnDup($7)
+    ins.OnDup = ast.OnDup($7)
     $$ = ins
   }
 | insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause SET update_list on_dup_opt
   {
-    cols := make(Columns, 0, len($7))
-    vals := make(ValTuple, 0, len($8))
+    cols := make(ast.Columns, 0, len($7))
+    vals := make(ast.ValTuple, 0, len($8))
     for _, updateList := range $7 {
       cols = append(cols, updateList.Name.Name)
       vals = append(vals, updateList.Expr)
     }
-    $$ = &Insert{Action: $1, Comments: ast.Comments($2).Parsed(), Ignore: $3, Table: $4, Partitions: $5, Columns: cols, Rows: Values{vals}, OnDup: OnDup($8)}
+    $$ = &ast.Insert{Action: $1, Comments: ast.Comments($2).Parsed(), Ignore: $3, Table: $4, Partitions: $5, Columns: cols, Rows: ast.Values{vals}, OnDup: ast.OnDup($8)}
   }
 
 insert_or_replace:
   INSERT
   {
-    $$ = InsertAct
+    $$ = ast.InsertAct
   }
 | REPLACE
   {
-    $$ = ReplaceAct
+    $$ = ast.ReplaceAct
   }
 
 update_statement:
   with_clause_opt UPDATE comment_opt ignore_opt table_references SET update_list where_expression_opt order_by_opt limit_opt
   {
-    $$ = &Update{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: $5, Exprs: $7, Where: NewWhere(WhereClause, $8), OrderBy: $9, Limit: $10}
+    $$ = &ast.Update{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: $5, Exprs: $7, Where: ast.NewWhere(ast.WhereClause, $8), OrderBy: $9, Limit: $10}
   }
 
 delete_statement:
   with_clause_opt DELETE comment_opt ignore_opt FROM table_name as_opt_id opt_partition_clause where_expression_opt order_by_opt limit_opt
   {
-    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: TableExprs{&AliasedTableExpr{Expr:$6, As: $7}}, Partitions: $8, Where: NewWhere(WhereClause, $9), OrderBy: $10, Limit: $11}
+    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: ast.TableExprs{&ast.AliasedTableExpr{Expr:$6, As: $7}}, Partitions: $8, Where: ast.NewWhere(ast.WhereClause, $9), OrderBy: $10, Limit: $11}
   }
 | with_clause_opt DELETE comment_opt ignore_opt FROM table_name_list USING table_references where_expression_opt
   {
-    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $6, TableExprs: $8, Where: NewWhere(WhereClause, $9)}
+    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $6, TableExprs: $8, Where: ast.NewWhere(ast.WhereClause, $9)}
   }
 | with_clause_opt DELETE comment_opt ignore_opt table_name_list from_or_using table_references where_expression_opt
   {
-    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $5, TableExprs: $7, Where: NewWhere(WhereClause, $8)}
+    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $5, TableExprs: $7, Where: ast.NewWhere(ast.WhereClause, $8)}
   }
 | with_clause_opt DELETE comment_opt ignore_opt delete_table_list from_or_using table_references where_expression_opt
   {
-    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $5, TableExprs: $7, Where: NewWhere(WhereClause, $8)}
+    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, Targets: $5, TableExprs: $7, Where: ast.NewWhere(ast.WhereClause, $8)}
   }
 
 from_or_using:
@@ -892,7 +892,7 @@ from_or_using:
 view_name_list:
   table_name
   {
-    $$ = TableNames{$1.ToViewName()}
+    $$ = ast.TableNames{$1.ToViewName()}
   }
 | view_name_list ',' table_name
   {
@@ -902,7 +902,7 @@ view_name_list:
 table_name_list:
   table_name
   {
-    $$ = TableNames{$1}
+    $$ = ast.TableNames{$1}
   }
 | table_name_list ',' table_name
   {
@@ -912,7 +912,7 @@ table_name_list:
 delete_table_list:
   delete_table_name
   {
-    $$ = TableNames{$1}
+    $$ = ast.TableNames{$1}
   }
 | delete_table_list ',' delete_table_name
   {
@@ -931,23 +931,23 @@ opt_partition_clause:
 set_statement:
   SET comment_opt set_list
   {
-    $$ = &Set{Comments: ast.Comments($2).Parsed(), Exprs: $3}
+    $$ = &ast.Set{Comments: ast.Comments($2).Parsed(), Exprs: $3}
   }
 
 set_transaction_statement:
   SET comment_opt set_session_or_global TRANSACTION transaction_chars
   {
-    $$ = &SetTransaction{Comments: ast.Comments($2).Parsed(), Scope: $3, Characteristics: $5}
+    $$ = &ast.SetTransaction{Comments: ast.Comments($2).Parsed(), Scope: $3, Characteristics: $5}
   }
 | SET comment_opt TRANSACTION transaction_chars
   {
-    $$ = &SetTransaction{Comments: ast.Comments($2).Parsed(), Characteristics: $4, Scope: ImplicitScope}
+    $$ = &ast.SetTransaction{Comments: ast.Comments($2).Parsed(), Characteristics: $4, Scope: ast.ImplicitScope}
   }
 
 transaction_chars:
   transaction_char
   {
-    $$ = []Characteristic{$1}
+    $$ = []ast.Characteristic{$1}
   }
 | transaction_chars ',' transaction_char
   {
@@ -961,39 +961,39 @@ transaction_char:
   }
 | READ WRITE
   {
-    $$ = ReadWrite
+    $$ = ast.ReadWrite
   }
 | READ ONLY
   {
-    $$ = ReadOnly
+    $$ = ast.ReadOnly
   }
 
 isolation_level:
   REPEATABLE READ
   {
-    $$ = RepeatableRead
+    $$ = ast.RepeatableRead
   }
 | READ COMMITTED
   {
-    $$ = ReadCommitted
+    $$ = ast.ReadCommitted
   }
 | READ UNCOMMITTED
   {
-    $$ = ReadUncommitted
+    $$ = ast.ReadUncommitted
   }
 | SERIALIZABLE
   {
-    $$ = Serializable
+    $$ = ast.Serializable
   }
 
 set_session_or_global:
   SESSION
   {
-    $$ = SessionScope
+    $$ = ast.SessionScope
   }
 | GLOBAL
   {
-    $$ = GlobalScope
+    $$ = ast.GlobalScope
   }
 
 create_statement:
@@ -1012,7 +1012,7 @@ create_statement:
   }
 | create_index_prefix '(' index_column_list ')' index_option_list_opt algorithm_lock_opt
   {
-    indexDef := $1.AlterOptions[0].(*AddIndexDefinition).IndexDefinition
+    indexDef := $1.AlterOptions[0].(*ast.AddIndexDefinition).IndexDefinition
     indexDef.Columns = $3
     indexDef.Options = append(indexDef.Options,$5...)
     $1.AlterOptions = append($1.AlterOptions,$6...)
@@ -1021,7 +1021,7 @@ create_statement:
   }
 | CREATE comment_opt replace_opt algorithm_view definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
   {
-    $$ = &CreateView{ViewName: $8.ToViewName(), Comments: ast.Comments($2).Parsed(), IsReplace:$3, Algorithm:$4, Definer: $5 ,Security:$6, Columns:$9, Select: $11, CheckOption: $12 }
+    $$ = &ast.CreateView{ViewName: $8.ToViewName(), Comments: ast.Comments($2).Parsed(), IsReplace:$3, Algorithm:$4, Definer: $5 ,Security:$6, Columns:$9, Select: $11, CheckOption: $12 }
   }
 | create_database_prefix create_options_opt
   {
@@ -1041,7 +1041,7 @@ replace_opt:
 
 vindex_type_opt:
   {
-    $$ = ast.ast.NewColIdent("")
+    $$ = ast.NewColIdent("")
   }
 | USING vindex_type
   {
@@ -1103,13 +1103,13 @@ json_object_param_list:
 json_object_param:
   expression ',' expression
   {
-    $$ = &JSONObjectParam{Key:$1, Value:$3}
+    $$ = &ast.JSONObjectParam{Key:$1, Value:$3}
   }
 
 create_table_prefix:
   CREATE comment_opt temp_opt TABLE not_exists_opt table_name
   {
-    $$ = &CreateTable{Comments: ast.Comments($2).Parsed(), Table: $6, IfNotExists: $5, Temp: $3}
+    $$ = &ast.CreateTable{Comments: ast.Comments($2).Parsed(), Table: $6, IfNotExists: $5, Temp: $3}
     setDDL(mysqlex, $$)
   }
 
@@ -1123,36 +1123,36 @@ alter_table_prefix:
 create_index_prefix:
   CREATE comment_opt INDEX id_or_var using_opt ON table_name
   {
-    $$ = &ast.AlterTable{Table: $7, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$4, Type:string($3)}, Options:$5}}}}
+    $$ = &ast.AlterTable{Table: $7, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$4, Type:string($3)}, Options:$5}}}}
     setDDL(mysqlex, $$)
   }
 | CREATE comment_opt FULLTEXT INDEX id_or_var using_opt ON table_name
   {
-    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Fulltext:true}, Options:$6}}}}
+    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Fulltext:true}, Options:$6}}}}
     setDDL(mysqlex, $$)
   }
 | CREATE comment_opt SPATIAL INDEX id_or_var using_opt ON table_name
   {
-    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Spatial:true}, Options:$6}}}}
+    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Spatial:true}, Options:$6}}}}
     setDDL(mysqlex, $$)
   }
 | CREATE comment_opt UNIQUE INDEX id_or_var using_opt ON table_name
   {
-    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition:&IndexDefinition{Info: &IndexInfo{Name:$5, Type:string($3)+" "+string($4), Unique:true}, Options:$6}}}}
+    $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Unique:true}, Options:$6}}}}
     setDDL(mysqlex, $$)
   }
 
 create_database_prefix:
   CREATE comment_opt database_or_schema comment_opt not_exists_opt table_id
   {
-    $$ = &CreateDatabase{Comments: ast.Comments($4).Parsed(), DBName: $6, IfNotExists: $5}
+    $$ = &ast.CreateDatabase{Comments: ast.Comments($4).Parsed(), DBName: $6, IfNotExists: $5}
     setDDL(mysqlex,$$)
   }
 
 alter_database_prefix:
   ALTER comment_opt database_or_schema
   {
-    $$ = &AlterDatabase{}
+    $$ = &ast.AlterDatabase{}
     setDDL(mysqlex,$$)
   }
 
@@ -1180,15 +1180,15 @@ create_options_opt:
 create_options:
   character_set
   {
-    $$ = []DatabaseOption{$1}
+    $$ = []ast.DatabaseOption{$1}
   }
 | collate
   {
-    $$ = []DatabaseOption{$1}
+    $$ = []ast.DatabaseOption{$1}
   }
 | encryption
   {
-    $$ = []DatabaseOption{$1}
+    $$ = []ast.DatabaseOption{$1}
   }
 | create_options collate
   {
@@ -1216,47 +1216,47 @@ default_optional:
 character_set:
   default_optional charset_or_character_set equal_opt id_or_var
   {
-    $$ = DatabaseOption{Type:CharacterSetType, Value:($4.String()), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.CharacterSetType, Value:($4.String()), IsDefault:$1}
   }
 | default_optional charset_or_character_set equal_opt STRING
   {
-    $$ = DatabaseOption{Type:CharacterSetType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.CharacterSetType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
   }
 
 collate:
   default_optional COLLATE equal_opt id_or_var
   {
-    $$ = DatabaseOption{Type:CollateType, Value:($4.String()), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.CollateType, Value:($4.String()), IsDefault:$1}
   }
 | default_optional COLLATE equal_opt STRING
   {
-    $$ = DatabaseOption{Type:CollateType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.CollateType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
   }
 
 encryption:
   default_optional ENCRYPTION equal_opt id_or_var
   {
-    $$ = DatabaseOption{Type:EncryptionType, Value:($4.String()), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.EncryptionType, Value:($4.String()), IsDefault:$1}
   }
 | default_optional ENCRYPTION equal_opt STRING
   {
-    $$ = DatabaseOption{Type:EncryptionType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
+    $$ = ast.DatabaseOption{Type:ast.EncryptionType, Value:(sql_types.EncodeStringSQL($4)), IsDefault:$1}
   }
 
 create_like:
   LIKE table_name
   {
-    $$ = &OptLike{LikeTable: $2}
+    $$ = &ast.OptLike{LikeTable: $2}
   }
 | '(' LIKE table_name ')'
   {
-    $$ = &OptLike{LikeTable: $3}
+    $$ = &ast.OptLike{LikeTable: $3}
   }
 
 column_definition_list:
   column_definition
   {
-    $$ = []*ColumnDefinition{$1}
+    $$ = []*ast.ColumnDefinition{$1}
   }
 | column_definition_list ',' column_definition
   {
@@ -1266,12 +1266,12 @@ column_definition_list:
 table_column_list:
   column_definition
   {
-    $$ = &TableSpec{}
+    $$ = &ast.TableSpec{}
     $$.AddColumn($1)
   }
 | check_constraint_definition
   {
-    $$ = &TableSpec{}
+    $$ = &ast.TableSpec{}
     $$.AddConstraint($1)
   }
 | table_column_list ',' column_definition
@@ -1309,7 +1309,7 @@ column_definition:
     	$2.Options.Collate = $3
     }
     $2.Options.Reference = $5
-    $$ = &ColumnDefinition{Name: $1, Type: $2}
+    $$ = &ast.ColumnDefinition{Name: $1, Type: $2}
   }
 | sql_id column_type collate_opt generated_always_opt AS '(' expression ')' generated_column_attribute_list_opt reference_definition_opt
   {
@@ -1317,7 +1317,7 @@ column_definition:
     $2.Options.As = $7
     $2.Options.Reference = $10
     $2.Options.Collate = $3
-    $$ = &ColumnDefinition{Name: $1, Type: $2}
+    $$ = &ast.ColumnDefinition{Name: $1, Type: $2}
   }
 
 generated_always_opt:
@@ -1335,7 +1335,7 @@ generated_always_opt:
 // was specific (as stated in the MySQL guide) and did not accept arbitrary order options. For example NOT NULL DEFAULT 1 and not DEFAULT 1 NOT NULL
 column_attribute_list_opt:
   {
-    $$ = &ast.ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: colKeyNone, Comment: nil, As: nil, Invisible: nil, Format: UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil }
+    $$ = &ast.ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: ast.ColKeyNone, Comment: nil, As: nil, Invisible: nil, Format: ast.UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil }
   }
 | column_attribute_list_opt NULL
   {
@@ -1421,25 +1421,25 @@ column_attribute_list_opt:
 column_format:
   FIXED
 {
-  $$ = FixedFormat
+  $$ = ast.FixedFormat
 }
 | DYNAMIC
 {
-  $$ = DynamicFormat
+  $$ = ast.DynamicFormat
 }
 | DEFAULT
 {
-  $$ = DefaultFormat
+  $$ = ast.DefaultFormat
 }
 
 column_storage:
   VIRTUAL
 {
-  $$ = VirtualStorage
+  $$ = ast.VirtualStorage
 }
 | STORED
 {
-  $$ = StoredStorage
+  $$ = ast.StoredStorage
 }
 
 generated_column_attribute_list_opt:
@@ -1523,7 +1523,7 @@ signed_literal
  null_as_literal:
 NULL
  {
-    $$ = &NullVal{}
+    $$ = &ast.NullVal{}
  }
 
  signed_literal:
@@ -1534,7 +1534,7 @@ NULL
    }
 | '-' NUM_literal
    {
-   	$$ = &UnaryExpr{Operator: UMinusOp, Expr: $2}
+   	$$ = &ast.UnaryExpr{Operator: ast.UMinusOp, Expr: $2}
    }
 
 literal:
@@ -1784,7 +1784,7 @@ STRING
   }
 | NCHAR_STRING
   {
-	$$ = &ast.UnaryExpr{Operator: NStringOp, Expr: ast.NewStrLiteral($1)}
+	$$ = &ast.UnaryExpr{Operator: ast.NStringOp, Expr: ast.NewStrLiteral($1)}
   }
  | underscore_charsets STRING %prec UNARY
    {
@@ -1805,19 +1805,19 @@ text_literal_or_arg:
 keys:
   PRIMARY KEY
   {
-    $$ = colKeyPrimary
+    $$ = ast.ColKeyPrimary
   }
 | UNIQUE
   {
-    $$ = colKeyUnique
+    $$ = ast.ColKeyUnique
   }
 | UNIQUE KEY
   {
-    $$ = colKeyUniqueKey
+    $$ = ast.ColKeyUniqueKey
   }
 | KEY
   {
-    $$ = colKey
+    $$ = ast.ColKey
   }
 
 column_type:
@@ -1845,69 +1845,69 @@ numeric_type:
 int_type:
   BIT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | BOOL
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | BOOLEAN
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | TINYINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | SMALLINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | MEDIUMINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | INT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | INTEGER
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | BIGINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 
 decimal_type:
 REAL float_length_opt
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
 | DOUBLE float_length_opt
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
 | FLOAT_TYPE float_length_opt
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
 | DECIMAL_TYPE decimal_length_opt
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
 | NUMERIC decimal_length_opt
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
@@ -1915,126 +1915,126 @@ REAL float_length_opt
 time_type:
   DATE
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | TIME length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 | TIMESTAMP length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 | DATETIME length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 | YEAR length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 
 char_type:
   CHAR length_opt charset_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2, Charset: $3}
+    $$ = ast.ColumnType{Type: string($1), Length: $2, Charset: $3}
   }
 | CHAR length_opt BYTE
   {
     // CHAR BYTE is an alias for binary. See also:
     // https://dev.mysql.com/doc/refman/8.0/en/string-type-syntax.html
-    $$ = ColumnType{Type: "binary", Length: $2}
+    $$ = ast.ColumnType{Type: "binary", Length: $2}
   }
 | VARCHAR length_opt charset_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2, Charset: $3}
+    $$ = ast.ColumnType{Type: string($1), Length: $2, Charset: $3}
   }
 | BINARY length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 | VARBINARY length_opt
   {
-    $$ = ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
 | TEXT charset_opt
   {
-    $$ = ColumnType{Type: string($1), Charset: $2}
+    $$ = ast.ColumnType{Type: string($1), Charset: $2}
   }
 | TINYTEXT charset_opt
   {
-    $$ = ColumnType{Type: string($1), Charset: $2}
+    $$ = ast.ColumnType{Type: string($1), Charset: $2}
   }
 | MEDIUMTEXT charset_opt
   {
-    $$ = ColumnType{Type: string($1), Charset: $2}
+    $$ = ast.ColumnType{Type: string($1), Charset: $2}
   }
 | LONGTEXT charset_opt
   {
-    $$ = ColumnType{Type: string($1), Charset: $2}
+    $$ = ast.ColumnType{Type: string($1), Charset: $2}
   }
 | BLOB
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | TINYBLOB
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | MEDIUMBLOB
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | LONGBLOB
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | JSON
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | ENUM '(' enum_values ')' charset_opt
   {
-    $$ = ColumnType{Type: string($1), EnumValues: $3, Charset: $5}
+    $$ = ast.ColumnType{Type: string($1), EnumValues: $3, Charset: $5}
   }
 // need set_values / SetValues ?
 | SET '(' enum_values ')' charset_opt
   {
-    $$ = ColumnType{Type: string($1), EnumValues: $3, Charset: $5}
+    $$ = ast.ColumnType{Type: string($1), EnumValues: $3, Charset: $5}
   }
 
 spatial_type:
   GEOMETRY
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | POINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | LINESTRING
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | POLYGON
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | GEOMETRYCOLLECTION
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | MULTIPOINT
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | MULTILINESTRING
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 | MULTIPOLYGON
   {
-    $$ = ColumnType{Type: string($1)}
+    $$ = ast.ColumnType{Type: string($1)}
   }
 
 enum_values:
@@ -2059,11 +2059,11 @@ length_opt:
 
 float_length_opt:
   {
-    $$ = LengthScaleOption{}
+    $$ = ast.LengthScaleOption{}
   }
 | '(' INTEGRAL ',' INTEGRAL ')'
   {
-    $$ = LengthScaleOption{
+    $$ = ast.LengthScaleOption{
         Length: ast.NewIntLiteral($2),
         Scale: ast.NewIntLiteral($4),
     }
@@ -2071,17 +2071,17 @@ float_length_opt:
 
 decimal_length_opt:
   {
-    $$ = LengthScaleOption{}
+    $$ = ast.LengthScaleOption{}
   }
 | '(' INTEGRAL ')'
   {
-    $$ = LengthScaleOption{
+    $$ = ast.LengthScaleOption{
         Length: ast.NewIntLiteral($2),
     }
   }
 | '(' INTEGRAL ',' INTEGRAL ')'
   {
-    $$ = LengthScaleOption{
+    $$ = ast.LengthScaleOption{
         Length: ast.NewIntLiteral($2),
         Scale: ast.NewIntLiteral($4),
     }
@@ -2127,27 +2127,27 @@ charset_opt:
   }
 | ASCII binary_opt
   {
-    // ASCII: Shorthand for CHARACTER SET latin1.
+    // ASCII: ast.Shorthand for CHARACTER SET latin1.
     $$ = ast.ColumnCharset{Name: "latin1", Binary: $2}
   }
 | UNICODE binary_opt
   {
-    // UNICODE: Shorthand for CHARACTER SET ucs2.
+    // UNICODE: ast.Shorthand for CHARACTER SET ucs2.
     $$ = ast.ColumnCharset{Name: "ucs2", Binary: $2}
   }
 | BINARY
   {
-    // BINARY: Shorthand for default CHARACTER SET but with binary collation
+    // BINARY: ast.Shorthand for default CHARACTER SET but with binary collation
     $$ = ast.ColumnCharset{Name: "", Binary: true}
   }
 | BINARY ASCII
   {
-    // BINARY ASCII: Shorthand for CHARACTER SET latin1 with binary collation
+    // BINARY ASCII: ast.Shorthand for CHARACTER SET latin1 with binary collation
     $$ = ast.ColumnCharset{Name: "latin1", Binary: true}
   }
 | BINARY UNICODE
   {
-    // BINARY UNICODE: Shorthand for CHARACTER SET ucs2 with binary collation
+    // BINARY UNICODE: ast.Shorthand for CHARACTER SET ucs2 with binary collation
     $$ = ast.ColumnCharset{Name: "ucs2", Binary: true}
   }
 
@@ -2177,7 +2177,7 @@ collate_opt:
 index_definition:
   index_info '(' index_column_list ')' index_option_list_opt
   {
-    $$ = &IndexDefinition{Info: $1, Columns: $3, Options: $5}
+    $$ = &ast.IndexDefinition{Info: $1, Columns: $3, Options: $5}
   }
 
 index_option_list_opt:
@@ -2207,31 +2207,31 @@ index_option:
 | KEY_BLOCK_SIZE equal_opt INTEGRAL
   {
     // should not be string
-    $$ = &IndexOption{Name: string($1), Value: ast.ast.NewIntLiteral($3)}
+    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewIntLiteral($3)}
   }
 | COMMENT_KEYWORD STRING
   {
-    $$ = &IndexOption{Name: string($1), Value: ast.NewStrLiteral($2)}
+    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($2)}
   }
 | VISIBLE
   {
-    $$ = &IndexOption{Name: string($1) }
+    $$ = &ast.IndexOption{Name: string($1) }
   }
 | INVISIBLE
   {
-    $$ = &IndexOption{Name: string($1) }
+    $$ = &ast.IndexOption{Name: string($1) }
   }
 | WITH PARSER id_or_var
   {
-    $$ = &IndexOption{Name: string($1) + " " + string($2), String: $3.String()}
+    $$ = &ast.IndexOption{Name: string($1) + " " + string($2), String: $3.String()}
   }
 | ENGINE_ATTRIBUTE equal_opt STRING
   {
-    $$ = &IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
+    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
   }
 | SECONDARY_ENGINE_ATTRIBUTE equal_opt STRING
   {
-    $$ = &IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
+    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
   }
 
 equal_opt:
@@ -2247,23 +2247,23 @@ equal_opt:
 index_info:
   constraint_name_opt PRIMARY KEY name_opt
   {
-    $$ = &IndexInfo{Type: string($2) + " " + string($3), ConstraintName: ast.ast.NewColIdent($1), Name: ast.ast.NewColIdent("PRIMARY"), Primary: true, Unique: true}
+    $$ = &ast.IndexInfo{Type: string($2) + " " + string($3), ConstraintName: ast.NewColIdent($1), Name: ast.NewColIdent("PRIMARY"), Primary: true, Unique: true}
   }
 | SPATIAL index_or_key_opt name_opt
   {
-    $$ = &IndexInfo{Type: string($1) + " " + string($2), Name: ast.ast.NewColIdent($3), Spatial: true, Unique: false}
+    $$ = &ast.IndexInfo{Type: string($1) + " " + string($2), Name: ast.NewColIdent($3), Spatial: true, Unique: false}
   }
 | FULLTEXT index_or_key_opt name_opt
   {
-    $$ = &IndexInfo{Type: string($1) + " " + string($2), Name: ast.ast.NewColIdent($3), Fulltext: true, Unique: false}
+    $$ = &ast.IndexInfo{Type: string($1) + " " + string($2), Name: ast.NewColIdent($3), Fulltext: true, Unique: false}
   }
 | constraint_name_opt UNIQUE index_or_key_opt name_opt
   {
-    $$ = &IndexInfo{Type: string($2) + " " + string($3), ConstraintName: ast.ast.NewColIdent($1), Name: ast.ast.NewColIdent($4), Unique: true}
+    $$ = &ast.IndexInfo{Type: string($2) + " " + string($3), ConstraintName: ast.NewColIdent($1), Name: ast.NewColIdent($4), Unique: true}
   }
 | index_or_key name_opt
   {
-    $$ = &IndexInfo{Type: string($1), Name: ast.ast.NewColIdent($2), Unique: false}
+    $$ = &ast.IndexInfo{Type: string($1), Name: ast.NewColIdent($2), Unique: false}
   }
 
 constraint_name_opt:
@@ -2331,7 +2331,7 @@ name_opt:
 index_column_list:
   index_column
   {
-    $$ = []*IndexColumn{$1}
+    $$ = []*ast.IndexColumn{$1}
   }
 | index_column_list ',' index_column
   {
@@ -2341,11 +2341,11 @@ index_column_list:
 index_column:
   sql_id length_opt asc_desc_opt
   {
-    $$ = &IndexColumn{Column: $1, Length: $2, Direction: $3}
+    $$ = &ast.IndexColumn{Column: $1, Length: $2, Direction: $3}
   }
 | openb expression closeb asc_desc_opt
   {
-    $$ = &IndexColumn{Expression: $2, Direction: $4}
+    $$ = &ast.IndexColumn{Expression: $2, Direction: $4}
   }
 
 constraint_definition:
@@ -2371,29 +2371,29 @@ check_constraint_definition:
 constraint_info:
   FOREIGN KEY name_opt '(' column_list ')' reference_definition
   {
-    $$ = &ForeignKeyDefinition{IndexName: ast.ast.NewColIdent($3), Source: $5, ReferenceDefinition: $7}
+    $$ = &ast.ForeignKeyDefinition{IndexName: ast.NewColIdent($3), Source: $5, ReferenceDefinition: $7}
   }
 
 reference_definition:
   REFERENCES table_name '(' column_list ')' fk_match_opt
   {
-    $$ = &ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6}
+    $$ = &ast.ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6}
   }
 | REFERENCES table_name '(' column_list ')' fk_match_opt fk_on_delete
   {
-    $$ = &ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnDelete: $7}
+    $$ = &ast.ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnDelete: $7}
   }
 | REFERENCES table_name '(' column_list ')' fk_match_opt fk_on_update
   {
-    $$ = &ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnUpdate: $7}
+    $$ = &ast.ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnUpdate: $7}
   }
 | REFERENCES table_name '(' column_list ')' fk_match_opt fk_on_delete fk_on_update
   {
-    $$ = &ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnDelete: $7, OnUpdate: $8}
+    $$ = &ast.ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnDelete: $7, OnUpdate: $8}
   }
 | REFERENCES table_name '(' column_list ')' fk_match_opt fk_on_update fk_on_delete
   {
-    $$ = &ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnUpdate: $7, OnDelete: $8}
+    $$ = &ast.ReferenceDefinition{ReferencedTable: $2, ReferencedColumns: $4, Match: $6, OnUpdate: $7, OnDelete: $8}
   }
 
 reference_definition_opt:
@@ -2420,20 +2420,20 @@ fk_match:
 fk_match_action:
   FULL
   {
-    $$ = Full
+    $$ = ast.Full
   }
 | PARTIAL
   {
-    $$ = Partial
+    $$ = ast.Partial
   }
 | SIMPLE
   {
-    $$ = Simple
+    $$ = ast.Simple
   }
 
 fk_match_opt:
   {
-    $$ = DefaultMatch
+    $$ = ast.DefaultMatch
   }
 | fk_match
   {
@@ -2518,7 +2518,7 @@ table_option_list_opt:
 table_option_list:
   table_option
   {
-    $$ = TableOptions{$1}
+    $$ = ast.TableOptions{$1}
   }
 | table_option_list ',' table_option
   {
@@ -2532,7 +2532,7 @@ table_option_list:
 space_separated_table_option_list:
   table_option
   {
-    $$ = TableOptions{$1}
+    $$ = ast.TableOptions{$1}
   }
 | space_separated_table_option_list table_option
   {
@@ -2566,23 +2566,23 @@ table_option:
   }
 | COMMENT_KEYWORD equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:string($1), Value:NewStrLiteral($3)}
+    $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
 | COMPRESSION equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:string($1), Value:NewStrLiteral($3)}
+    $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
 | CONNECTION equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:string($1), Value:NewStrLiteral($3)}
+    $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
 | DATA DIRECTORY equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:NewStrLiteral($4)}
+    $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:ast.NewStrLiteral($4)}
   }
 | INDEX DIRECTORY equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:NewStrLiteral($4)}
+    $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:ast.NewStrLiteral($4)}
   }
 | DELAY_KEY_WRITE equal_opt INTEGRAL
   {
@@ -2590,7 +2590,7 @@ table_option:
   }
 | ENCRYPTION equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:string($1), Value:NewStrLiteral($3)}
+    $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
 | ENGINE equal_opt table_alias
   {
@@ -2626,7 +2626,7 @@ table_option:
   }
 | PASSWORD equal_opt STRING
   {
-    $$ = &ast.TableOption{Name:string($1), Value:NewStrLiteral($3)}
+    $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
 | ROW_FORMAT equal_opt row_format_options
   {
@@ -2748,7 +2748,7 @@ ratio_opt:
   }
 | RATIO DECIMAL
   {
-    $$ = NewDecimalLiteral($2)
+    $$ = ast.NewDecimalLiteral($2)
   }
 
 alter_commands_list:
@@ -2761,7 +2761,7 @@ alter_commands_list:
   }
 | alter_options ',' ORDER BY column_list
   {
-    $$ = append($1,&OrderByOption{Cols:$5})
+    $$ = append($1,&ast.OrderByOption{Cols:$5})
   }
 | alter_commands_modifier_list
   {
@@ -2773,7 +2773,7 @@ alter_commands_list:
   }
 | alter_commands_modifier_list ',' alter_options ',' ORDER BY column_list
   {
-    $$ = append(append($1,$3...),&OrderByOption{Cols:$7})
+    $$ = append(append($1,$3...),&ast.OrderByOption{Cols:$7})
   }
 
 alter_options:
@@ -2797,15 +2797,15 @@ alter_option:
   }
 | ADD check_constraint_definition
   {
-    $$ = &AddConstraintDefinition{ConstraintDefinition: $2}
+    $$ = &ast.AddConstraintDefinition{ConstraintDefinition: $2}
   }
 | ADD constraint_definition
   {
-    $$ = &AddConstraintDefinition{ConstraintDefinition: $2}
+    $$ = &ast.AddConstraintDefinition{ConstraintDefinition: $2}
   }
 | ADD index_definition
   {
-    $$ = &AddIndexDefinition{IndexDefinition: $2}
+    $$ = &ast.AddIndexDefinition{IndexDefinition: $2}
   }
 | ADD column_opt '(' column_definition_list ')'
   {
@@ -2813,7 +2813,7 @@ alter_option:
   }
 | ADD column_opt column_definition first_opt after_opt
   {
-    $$ = &ast.AddColumns{Columns: []*ColumnDefinition{$3}, First:$4, After:$5}
+    $$ = &ast.AddColumns{Columns: []*ast.ColumnDefinition{$3}, First:$4, After:$5}
   }
 | ALTER column_opt column_name DROP DEFAULT
   {
@@ -2839,71 +2839,71 @@ alter_option:
   }
 | ALTER CHECK id_or_var enforced
   {
-    $$ = &AlterCheck{Name: $3, Enforced: $4}
+    $$ = &ast.AlterCheck{Name: $3, Enforced: $4}
   }
 | ALTER INDEX id_or_var VISIBLE
   {
-    $$ = &AlterIndex{Name: $3, Invisible: false}
+    $$ = &ast.AlterIndex{Name: $3, Invisible: false}
   }
 | ALTER INDEX id_or_var INVISIBLE
   {
-    $$ = &AlterIndex{Name: $3, Invisible: true}
+    $$ = &ast.AlterIndex{Name: $3, Invisible: true}
   }
 | CHANGE column_opt column_name column_definition first_opt after_opt
   {
-    $$ = &ChangeColumn{OldColumn:$3, NewColDefinition:$4, First:$5, After:$6}
+    $$ = &ast.ChangeColumn{OldColumn:$3, NewColDefinition:$4, First:$5, After:$6}
   }
 | MODIFY column_opt column_definition first_opt after_opt
   {
-    $$ = &ModifyColumn{NewColDefinition:$3, First:$4, After:$5}
+    $$ = &ast.ModifyColumn{NewColDefinition:$3, First:$4, After:$5}
   }
 | CONVERT TO charset_or_character_set charset collate_opt
   {
-    $$ = &AlterCharset{CharacterSet:$4, Collate:$5}
+    $$ = &ast.AlterCharset{CharacterSet:$4, Collate:$5}
   }
 | DISABLE KEYS
   {
-    $$ = &KeyState{Enable:false}
+    $$ = &ast.KeyState{Enable:false}
   }
 | ENABLE KEYS
   {
-    $$ = &KeyState{Enable:true}
+    $$ = &ast.KeyState{Enable:true}
   }
 | DISCARD TABLESPACE
   {
-    $$ = &TablespaceOperation{Import:false}
+    $$ = &ast.TablespaceOperation{Import:false}
   }
 | IMPORT TABLESPACE
   {
-    $$ = &TablespaceOperation{Import:true}
+    $$ = &ast.TablespaceOperation{Import:true}
   }
 | DROP column_opt column_name
   {
-    $$ = &DropColumn{Name:$3}
+    $$ = &ast.DropColumn{Name:$3}
   }
 | DROP index_or_key id_or_var
   {
-    $$ = &ast.DropKey{Type:NormalKeyType, Name:$3}
+    $$ = &ast.DropKey{Type: ast.NormalKeyType, Name:$3}
   }
 | DROP PRIMARY KEY
   {
-    $$ = &ast.DropKey{Type:PrimaryKeyType}
+    $$ = &ast.DropKey{Type: ast.PrimaryKeyType}
   }
 | DROP FOREIGN KEY id_or_var
   {
-    $$ = &ast.DropKey{Type:ForeignKeyType, Name:$4}
+    $$ = &ast.DropKey{Type: ast.ForeignKeyType, Name:$4}
   }
 | DROP CHECK id_or_var
   {
-    $$ = &ast.DropKey{Type:CheckKeyType, Name:$3}
+    $$ = &ast.DropKey{Type: ast.CheckKeyType, Name:$3}
   }
 | DROP CONSTRAINT id_or_var
   {
-    $$ = &ast.DropKey{Type:CheckKeyType, Name:$3}
+    $$ = &ast.DropKey{Type: ast.CheckKeyType, Name:$3}
   }
 | FORCE
   {
-    $$ = &Force{}
+    $$ = &ast.Force{}
   }
 | RENAME to_opt table_name
   {
@@ -2911,7 +2911,7 @@ alter_option:
   }
 | RENAME index_or_key id_or_var TO id_or_var
   {
-    $$ = &RenameIndex{OldName:$3, NewName:$5}
+    $$ = &ast.RenameIndex{OldName:$3, NewName:$5}
   }
 
 alter_commands_modifier_list:
@@ -2927,43 +2927,43 @@ alter_commands_modifier_list:
 alter_commands_modifier:
   ALGORITHM equal_opt DEFAULT
     {
-      $$ = AlgorithmValue(string($3))
+      $$ = ast.AlgorithmValue(string($3))
     }
   | ALGORITHM equal_opt INPLACE
     {
-      $$ = AlgorithmValue(string($3))
+      $$ = ast.AlgorithmValue(string($3))
     }
   | ALGORITHM equal_opt COPY
     {
-      $$ = AlgorithmValue(string($3))
+      $$ = ast.AlgorithmValue(string($3))
     }
   | ALGORITHM equal_opt INSTANT
     {
-      $$ = AlgorithmValue(string($3))
+      $$ = ast.AlgorithmValue(string($3))
     }
   | LOCK equal_opt DEFAULT
     {
-      $$ = &LockOption{Type:DefaultType}
+      $$ = &ast.LockOption{Type: ast.DefaultType}
     }
   | LOCK equal_opt NONE
     {
-      $$ = &LockOption{Type:NoneType}
+      $$ = &ast.LockOption{Type: ast.NoneType}
     }
   | LOCK equal_opt SHARED
     {
-      $$ = &LockOption{Type:SharedType}
+      $$ = &ast.LockOption{Type: ast.SharedType}
     }
   | LOCK equal_opt EXCLUSIVE
     {
-      $$ = &LockOption{Type:ExclusiveType}
+      $$ = &ast.LockOption{Type: ast.ExclusiveType}
     }
   | WITH VALIDATION
     {
-      $$ = &Validation{With:true}
+      $$ = &ast.Validation{With:true}
     }
   | WITHOUT VALIDATION
     {
-      $$ = &Validation{With:false}
+      $$ = &ast.Validation{With:false}
     }
 
 alter_statement:
@@ -2978,7 +2978,7 @@ alter_statement:
   {
     $1.FullyParsed = true
     $1.AlterOptions = $2
-    $1.PartitionSpec = &ast.PartitionSpec{Action:RemoveAction}
+    $1.PartitionSpec = &ast.PartitionSpec{Action: ast.RemoveAction}
     $$ = $1
   }
 | alter_table_prefix alter_commands_modifier_list ',' partition_operation
@@ -3021,10 +3021,10 @@ alter_statement:
 | ALTER comment_opt VSCHEMA CREATE VINDEX table_name vindex_type_opt vindex_params_opt
   {
     $$ = &ast.AlterVschema{
-        Action: CreateVindexDDLAction,
+        Action: ast.CreateVindexDDLAction,
         Table: $6,
-        VindexSpec: &VindexSpec{
-          Name: ast.ast.NewColIdent($6.Name.String()),
+        VindexSpec: &ast.VindexSpec{
+          Name: ast.NewColIdent($6.Name.String()),
           Type: $7,
           Params: $8,
         },
@@ -3033,27 +3033,27 @@ alter_statement:
 | ALTER comment_opt VSCHEMA DROP VINDEX table_name
   {
     $$ = &ast.AlterVschema{
-        Action: DropVindexDDLAction,
+        Action: ast.DropVindexDDLAction,
         Table: $6,
-        VindexSpec: &VindexSpec{
-          Name: ast.ast.NewColIdent($6.Name.String()),
+        VindexSpec: &ast.VindexSpec{
+          Name: ast.NewColIdent($6.Name.String()),
         },
       }
   }
 | ALTER comment_opt VSCHEMA ADD TABLE table_name
   {
-    $$ = &ast.AlterVschema{Action: AddVschemaTableDDLAction, Table: $6}
+    $$ = &ast.AlterVschema{Action: ast.AddVschemaTableDDLAction, Table: $6}
   }
 | ALTER comment_opt VSCHEMA DROP TABLE table_name
   {
-    $$ = &ast.AlterVschema{Action: DropVschemaTableDDLAction, Table: $6}
+    $$ = &ast.AlterVschema{Action: ast.DropVschemaTableDDLAction, Table: $6}
   }
 | ALTER comment_opt VSCHEMA ON table_name ADD VINDEX sql_id '(' column_list ')' vindex_type_opt vindex_params_opt
   {
     $$ = &ast.AlterVschema{
-        Action: AddColVindexDDLAction,
+        Action: ast.AddColVindexDDLAction,
         Table: $5,
-        VindexSpec: &VindexSpec{
+        VindexSpec: &ast.VindexSpec{
             Name: $8,
             Type: $12,
             Params: $13,
@@ -3064,23 +3064,23 @@ alter_statement:
 | ALTER comment_opt VSCHEMA ON table_name DROP VINDEX sql_id
   {
     $$ = &ast.AlterVschema{
-        Action: DropColVindexDDLAction,
+        Action: ast.DropColVindexDDLAction,
         Table: $5,
-        VindexSpec: &VindexSpec{
+        VindexSpec: &ast.VindexSpec{
             Name: $8,
         },
       }
   }
 | ALTER comment_opt VSCHEMA ADD SEQUENCE table_name
   {
-    $$ = &ast.AlterVschema{Action: AddSequenceDDLAction, Table: $6}
+    $$ = &ast.AlterVschema{Action: ast.AddSequenceDDLAction, Table: $6}
   }
 | ALTER comment_opt VSCHEMA ON table_name ADD AUTO_INCREMENT sql_id USING table_name
   {
     $$ = &ast.AlterVschema{
-        Action: AddAutoIncDDLAction,
+        Action: ast.AddAutoIncDDLAction,
         Table: $5,
-        AutoIncSpec: &AutoIncSpec{
+        AutoIncSpec: &ast.AutoIncSpec{
             Column: $8,
             Sequence: $10,
         },
@@ -3089,41 +3089,41 @@ alter_statement:
 | ALTER comment_opt VITESS_MIGRATION STRING RETRY
   {
     $$ = &ast.AlterMigration{
-      Type: RetryMigrationType,
+      Type: ast.RetryMigrationType,
       UUID: string($4),
     }
   }
 | ALTER comment_opt VITESS_MIGRATION STRING CLEANUP
   {
     $$ = &ast.AlterMigration{
-      Type: CleanupMigrationType,
+      Type: ast.CleanupMigrationType,
       UUID: string($4),
     }
   }
 | ALTER comment_opt VITESS_MIGRATION STRING COMPLETE
   {
     $$ = &ast.AlterMigration{
-      Type: CompleteMigrationType,
+      Type: ast.CompleteMigrationType,
       UUID: string($4),
     }
   }
 | ALTER comment_opt VITESS_MIGRATION STRING CANCEL
   {
     $$ = &ast.AlterMigration{
-      Type: CancelMigrationType,
+      Type: ast.CancelMigrationType,
       UUID: string($4),
     }
   }
 | ALTER comment_opt VITESS_MIGRATION CANCEL ALL
   {
     $$ = &ast.AlterMigration{
-      Type: CancelAllMigrationType,
+      Type: ast.CancelAllMigrationType,
     }
   }
 | ALTER comment_opt VITESS_MIGRATION STRING THROTTLE expire_opt ratio_opt
   {
     $$ = &ast.AlterMigration{
-      Type: ThrottleMigrationType,
+      Type: ast.ThrottleMigrationType,
       UUID: string($4),
       Expire: $6,
       Ratio: $7,
@@ -3132,7 +3132,7 @@ alter_statement:
 | ALTER comment_opt VITESS_MIGRATION THROTTLE ALL expire_opt ratio_opt
   {
     $$ = &ast.AlterMigration{
-      Type: ThrottleAllMigrationType,
+      Type: ast.ThrottleAllMigrationType,
       Expire: $6,
       Ratio: $7,
     }
@@ -3140,14 +3140,14 @@ alter_statement:
 | ALTER comment_opt VITESS_MIGRATION STRING UNTHROTTLE
   {
     $$ = &ast.AlterMigration{
-      Type: UnthrottleMigrationType,
+      Type: ast.UnthrottleMigrationType,
       UUID: string($4),
     }
   }
 | ALTER comment_opt VITESS_MIGRATION UNTHROTTLE ALL
   {
     $$ = &ast.AlterMigration{
-      Type: UnthrottleAllMigrationType,
+      Type: ast.UnthrottleAllMigrationType,
     }
   }
 
@@ -3166,7 +3166,7 @@ partitions_options_opt:
 partitions_options_beginning:
   linear_opt HASH '(' expression ')'
     {
-      $$ = &PartitionOption {
+      $$ = &ast.PartitionOption {
         IsLinear: $1,
         Type: ast.HashType,
         Expr: $4,
@@ -3174,23 +3174,23 @@ partitions_options_beginning:
     }
 | linear_opt KEY algorithm_opt '(' column_list ')'
     {
-      $$ = &PartitionOption {
+      $$ = &ast.PartitionOption {
         IsLinear: $1,
-        Type: KeyType,
+        Type: ast.KeyType,
         KeyAlgorithm: $3,
         ColList: $5,
       }
     }
 | range_or_list '(' expression ')'
     {
-      $$ = &PartitionOption {
+      $$ = &ast.PartitionOption {
         Type: $1,
         Expr: $3,
       }
     }
 | range_or_list COLUMNS '(' column_list ')'
   {
-    $$ = &PartitionOption {
+    $$ = &ast.PartitionOption {
         Type: $1,
         ColList: $4,
     }
@@ -3213,7 +3213,7 @@ subpartition_opt:
   {
     $$ = &ast.SubPartition {
       IsLinear: $3,
-      Type: KeyType,
+      Type: ast.KeyType,
       KeyAlgorithm: $5,
       ColList: $7,
       SubPartitions: $9,
@@ -3272,7 +3272,7 @@ columns_list:
 jt_column:
  sql_id FOR ORDINALITY
   {
-    $$ = &ast.JtColumnDefinition{JtOrdinal: &JtOrdinalColDef{Name: $1}}
+    $$ = &ast.JtColumnDefinition{JtOrdinal: &ast.JtOrdinalColDef{Name: $1}}
   }
 | sql_id column_type collate_opt jt_exists_opt PATH text_literal_or_arg
   {
@@ -3300,7 +3300,7 @@ jt_column:
   }
 | NESTED jt_path_opt text_literal_or_arg jt_columns_clause
   {
-    jtNestedPath := &JtNestedPathColDef{Path: $3, Columns: $4}
+    jtNestedPath := &ast.JtNestedPathColDef{Path: $3, Columns: $4}
     $$ = &ast.JtColumnDefinition{JtNestedPath: jtNestedPath}
   }
 
@@ -3336,25 +3336,25 @@ on_error:
 json_on_response:
   ERROR
   {
-    $$ = &JtOnResponse{ResponseType: ErrorJSONType}
+    $$ = &ast.JtOnResponse{ResponseType: ast.ErrorJSONType}
   }
 | NULL
   {
-    $$ = &JtOnResponse{ResponseType: NullJSONType}
+    $$ = &ast.JtOnResponse{ResponseType: ast.NullJSONType}
   }
 | DEFAULT text_literal_or_arg
   {
-    $$ = &JtOnResponse{ResponseType: DefaultJSONType, Expr: $2}
+    $$ = &ast.JtOnResponse{ResponseType: ast.DefaultJSONType, Expr: $2}
   }
 
 range_or_list:
   RANGE
   {
-    $$ = RangeType
+    $$ = ast.RangeType
   }
 | LIST
   {
-    $$ = ListType
+    $$ = ast.ListType
   }
 
 partitions_opt:
@@ -3378,7 +3378,7 @@ subpartitions_opt:
 partition_operation:
   ADD PARTITION '(' partition_definition ')'
   {
-    $$ = &ast.PartitionSpec{Action: AddAction, Definitions: []*PartitionDefinition{$4}}
+    $$ = &ast.PartitionSpec{Action: ast.AddAction, Definitions: []*ast.PartitionDefinition{$4}}
   }
 | DROP PARTITION partition_list
   {
@@ -3418,7 +3418,7 @@ partition_operation:
   }
 | EXCHANGE PARTITION sql_id WITH TABLE table_name without_valid_opt
   {
-    $$ = &ast.PartitionSpec{Action:ast.ExchangeAction, Names: Partitions{$3}, TableName: $6, WithoutValidation: $7}
+    $$ = &ast.PartitionSpec{Action:ast.ExchangeAction, Names: ast.Partitions{$3}, TableName: $6, WithoutValidation: $7}
   }
 | ANALYZE PARTITION partition_list
   {
@@ -3482,7 +3482,7 @@ without_valid_opt:
 partition_definitions:
   partition_definition
   {
-    $$ = []*PartitionDefinition{$1}
+    $$ = []*ast.PartitionDefinition{$1}
   }
 | partition_definitions ',' partition_definition
   {
@@ -3628,7 +3628,7 @@ partition_value_range:
 | VALUES IN row_tuple
   {
     $$ = &ast.PartitionValueRange{
-    	Type: InType,
+    	Type: ast.InType,
     	Range: $3,
     }
   }
@@ -3725,9 +3725,9 @@ drop_statement:
   {
     // Change this to an alter statement
     if $4.Lowered() == "primary" {
-      $$ = &ast.AlterTable{FullyParsed:true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type:PrimaryKeyType}},$7...)}
+      $$ = &ast.AlterTable{FullyParsed:true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.PrimaryKeyType}},$7...)}
     } else {
-      $$ = &ast.AlterTable{FullyParsed: true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type:NormalKeyType, Name:$4}},$7...)}
+      $$ = &ast.AlterTable{FullyParsed: true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.NormalKeyType, Name:$4}},$7...)}
     }
   }
 | DROP comment_opt VIEW exists_opt view_name_list restrict_or_cascade_opt
@@ -3757,131 +3757,131 @@ analyze_statement:
 show_statement:
   SHOW charset_or_character_set like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Charset, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Charset, Filter: $3}}
   }
 | SHOW COLLATION like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Collation, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Collation, Filter: $3}}
   }
 | SHOW full_opt columns_or_fields from_or_in table_name from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Full: $2, Command: Column, Tbl: $5, DbName: $6, Filter: $7}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Full: $2, Command: ast.Column, Tbl: $5, DbName: $6, Filter: $7}}
   }
 | SHOW DATABASES like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Database, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Database, Filter: $3}}
   }
 | SHOW SCHEMAS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Database, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Database, Filter: $3}}
   }
 | SHOW KEYSPACES like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Keyspace, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
   }
 | SHOW VITESS_KEYSPACES like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Keyspace, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
   }
 | SHOW FUNCTION STATUS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Function, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Function, Filter: $4}}
   }
 | SHOW extended_opt index_symbols from_or_in table_name from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Index, Tbl: $5, DbName: $6, Filter: $7}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Index, Tbl: $5, DbName: $6, Filter: $7}}
   }
 | SHOW OPEN TABLES from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: OpenTable, DbName:$4, Filter: $5}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.OpenTable, DbName:$4, Filter: $5}}
   }
 | SHOW PRIVILEGES
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Privilege}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Privilege}}
   }
 | SHOW PROCEDURE STATUS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Procedure, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Procedure, Filter: $4}}
   }
 | SHOW session_or_local_opt STATUS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: StatusSession, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.StatusSession, Filter: $4}}
   }
 | SHOW GLOBAL STATUS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: StatusGlobal, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.StatusGlobal, Filter: $4}}
   }
 | SHOW session_or_local_opt VARIABLES like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VariableSession, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VariableSession, Filter: $4}}
   }
 | SHOW GLOBAL VARIABLES like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VariableGlobal, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VariableGlobal, Filter: $4}}
   }
 | SHOW TABLE STATUS from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: TableStatus, DbName:$4, Filter: $5}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.TableStatus, DbName:$4, Filter: $5}}
   }
 | SHOW full_opt TABLES from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Table, Full: $2, DbName:$4, Filter: $5}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Table, Full: $2, DbName:$4, Filter: $5}}
   }
 | SHOW TRIGGERS from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Trigger, DbName:$3, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Trigger, DbName:$3, Filter: $4}}
   }
 | SHOW CREATE DATABASE table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateDb, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateDb, Op: $4}}
   }
 | SHOW CREATE EVENT table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateE, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateE, Op: $4}}
   }
 | SHOW CREATE FUNCTION table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateF, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateF, Op: $4}}
   }
 | SHOW CREATE PROCEDURE table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateProc, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateProc, Op: $4}}
   }
 | SHOW CREATE TABLE table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateTbl, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateTbl, Op: $4}}
   }
 | SHOW CREATE TRIGGER table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateTr, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateTr, Op: $4}}
   }
 | SHOW CREATE VIEW table_name
   {
-    $$ = &ast.Show{&ast.ShowCreate{Command: CreateV, Op: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateV, Op: $4}}
   }
 | SHOW ENGINES
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Engines}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Engines}}
   }
 | SHOW PLUGINS
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Plugins}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Plugins}}
   }
 | SHOW GLOBAL GTID_EXECUTED from_database_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: GtidExecGlobal, DbName: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.GtidExecGlobal, DbName: $4}}
   }
 | SHOW GLOBAL VGTID_EXECUTED from_database_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VGtidExecGlobal, DbName: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VGtidExecGlobal, DbName: $4}}
   }
 | SHOW VITESS_METADATA VARIABLES like_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessVariables, Filter: $4}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessVariables, Filter: $4}}
   }
 | SHOW VITESS_MIGRATIONS from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessMigrations, Filter: $4, DbName: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessMigrations, Filter: $4, DbName: $3}}
   }
 | SHOW VITESS_MIGRATION STRING LOGS
   {
@@ -3893,74 +3893,74 @@ show_statement:
   }
 | SHOW VITESS_REPLICATION_STATUS like_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessReplicationStatus, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessReplicationStatus, Filter: $3}}
   }
 | SHOW VSCHEMA TABLES
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VschemaTables}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaTables}}
   }
 | SHOW VSCHEMA VINDEXES
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VschemaVindexes}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaVindexes}}
   }
 | SHOW VSCHEMA VINDEXES from_or_on table_name
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VschemaVindexes, Tbl: $5}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaVindexes, Tbl: $5}}
   }
 | SHOW WARNINGS
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: Warnings}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Warnings}}
   }
 | SHOW VITESS_SHARDS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessShards, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessShards, Filter: $3}}
   }
 | SHOW VITESS_TABLETS like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessTablets, Filter: $3}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTablets, Filter: $3}}
   }
 | SHOW VITESS_TARGET
   {
-    $$ = &ast.Show{&ast.ShowBasic{Command: VitessTarget}}
+    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTarget}}
   }
 /*
  * Catch-all for show statements without vitess keywords:
  */
 | SHOW id_or_var ddl_skip_to_end
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2.String())}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2.String())}}
   }
 | SHOW CREATE USER ddl_skip_to_end
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2) + " " + string($3)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + string($3)}}
    }
 | SHOW BINARY id_or_var ddl_skip_to_end /* SHOW BINARY ... */
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2) + " " + $3.String()}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + $3.String()}}
   }
 | SHOW BINARY LOGS ddl_skip_to_end /* SHOW BINARY LOGS */
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2) + " " + string($3)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + string($3)}}
   }
 | SHOW ENGINE ddl_skip_to_end
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2)}}
   }
 | SHOW FUNCTION CODE table_name
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2) + " " + string($3) + " " + String($4)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + string($3) + " " + ast.String($4)}}
   }
 | SHOW PROCEDURE CODE table_name
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2) + " " + string($3) + " " + String($4)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + string($3) + " " + ast.String($4)}}
   }
 | SHOW full_opt PROCESSLIST from_database_opt like_or_where_opt
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($3)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($3)}}
   }
 | SHOW STORAGE ddl_skip_to_end
   {
-    $$ = &ast.Show{&ast.ShowOther{Command: string($2)}}
+    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2)}}
   }
 
 extended_opt:
@@ -4062,11 +4062,11 @@ use_statement:
   }
 | USE
   {
-    $$ = &ast.Use{DBName:ast.TableIdent{v:""}}
+    $$ = &ast.Use{DBName:ast.TableIdent{V:""}}
   }
 | USE table_id AT_ID
   {
-    $$ = &ast.Use{DBName:ast.ast.NewTableIdent($2.String()+"@"+string($3))}
+    $$ = &ast.Use{DBName:ast.NewTableIdent($2.String()+"@"+string($3))}
   }
 
 begin_statement:
@@ -4181,7 +4181,7 @@ wild_opt:
   }
 | sql_id
   {
-    $$ = $1.val
+    $$ = $1.Val
   }
 | STRING
   {
@@ -4407,11 +4407,11 @@ cache_opt:
 }
 | SQL_NO_CACHE
 {
-  $$ = SQLNoCacheStr
+  $$ = ast.SQLNoCacheStr
 }
 | SQL_CACHE
 {
-  $$ = SQLCacheStr
+  $$ = ast.SQLCacheStr
 }
 
 distinct_opt:
@@ -4430,15 +4430,15 @@ distinct_opt:
 prepare_statement:
   PREPARE comment_opt sql_id FROM text_literal_or_arg
   {
-    $$ = &PrepareStmt{Name:$3, Comments: ast.Comments($2).Parsed(), Statement:$5}
+    $$ = &ast.PrepareStmt{Name:$3, Comments: ast.Comments($2).Parsed(), Statement:$5}
   }
 | PREPARE comment_opt sql_id FROM AT_ID
   {
-    $$ = &PrepareStmt{
+    $$ = &ast.PrepareStmt{
     	Name:$3,
     	Comments: ast.Comments($2).Parsed(),
-    	Statement: &ColName{
-    		Name: ast.ast.NewColIdentWithAt(string($5), SingleAt),
+    	Statement: &ast.ColName{
+    		Name: ast.NewColIdentWithAt(string($5), ast.SingleAt),
     	},
     }
   }
@@ -4446,7 +4446,7 @@ prepare_statement:
 execute_statement:
   EXECUTE comment_opt sql_id execute_statement_list_opt
   {
-    $$ = &ExecuteStmt{Name:$3, Comments: ast.Comments($2).Parsed(), Arguments: $4}
+    $$ = &ast.ExecuteStmt{Name:$3, Comments: ast.Comments($2).Parsed(), Arguments: $4}
   }
 
 execute_statement_list_opt:
@@ -4461,11 +4461,11 @@ execute_statement_list_opt:
 deallocate_statement:
   DEALLOCATE comment_opt PREPARE sql_id
   {
-    $$ = &DeallocateStmt{Type:DeallocateType, Comments: ast.Comments($2).Parsed(), Name:$4}
+    $$ = &ast.DeallocateStmt{Type: ast.DeallocateType, Comments: ast.Comments($2).Parsed(), Name:$4}
   }
 | DROP comment_opt PREPARE sql_id
   {
-    $$ = &DeallocateStmt{Type: DropType, Comments: ast.Comments($2).Parsed(), Name: $4}
+    $$ = &ast.DeallocateStmt{Type: ast.DropType, Comments: ast.Comments($2).Parsed(), Name: $4}
   }
 
 select_expression_list_opt:
@@ -4486,7 +4486,7 @@ select_options:
     $$ = []string{$1}
   }
 | select_option select_option // TODO: figure out a way to do this recursively instead.
-  {                           // TODO: This is a hack since I couldn't get it to work in a nicer way. I got 'conflicts: 8 shift/reduce'
+  {                           // TODO: ast.This is a hack since I couldn't get it to work in a nicer way. I got 'conflicts: 8 shift/reduce'
     $$ = []string{$1, $2}
   }
 | select_option select_option select_option
@@ -4501,37 +4501,37 @@ select_options:
 select_option:
   SQL_NO_CACHE
   {
-    $$ = SQLNoCacheStr
+    $$ = ast.SQLNoCacheStr
   }
 | SQL_CACHE
   {
-    $$ = SQLCacheStr
+    $$ = ast.SQLCacheStr
   }
 | DISTINCT
   {
-    $$ = DistinctStr
+    $$ = ast.DistinctStr
   }
 | DISTINCTROW
   {
-    $$ = DistinctStr
+    $$ = ast.DistinctStr
   }
 | STRAIGHT_JOIN
   {
-    $$ = StraightJoinHint
+    $$ = ast.StraightJoinHint
   }
 | SQL_CALC_FOUND_ROWS
   {
-    $$ = SQLCalcFoundRowsStr
+    $$ = ast.SQLCalcFoundRowsStr
   }
 | ALL
   {
-    $$ = AllStr // These are not picked up by NewSelect, and so ALL will be dropped. But this is OK, since it's redundant anyway
+    $$ = ast.AllStr // These are not picked up by NewSelect, and so ALL will be dropped. But this is OK, since it's redundant anyway
   }
 
 select_expression_list:
   select_expression
   {
-    $$ = SelectExprs{$1}
+    $$ = ast.SelectExprs{$1}
   }
 | select_expression_list ',' select_expression
   {
@@ -4541,24 +4541,24 @@ select_expression_list:
 select_expression:
   '*'
   {
-    $$ = &StarExpr{}
+    $$ = &ast.StarExpr{}
   }
 | expression as_ci_opt
   {
-    $$ = &AliasedExpr{Expr: $1, As: $2}
+    $$ = &ast.AliasedExpr{Expr: $1, As: $2}
   }
 | table_id '.' '*'
   {
-    $$ = &StarExpr{TableName: TableName{Name: $1}}
+    $$ = &ast.StarExpr{TableName: ast.TableName{Name: $1}}
   }
 | table_id '.' reserved_table_id '.' '*'
   {
-    $$ = &StarExpr{TableName: TableName{Qualifier: $1, Name: $3}}
+    $$ = &ast.StarExpr{TableName: ast.TableName{Qualifier: $1, Name: $3}}
   }
 
 as_ci_opt:
   {
-    $$ = ColIdent{}
+    $$ = ast.ColIdent{}
   }
 | col_alias
   {
@@ -4573,12 +4573,12 @@ col_alias:
   sql_id
 | STRING
   {
-    $$ = ast.ast.NewColIdent(string($1))
+    $$ = ast.NewColIdent(string($1))
   }
 
 from_opt:
   %prec EMPTY_FROM_CLAUSE {
-    $$ = TableExprs{&AliasedTableExpr{Expr:TableName{Name: ast.NewTableIdent("dual")}}}
+    $$ = ast.TableExprs{&ast.AliasedTableExpr{Expr:ast.TableName{Name: ast.NewTableIdent("dual")}}}
   }
   | from_clause
   {
@@ -4594,7 +4594,7 @@ FROM table_references
 table_references:
   table_reference
   {
-    $$ = TableExprs{$1}
+    $$ = ast.TableExprs{$1}
   }
 | table_references ',' table_reference
   {
@@ -4612,11 +4612,11 @@ table_factor:
   }
 | derived_table as_opt table_id column_list_opt
   {
-    $$ = &AliasedTableExpr{Expr:$1, As: $3, Columns: $4}
+    $$ = &ast.AliasedTableExpr{Expr:$1, As: $3, Columns: $4}
   }
 | openb table_references closeb
   {
-    $$ = &ParenTableExpr{Exprs: $2}
+    $$ = &ast.ParenTableExpr{Exprs: $2}
   }
 | json_table_function
   {
@@ -4626,21 +4626,21 @@ table_factor:
 derived_table:
   openb query_expression closeb
   {
-    $$ = &DerivedTable{Lateral: false, Select: $2}
+    $$ = &ast.DerivedTable{Lateral: false, Select: $2}
   }
 | LATERAL openb query_expression closeb
   {
-    $$ = &DerivedTable{Lateral: true, Select: $3}
+    $$ = &ast.DerivedTable{Lateral: true, Select: $3}
   }
 
 aliased_table_name:
 table_name as_opt_id index_hint_list_opt
   {
-    $$ = &AliasedTableExpr{Expr:$1, As: $2, Hints: $3}
+    $$ = &ast.AliasedTableExpr{Expr:$1, As: $2, Hints: $3}
   }
 | table_name PARTITION openb partition_list closeb as_opt_id index_hint_list_opt
   {
-    $$ = &AliasedTableExpr{Expr:$1, Partitions: $4, As: $6, Hints: $7}
+    $$ = &ast.AliasedTableExpr{Expr:$1, Partitions: $4, As: $6, Hints: $7}
   }
 
 column_list_opt:
@@ -4655,7 +4655,7 @@ column_list_opt:
 column_list:
   sql_id
   {
-    $$ = Columns{$1}
+    $$ = ast.Columns{$1}
   }
 | column_list ',' sql_id
   {
@@ -4665,21 +4665,21 @@ column_list:
 at_id_list:
   AT_ID
   {
-    $$ = Columns{ast.NewColIdentWithAt(string($1), SingleAt)}
+    $$ = ast.Columns{ast.NewColIdentWithAt(string($1), ast.SingleAt)}
   }
 | column_list ',' AT_ID
   {
-    $$ = append($$, ast.ast.NewColIdentWithAt(string($3), SingleAt))
+    $$ = append($$, ast.NewColIdentWithAt(string($3), ast.SingleAt))
   }
 
 index_list:
   sql_id
   {
-    $$ = Columns{$1}
+    $$ = ast.Columns{$1}
   }
 | PRIMARY
   {
-    $$ = Columns{ast.NewColIdent(string($1))}
+    $$ = ast.Columns{ast.NewColIdent(string($1))}
   }
 | index_list ',' sql_id
   {
@@ -4687,13 +4687,13 @@ index_list:
   }
 | index_list ',' PRIMARY
   {
-    $$ = append($$, ast.ast.NewColIdent(string($3)))
+    $$ = append($$, ast.NewColIdent(string($3)))
   }
 
 partition_list:
   sql_id
   {
-    $$ = Partitions{$1}
+    $$ = ast.Partitions{$1}
   }
 | partition_list ',' sql_id
   {
@@ -4701,8 +4701,8 @@ partition_list:
   }
 
 // There is a grammar conflict here:
-// 1: INSERT INTO a SELECT * FROM b JOIN c ON b.i = c.i
-// 2: INSERT INTO a SELECT * FROM b JOIN c ON DUPLICATE KEY UPDATE a.i = 1
+// 1: ast.INSERT INTO a SELECT * FROM b JOIN c ON b.i = c.i
+// 2: ast.INSERT INTO a SELECT * FROM b JOIN c ON DUPLICATE KEY UPDATE a.i = 1
 // When yacc encounters the ON clause, it cannot determine which way to
 // resolve. The %prec override below makes the parser choose the
 // first construct, which automatically makes the second construct a
@@ -4710,38 +4710,38 @@ partition_list:
 join_table:
   table_reference inner_join table_factor join_condition_opt
   {
-    $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
+    $$ = &ast.JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
   }
 | table_reference straight_join table_factor on_expression_opt
   {
-    $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
+    $$ = &ast.JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
   }
 | table_reference outer_join table_reference join_condition
   {
-    $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
+    $$ = &ast.JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3, Condition: $4}
   }
 | table_reference natural_join table_factor
   {
-    $$ = &JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3}
+    $$ = &ast.JoinTableExpr{LeftExpr: $1, Join: $2, RightExpr: $3}
   }
 
 join_condition:
   ON expression
-  { $$ = &JoinCondition{On: $2} }
+  { $$ = &ast.JoinCondition{On: $2} }
 | USING '(' column_list ')'
-  { $$ = &JoinCondition{Using: $3} }
+  { $$ = &ast.JoinCondition{Using: $3} }
 
 join_condition_opt:
 %prec JOIN
-  { $$ = &JoinCondition{} }
+  { $$ = &ast.JoinCondition{} }
 | join_condition
   { $$ = $1 }
 
 on_expression_opt:
 %prec JOIN
-  { $$ = &JoinCondition{} }
+  { $$ = &ast.JoinCondition{} }
 | ON expression
-  { $$ = &JoinCondition{On: $2} }
+  { $$ = &ast.JoinCondition{On: $2} }
 
 as_opt:
   { $$ = struct{}{} }
@@ -4771,52 +4771,52 @@ table_alias:
 inner_join:
   JOIN
   {
-    $$ = NormalJoinType
+    $$ = ast.NormalJoinType
   }
 | INNER JOIN
   {
-    $$ = NormalJoinType
+    $$ = ast.NormalJoinType
   }
 | CROSS JOIN
   {
-    $$ = NormalJoinType
+    $$ = ast.NormalJoinType
   }
 
 straight_join:
   STRAIGHT_JOIN
   {
-    $$ = StraightJoinType
+    $$ = ast.StraightJoinType
   }
 
 outer_join:
   LEFT JOIN
   {
-    $$ = LeftJoinType
+    $$ = ast.LeftJoinType
   }
 | LEFT OUTER JOIN
   {
-    $$ = LeftJoinType
+    $$ = ast.LeftJoinType
   }
 | RIGHT JOIN
   {
-    $$ = RightJoinType
+    $$ = ast.RightJoinType
   }
 | RIGHT OUTER JOIN
   {
-    $$ = RightJoinType
+    $$ = ast.RightJoinType
   }
 
 natural_join:
  NATURAL JOIN
   {
-    $$ = NaturalJoinType
+    $$ = ast.NaturalJoinType
   }
 | NATURAL outer_join
   {
-    if $2 == LeftJoinType {
-      $$ = NaturalLeftJoinType
+    if $2 == ast.LeftJoinType {
+      $$ = ast.NaturalLeftJoinType
     } else {
-      $$ = NaturalRightJoinType
+      $$ = ast.NaturalRightJoinType
     }
   }
 
@@ -4833,17 +4833,17 @@ into_table_name:
 table_name:
   table_id
   {
-    $$ = TableName{Name: $1}
+    $$ = ast.TableName{Name: $1}
   }
 | table_id '.' reserved_table_id
   {
-    $$ = TableName{Qualifier: $1, Name: $3}
+    $$ = ast.TableName{Qualifier: $1, Name: $3}
   }
 
 delete_table_name:
 table_id '.' '*'
   {
-    $$ = TableName{Name: $1}
+    $$ = ast.TableName{Name: $1}
   }
 
 index_hint_list_opt:
@@ -4858,7 +4858,7 @@ index_hint_list_opt:
 index_hint_list:
 index_hint
   {
-    $$ = IndexHints{$1}
+    $$ = ast.IndexHints{$1}
   }
 | index_hint_list index_hint
   {
@@ -4868,36 +4868,36 @@ index_hint
 index_hint:
   USE index_or_key index_hint_for_opt openb index_list closeb
   {
-    $$ = &IndexHint{Type: UseOp, ForType:$3, Indexes: $5}
+    $$ = &ast.IndexHint{Type: ast.UseOp, ForType:$3, Indexes: $5}
   }
 | USE index_or_key index_hint_for_opt openb closeb
   {
-    $$ = &IndexHint{Type: UseOp, ForType: $3}
+    $$ = &ast.IndexHint{Type: ast.UseOp, ForType: $3}
   }
 | IGNORE index_or_key index_hint_for_opt openb index_list closeb
   {
-    $$ = &IndexHint{Type: IgnoreOp, ForType: $3, Indexes: $5}
+    $$ = &ast.IndexHint{Type: ast.IgnoreOp, ForType: $3, Indexes: $5}
   }
 | FORCE index_or_key index_hint_for_opt openb index_list closeb
   {
-    $$ = &IndexHint{Type: ForceOp, ForType: $3, Indexes: $5}
+    $$ = &ast.IndexHint{Type: ast.ForceOp, ForType: $3, Indexes: $5}
   }
 
 index_hint_for_opt:
   {
-    $$ = NoForType
+    $$ = ast.NoForType
   }
 | FOR JOIN
   {
-    $$ = JoinForType
+    $$ = ast.JoinForType
   }
 | FOR ORDER BY
   {
-    $$ = OrderByForType
+    $$ = ast.OrderByForType
   }
 | FOR GROUP BY
   {
-    $$ = GroupByForType
+    $$ = ast.GroupByForType
   }
 
 
@@ -4914,23 +4914,23 @@ where_expression_opt:
 expression:
   expression OR expression %prec OR
   {
-	$$ = &OrExpr{Left: $1, Right: $3}
+	$$ = &ast.OrExpr{Left: $1, Right: $3}
   }
 | expression XOR expression %prec XOR
   {
-	$$ = &XorExpr{Left: $1, Right: $3}
+	$$ = &ast.XorExpr{Left: $1, Right: $3}
   }
 | expression AND expression %prec AND
   {
-	$$ = &AndExpr{Left: $1, Right: $3}
+	$$ = &ast.AndExpr{Left: $1, Right: $3}
   }
 | NOT expression %prec NOT
   {
-	  $$ = &NotExpr{Expr: $2}
+	  $$ = &ast.NotExpr{Expr: $2}
   }
 | bool_pri IS is_suffix %prec IS
   {
-	 $$ = &IsExpr{Left: $1, Right: $3}
+	 $$ = &ast.IsExpr{Left: $1, Right: $3}
   }
 | bool_pri %prec EXPRESSION_PREC_SETTER
   {
@@ -4938,22 +4938,22 @@ expression:
   }
 | expression MEMBER OF openb expression closeb
   {
-    $$ = &MemberOfExpr{Value: $1, JSONArr:$5 }
+    $$ = &ast.MemberOfExpr{Value: $1, JSONArr:$5 }
   }
 
 
 bool_pri:
 bool_pri IS NULL %prec IS
   {
-	 $$ = &IsExpr{Left: $1, Right: IsNullOp}
+	 $$ = &ast.IsExpr{Left: $1, Right: ast.IsNullOp}
   }
 | bool_pri IS NOT NULL %prec IS
   {
-  	$$ = &IsExpr{Left: $1, Right: IsNotNullOp}
+  	$$ = &ast.IsExpr{Left: $1, Right: ast.IsNotNullOp}
   }
 | bool_pri compare predicate
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: $2, Right: $3}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: $2, Right: $3}
   }
 | predicate %prec EXPRESSION_PREC_SETTER
   {
@@ -4963,43 +4963,43 @@ bool_pri IS NULL %prec IS
 predicate:
 bit_expr IN col_tuple
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: InOp, Right: $3}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.InOp, Right: $3}
   }
 | bit_expr NOT IN col_tuple
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: NotInOp, Right: $4}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.NotInOp, Right: $4}
   }
 | bit_expr BETWEEN bit_expr AND predicate
   {
-	 $$ = &BetweenExpr{Left: $1, IsBetween: true, From: $3, To: $5}
+	 $$ = &ast.BetweenExpr{Left: $1, IsBetween: true, From: $3, To: $5}
   }
 | bit_expr NOT BETWEEN bit_expr AND predicate
   {
-	$$ = &BetweenExpr{Left: $1, IsBetween: false, From: $4, To: $6}
+	$$ = &ast.BetweenExpr{Left: $1, IsBetween: false, From: $4, To: $6}
   }
 | bit_expr LIKE simple_expr
   {
-	  $$ = &ComparisonExpr{Left: $1, Operator: LikeOp, Right: $3}
+	  $$ = &ast.ComparisonExpr{Left: $1, Operator: ast.LikeOp, Right: $3}
   }
 | bit_expr NOT LIKE simple_expr
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: NotLikeOp, Right: $4}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.NotLikeOp, Right: $4}
   }
 | bit_expr LIKE simple_expr ESCAPE simple_expr %prec LIKE
   {
-	  $$ = &ComparisonExpr{Left: $1, Operator: LikeOp, Right: $3, Escape: $5}
+	  $$ = &ast.ComparisonExpr{Left: $1, Operator: ast.LikeOp, Right: $3, Escape: $5}
   }
 | bit_expr NOT LIKE simple_expr ESCAPE simple_expr %prec LIKE
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: NotLikeOp, Right: $4, Escape: $6}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.NotLikeOp, Right: $4, Escape: $6}
   }
 | bit_expr REGEXP bit_expr
   {
-	$$ = &ComparisonExpr{Left: $1, Operator: RegexpOp, Right: $3}
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.RegexpOp, Right: $3}
   }
 | bit_expr NOT REGEXP bit_expr
   {
-	 $$ = &ComparisonExpr{Left: $1, Operator: NotRegexpOp, Right: $4}
+	 $$ = &ast.ComparisonExpr{Left: $1, Operator: ast.NotRegexpOp, Right: $4}
   }
 | bit_expr %prec EXPRESSION_PREC_SETTER
  {
@@ -5009,51 +5009,51 @@ bit_expr IN col_tuple
 bit_expr:
 bit_expr '|' bit_expr %prec '|'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: BitOrOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.BitOrOp, Right: $3}
   }
 | bit_expr '&' bit_expr %prec '&'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: BitAndOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.BitAndOp, Right: $3}
   }
 | bit_expr SHIFT_LEFT bit_expr %prec SHIFT_LEFT
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: ShiftLeftOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.ShiftLeftOp, Right: $3}
   }
 | bit_expr SHIFT_RIGHT bit_expr %prec SHIFT_RIGHT
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: ShiftRightOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.ShiftRightOp, Right: $3}
   }
 | bit_expr '+' bit_expr %prec '+'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: PlusOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.PlusOp, Right: $3}
   }
 | bit_expr '-' bit_expr %prec '-'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: MinusOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.MinusOp, Right: $3}
   }
 | bit_expr '*' bit_expr %prec '*'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: MultOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.MultOp, Right: $3}
   }
 | bit_expr '/' bit_expr %prec '/'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: DivOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.DivOp, Right: $3}
   }
 | bit_expr '%' bit_expr %prec '%'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: ModOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.ModOp, Right: $3}
   }
 | bit_expr DIV bit_expr %prec DIV
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: IntDivOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.IntDivOp, Right: $3}
   }
 | bit_expr MOD bit_expr %prec MOD
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: ModOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.ModOp, Right: $3}
   }
 | bit_expr '^' bit_expr %prec '^'
   {
-	  $$ = &BinaryExpr{Left: $1, Operator: BitXorOp, Right: $3}
+	  $$ = &ast.BinaryExpr{Left: $1, Operator: ast.BitXorOp, Right: $3}
   }
 | simple_expr %prec EXPRESSION_PREC_SETTER
   {
@@ -5079,7 +5079,7 @@ function_call_keyword
   }
 | simple_expr COLLATE charset %prec UNARY
   {
-	$$ = &CollateExpr{Expr: $1, Collation: $3}
+	$$ = &ast.CollateExpr{Expr: $1, Collation: $3}
   }
 | literal_or_null
   {
@@ -5095,15 +5095,15 @@ function_call_keyword
   }
 | '-' simple_expr %prec UNARY
   {
-	$$ = &UnaryExpr{Operator: UMinusOp, Expr: $2}
+	$$ = &ast.UnaryExpr{Operator: ast.UMinusOp, Expr: $2}
   }
 | '~' simple_expr %prec UNARY
   {
-	$$ = &UnaryExpr{Operator: TildaOp, Expr: $2}
+	$$ = &ast.UnaryExpr{Operator: ast.TildaOp, Expr: $2}
   }
 | '!' simple_expr %prec UNARY
   {
-    $$ = &UnaryExpr{Operator: BangOp, Expr: $2}
+    $$ = &ast.UnaryExpr{Operator: ast.BangOp, Expr: $2}
   }
 | subquery
   {
@@ -5115,23 +5115,23 @@ function_call_keyword
   }
 | EXISTS subquery
   {
-	$$ = &ExistsExpr{Subquery: $2}
+	$$ = &ast.ExistsExpr{Subquery: $2}
   }
 | MATCH openb select_expression_list closeb AGAINST openb bit_expr match_option closeb
   {
-  $$ = &MatchExpr{Columns: $3, Expr: $7, Option: $8}
+  $$ = &ast.MatchExpr{Columns: $3, Expr: $7, Option: $8}
   }
 | CAST openb expression AS convert_type closeb
   {
-    $$ = &ConvertExpr{Expr: $3, Type: $5}
+    $$ = &ast.ConvertExpr{Expr: $3, Type: $5}
   }
 | CONVERT openb expression ',' convert_type closeb
   {
-    $$ = &ConvertExpr{Expr: $3, Type: $5}
+    $$ = &ast.ConvertExpr{Expr: $3, Type: $5}
   }
 | CONVERT openb expression USING charset closeb
   {
-    $$ = &ConvertUsingExpr{Expr: $3, Type: $5}
+    $$ = &ast.ConvertUsingExpr{Expr: $3, Type: $5}
   }
 | BINARY simple_expr %prec UNARY
   {
@@ -5139,11 +5139,11 @@ function_call_keyword
     // To convert a string expression to a binary string, these constructs are equivalent:
     //    CAST(expr AS BINARY)
     //    BINARY expr
-    $$ = &ConvertExpr{Expr: $2, Type: &ConvertType{Type: $1}}
+    $$ = &ast.ConvertExpr{Expr: $2, Type: &ast.ConvertType{Type: $1}}
   }
 | DEFAULT default_opt
   {
-	 $$ = &Default{ColName: $2}
+	 $$ = &ast.Default{ColName: $2}
   }
 | INTERVAL simple_expr sql_id
   {
@@ -5151,29 +5151,29 @@ function_call_keyword
 	// as a function. If support is needed for that,
 	// we'll need to revisit this. The solution
 	// will be non-trivial because of grammar conflicts.
-	$$ = &IntervalExpr{Expr: $2, Unit: $3.String()}
+	$$ = &ast.IntervalExpr{Expr: $2, Unit: $3.String()}
   }
 | column_name JSON_EXTRACT_OP text_literal_or_arg
   {
-	$$ = &BinaryExpr{Left: $1, Operator: JSONExtractOp, Right: $3}
+	$$ = &ast.BinaryExpr{Left: $1, Operator: ast.JSONExtractOp, Right: $3}
   }
 | column_name JSON_UNQUOTE_EXTRACT_OP text_literal_or_arg
   {
-	$$ = &BinaryExpr{Left: $1, Operator: JSONUnquoteExtractOp, Right: $3}
+	$$ = &ast.BinaryExpr{Left: $1, Operator: ast.JSONUnquoteExtractOp, Right: $3}
   }
 
 trim_type:
   BOTH
   {
-    $$ = BothTrimType
+    $$ = ast.BothTrimType
   }
 | LEADING
   {
-    $$ = LeadingTrimType
+    $$ = ast.LeadingTrimType
   }
 | TRAILING
   {
-    $$ = TrailingTrimType
+    $$ = ast.TrailingTrimType
   }
 
 default_opt:
@@ -5189,60 +5189,60 @@ default_opt:
 boolean_value:
   TRUE
   {
-    $$ = BoolVal(true)
+    $$ = ast.BoolVal(true)
   }
 | FALSE
   {
-    $$ = BoolVal(false)
+    $$ = ast.BoolVal(false)
   }
 
 
 is_suffix:
  TRUE
   {
-    $$ = IsTrueOp
+    $$ = ast.IsTrueOp
   }
 | NOT TRUE
   {
-    $$ = IsNotTrueOp
+    $$ = ast.IsNotTrueOp
   }
 | FALSE
   {
-    $$ = IsFalseOp
+    $$ = ast.IsFalseOp
   }
 | NOT FALSE
   {
-    $$ = IsNotFalseOp
+    $$ = ast.IsNotFalseOp
   }
 
 compare:
   '='
   {
-    $$ = EqualOp
+    $$ = ast.EqualOp
   }
 | '<'
   {
-    $$ = LessThanOp
+    $$ = ast.LessThanOp
   }
 | '>'
   {
-    $$ = GreaterThanOp
+    $$ = ast.GreaterThanOp
   }
 | LE
   {
-    $$ = LessEqualOp
+    $$ = ast.LessEqualOp
   }
 | GE
   {
-    $$ = GreaterEqualOp
+    $$ = ast.GreaterEqualOp
   }
 | NE
   {
-    $$ = NotEqualOp
+    $$ = ast.NotEqualOp
   }
 | NULL_SAFE_EQUAL
   {
-    $$ = NullSafeEqualOp
+    $$ = ast.NullSafeEqualOp
   }
 
 col_tuple:
@@ -5256,20 +5256,20 @@ col_tuple:
   }
 | LIST_ARG
   {
-    $$ = ListArg($1[2:])
+    $$ = ast.ListArg($1[2:])
     bindVariable(mysqlex, $1[2:])
   }
 
 subquery:
   query_expression_parens %prec SUBQUERY_AS_EXPR
   {
-  	$$ = &Subquery{$1}
+  	$$ = &ast.Subquery{$1}
   }
 
 expression_list:
   expression
   {
-    $$ = Exprs{$1}
+    $$ = ast.Exprs{$1}
   }
 | expression_list ',' expression
   {
@@ -5283,19 +5283,19 @@ expression_list:
 function_call_generic:
   sql_id openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Name: $1, Exprs: $3}
+    $$ = &ast.FuncExpr{Name: $1, Exprs: $3}
   }
 | sql_id openb DISTINCT select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4}
+    $$ = &ast.FuncExpr{Name: $1, Distinct: true, Exprs: $4}
   }
 | sql_id openb DISTINCTROW select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: $1, Distinct: true, Exprs: $4}
+    $$ = &ast.FuncExpr{Name: $1, Distinct: true, Exprs: $4}
   }
 | table_id '.' reserved_sql_id openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Qualifier: $1, Name: $3, Exprs: $5}
+    $$ = &ast.FuncExpr{Qualifier: $1, Name: $3, Exprs: $5}
   }
 
 /*
@@ -5305,43 +5305,43 @@ function_call_generic:
 function_call_keyword:
   LEFT openb select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("left"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("left"), Exprs: $3}
   }
 | RIGHT openb select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("right"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("right"), Exprs: $3}
   }
 | SUBSTRING openb expression ',' expression ',' expression closeb
   {
-    $$ = &SubstrExpr{Name: $3, From: $5, To: $7}
+    $$ = &ast.SubstrExpr{Name: $3, From: $5, To: $7}
   }
 | SUBSTRING openb expression ',' expression closeb
   {
-    $$ = &SubstrExpr{Name: $3, From: $5}
+    $$ = &ast.SubstrExpr{Name: $3, From: $5}
   }
 | SUBSTRING openb expression FROM expression FOR expression closeb
   {
-  	$$ = &SubstrExpr{Name: $3, From: $5, To: $7}
+  	$$ = &ast.SubstrExpr{Name: $3, From: $5, To: $7}
   }
 | SUBSTRING openb expression FROM expression closeb
   {
-  	$$ = &SubstrExpr{Name: $3, From: $5}
+  	$$ = &ast.SubstrExpr{Name: $3, From: $5}
   }
 | GROUP_CONCAT openb distinct_opt select_expression_list order_by_opt separator_opt limit_opt closeb
   {
-    $$ = &GroupConcatExpr{Distinct: $3, Exprs: $4, OrderBy: $5, Separator: $6, Limit: $7}
+    $$ = &ast.GroupConcatExpr{Distinct: $3, Exprs: $4, OrderBy: $5, Separator: $6, Limit: $7}
   }
 | CASE expression_opt when_expression_list else_expression_opt END
   {
-    $$ = &CaseExpr{Expr: $2, Whens: $3, Else: $4}
+    $$ = &ast.CaseExpr{Expr: $2, Whens: $3, Else: $4}
   }
 | VALUES openb column_name closeb
   {
-    $$ = &ValuesFuncExpr{Name: $3}
+    $$ = &ast.ValuesFuncExpr{Name: $3}
   }
 | CURRENT_USER func_paren_opt
   {
-    $$ =  &FuncExpr{Name: ast.ast.NewColIdent($1)}
+    $$ =  &ast.FuncExpr{Name: ast.NewColIdent($1)}
   }
 
 /*
@@ -5352,7 +5352,7 @@ function_call_nonkeyword:
 /* doesn't support fsp */
 UTC_DATE func_paren_opt
   {
-    $$ = &FuncExpr{Name:ast.NewColIdent("utc_date")}
+    $$ = &ast.FuncExpr{Name:ast.NewColIdent("utc_date")}
   }
 | now
   {
@@ -5362,7 +5362,7 @@ UTC_DATE func_paren_opt
 /* doesn't support fsp */
 | CURRENT_DATE func_paren_opt
   {
-    $$ = &FuncExpr{Name:ast.NewColIdent("current_date")}
+    $$ = &ast.FuncExpr{Name:ast.NewColIdent("current_date")}
   }
 | UTC_TIME func_datetime_precision
   {
@@ -5375,175 +5375,175 @@ UTC_DATE func_paren_opt
   }
 | TIMESTAMPADD openb sql_id ',' expression ',' expression closeb
   {
-    $$ = &TimestampFuncExpr{Name:string("timestampadd"), Unit:$3.String(), Expr1:$5, Expr2:$7}
+    $$ = &ast.TimestampFuncExpr{Name:string("timestampadd"), Unit:$3.String(), Expr1:$5, Expr2:$7}
   }
 | TIMESTAMPDIFF openb sql_id ',' expression ',' expression closeb
   {
-    $$ = &TimestampFuncExpr{Name:string("timestampdiff"), Unit:$3.String(), Expr1:$5, Expr2:$7}
+    $$ = &ast.TimestampFuncExpr{Name:string("timestampdiff"), Unit:$3.String(), Expr1:$5, Expr2:$7}
   }
 | EXTRACT openb interval FROM expression closeb
   {
-	$$ = &ExtractFuncExpr{IntervalTypes: $3, Expr: $5}
+	$$ = &ast.ExtractFuncExpr{IntervalTypes: $3, Expr: $5}
   }
 | WEIGHT_STRING openb expression convert_type_weight_string closeb
   {
-    $$ = &WeightStringFuncExpr{Expr: $3, As: $4}
+    $$ = &ast.WeightStringFuncExpr{Expr: $3, As: $4}
   }
 | JSON_PRETTY openb expression closeb
   {
-    $$ = &JSONPrettyExpr{JSONVal: $3}
+    $$ = &ast.JSONPrettyExpr{JSONVal: $3}
   }
 | JSON_STORAGE_FREE openb expression closeb
   {
-    $$ = &JSONStorageFreeExpr{ JSONVal: $3}
+    $$ = &ast.JSONStorageFreeExpr{ JSONVal: $3}
   }
 | JSON_STORAGE_SIZE openb expression closeb
   {
-    $$ = &JSONStorageSizeExpr{ JSONVal: $3}
+    $$ = &ast.JSONStorageSizeExpr{ JSONVal: $3}
   }
 | LTRIM openb expression closeb
   {
-    $$ = &TrimFuncExpr{TrimFuncType:LTrimType, StringArg: $3}
+    $$ = &ast.TrimFuncExpr{TrimFuncType:ast.LTrimType, StringArg: $3}
   }
 | RTRIM openb expression closeb
   {
-    $$ = &TrimFuncExpr{TrimFuncType:RTrimType, StringArg: $3}
+    $$ = &ast.TrimFuncExpr{TrimFuncType:ast.RTrimType, StringArg: $3}
   }
 | TRIM openb trim_type expression_opt FROM expression closeb
   {
-    $$ = &TrimFuncExpr{Type:$3, TrimArg:$4, StringArg: $6}
+    $$ = &ast.TrimFuncExpr{Type:$3, TrimArg:$4, StringArg: $6}
   }
 | TRIM openb expression closeb
   {
-    $$ = &TrimFuncExpr{StringArg: $3}
+    $$ = &ast.TrimFuncExpr{StringArg: $3}
   }
 | TRIM openb expression FROM expression closeb
   {
-    $$ = &TrimFuncExpr{TrimArg:$3, StringArg: $5}
+    $$ = &ast.TrimFuncExpr{TrimArg:$3, StringArg: $5}
   }
 | JSON_SCHEMA_VALID openb expression ',' expression closeb
   {
-    $$ = &JSONSchemaValidFuncExpr{ Schema: $3, Document: $5}
+    $$ = &ast.JSONSchemaValidFuncExpr{ Schema: $3, Document: $5}
   }
 | JSON_SCHEMA_VALIDATION_REPORT openb expression ',' expression closeb
   {
-    $$ = &JSONSchemaValidationReportFuncExpr{ Schema: $3, Document: $5}
+    $$ = &ast.JSONSchemaValidationReportFuncExpr{ Schema: $3, Document: $5}
   }
 | JSON_ARRAY openb expression_list_opt closeb
   {
-    $$ = &JSONArrayExpr{ Params:$3 }
+    $$ = &ast.JSONArrayExpr{ Params:$3 }
   }
 | JSON_OBJECT openb json_object_param_opt closeb
   {
-    $$ = &JSONObjectExpr{ Params:$3 }
+    $$ = &ast.JSONObjectExpr{ Params:$3 }
   }
 | JSON_QUOTE openb expression closeb
   {
-    $$ = &JSONQuoteExpr{ StringArg:$3 }
+    $$ = &ast.JSONQuoteExpr{ StringArg:$3 }
   }
 | JSON_CONTAINS openb expression ',' expression json_path_param_list_opt closeb
   {
-    $$ = &JSONContainsExpr{Target: $3, Candidate: $5, PathList: $6}
+    $$ = &ast.JSONContainsExpr{Target: $3, Candidate: $5, PathList: $6}
   }
 | JSON_CONTAINS_PATH openb expression ',' expression ',' json_path_param_list closeb
   {
-    $$ = &JSONContainsPathExpr{JSONDoc: $3, OneOrAll: $5, PathList: $7}
+    $$ = &ast.JSONContainsPathExpr{JSONDoc: $3, OneOrAll: $5, PathList: $7}
   }
 | JSON_EXTRACT openb expression ',' json_path_param_list closeb
   {
-    $$ = &JSONExtractExpr{JSONDoc: $3, PathList: $5}
+    $$ = &ast.JSONExtractExpr{JSONDoc: $3, PathList: $5}
   }
 | JSON_KEYS openb expression json_path_param_list_opt closeb
   {
-    $$ = &JSONKeysExpr{JSONDoc: $3, PathList: $4}
+    $$ = &ast.JSONKeysExpr{JSONDoc: $3, PathList: $4}
   }
 | JSON_OVERLAPS openb expression ',' expression closeb
   {
-    $$ = &JSONOverlapsExpr{JSONDoc1:$3, JSONDoc2:$5}
+    $$ = &ast.JSONOverlapsExpr{JSONDoc1:$3, JSONDoc2:$5}
   }
 | JSON_SEARCH openb expression ',' expression ',' expression closeb
   {
-    $$ = &JSONSearchExpr{JSONDoc: $3, OneOrAll: $5, SearchStr: $7 }
+    $$ = &ast.JSONSearchExpr{JSONDoc: $3, OneOrAll: $5, SearchStr: $7 }
   }
 | JSON_SEARCH openb expression ',' expression ',' expression ',' expression json_path_param_list_opt closeb
   {
-    $$ = &JSONSearchExpr{JSONDoc: $3, OneOrAll: $5, SearchStr: $7, EscapeChar: $9, PathList:$10 }
+    $$ = &ast.JSONSearchExpr{JSONDoc: $3, OneOrAll: $5, SearchStr: $7, EscapeChar: $9, PathList:$10 }
   }
 | JSON_VALUE openb expression ',' json_path_param returning_type_opt closeb
   {
-    $$ = &JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6}
+    $$ = &ast.JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6}
   }
 | JSON_VALUE openb expression ',' json_path_param returning_type_opt on_empty closeb
   {
-    $$ = &JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, EmptyOnResponse: $7}
+    $$ = &ast.JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, EmptyOnResponse: $7}
   }
 | JSON_VALUE openb expression ',' json_path_param returning_type_opt on_error closeb
   {
-    $$ = &JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, ErrorOnResponse: $7}
+    $$ = &ast.JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, ErrorOnResponse: $7}
   }
 | JSON_VALUE openb expression ',' json_path_param returning_type_opt on_empty on_error closeb
   {
-    $$ = &JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, EmptyOnResponse: $7, ErrorOnResponse: $8}
+    $$ = &ast.JSONValueExpr{JSONDoc: $3, Path: $5, ReturningType: $6, EmptyOnResponse: $7, ErrorOnResponse: $8}
   }
 | JSON_DEPTH openb expression closeb
   {
-    $$ = &JSONAttributesExpr{Type:DepthAttributeType, JSONDoc:$3}
+    $$ = &ast.JSONAttributesExpr{Type:ast.DepthAttributeType, JSONDoc:$3}
   }
 | JSON_VALID openb expression closeb
   {
-    $$ = &JSONAttributesExpr{Type:ValidAttributeType, JSONDoc:$3}
+    $$ = &ast.JSONAttributesExpr{Type:ast.ValidAttributeType, JSONDoc:$3}
   }
 | JSON_TYPE openb expression closeb
   {
-    $$ = &JSONAttributesExpr{Type:TypeAttributeType, JSONDoc:$3}
+    $$ = &ast.JSONAttributesExpr{Type:ast.TypeAttributeType, JSONDoc:$3}
   }
 | JSON_LENGTH openb expression closeb
   {
-    $$ = &JSONAttributesExpr{Type:LengthAttributeType, JSONDoc:$3 }
+    $$ = &ast.JSONAttributesExpr{Type:ast.LengthAttributeType, JSONDoc:$3 }
   }
 | JSON_LENGTH openb expression ',' json_path_param closeb
   {
-    $$ = &JSONAttributesExpr{Type:LengthAttributeType, JSONDoc:$3, Path: $5 }
+    $$ = &ast.JSONAttributesExpr{Type:ast.LengthAttributeType, JSONDoc:$3, Path: $5 }
   }
 | JSON_ARRAY_APPEND openb expression ',' json_object_param_list closeb
   {
-    $$ = &JSONValueModifierExpr{Type:JSONArrayAppendType ,JSONDoc:$3, Params:$5}
+    $$ = &ast.JSONValueModifierExpr{Type:ast.JSONArrayAppendType ,JSONDoc:$3, Params:$5}
   }
 | JSON_ARRAY_INSERT openb expression ',' json_object_param_list closeb
   {
-    $$ = &JSONValueModifierExpr{Type:JSONArrayInsertType ,JSONDoc:$3, Params:$5}
+    $$ = &ast.JSONValueModifierExpr{Type:ast.JSONArrayInsertType ,JSONDoc:$3, Params:$5}
   }
 | JSON_INSERT openb expression ',' json_object_param_list closeb
   {
-    $$ = &JSONValueModifierExpr{Type:JSONInsertType ,JSONDoc:$3, Params:$5}
+    $$ = &ast.JSONValueModifierExpr{Type:ast.JSONInsertType ,JSONDoc:$3, Params:$5}
   }
 | JSON_REPLACE openb expression ',' json_object_param_list closeb
   {
-    $$ = &JSONValueModifierExpr{Type:JSONReplaceType ,JSONDoc:$3, Params:$5}
+    $$ = &ast.JSONValueModifierExpr{Type:ast.JSONReplaceType ,JSONDoc:$3, Params:$5}
   }
 | JSON_SET openb expression ',' json_object_param_list closeb
   {
-    $$ = &JSONValueModifierExpr{Type:JSONSetType ,JSONDoc:$3, Params:$5}
+    $$ = &ast.JSONValueModifierExpr{Type:ast.JSONSetType ,JSONDoc:$3, Params:$5}
   }
 | JSON_MERGE openb expression ',' expression_list closeb
   {
-    $$ = &JSONValueMergeExpr{Type: JSONMergeType, JSONDoc: $3, JSONDocList: $5}
+    $$ = &ast.JSONValueMergeExpr{Type: ast.JSONMergeType, JSONDoc: $3, JSONDocList: $5}
   }
 | JSON_MERGE_PATCH openb expression ',' expression_list closeb
   {
-    $$ = &JSONValueMergeExpr{Type: JSONMergePatchType, JSONDoc: $3, JSONDocList: $5}
+    $$ = &ast.JSONValueMergeExpr{Type: ast.JSONMergePatchType, JSONDoc: $3, JSONDocList: $5}
   }
 | JSON_MERGE_PRESERVE openb expression ',' expression_list closeb
   {
-    $$ = &JSONValueMergeExpr{Type: JSONMergePreserveType, JSONDoc: $3, JSONDocList: $5}
+    $$ = &ast.JSONValueMergeExpr{Type: ast.JSONMergePreserveType, JSONDoc: $3, JSONDocList: $5}
   }
 | JSON_REMOVE openb expression ',' expression_list closeb
   {
-    $$ = &JSONRemoveExpr{JSONDoc:$3, PathList: $5}
+    $$ = &ast.JSONRemoveExpr{JSONDoc:$3, PathList: $5}
   }
 | JSON_UNQUOTE openb expression closeb
   {
-    $$ = &JSONUnquoteExpr{JSONValue:$3}
+    $$ = &ast.JSONUnquoteExpr{JSONValue:$3}
   }
 
 returning_type_opt:
@@ -5567,7 +5567,7 @@ json_path_param_list_opt:
 json_path_param_list:
   json_path_param
   {
-    $$ = []JSONPathParam{$1}
+    $$ = []ast.JSONPathParam{$1}
   }
 | json_path_param_list ',' json_path_param
   {
@@ -5577,11 +5577,11 @@ json_path_param_list:
 json_path_param:
   text_literal_or_arg
   {
-    $$ = JSONPathParam($1)
+    $$ = ast.JSONPathParam($1)
   }
 | column_name
   {
-    $$ = JSONPathParam($1)
+    $$ = ast.JSONPathParam($1)
   }
 
 interval:
@@ -5589,85 +5589,85 @@ interval:
  {}
 | DAY_HOUR
   {
-	$$=IntervalDayHour
+	$$=ast.IntervalDayHour
   }
 | DAY_MICROSECOND
   {
-	$$=IntervalDayMicrosecond
+	$$=ast.IntervalDayMicrosecond
   }
 | DAY_MINUTE
   {
-	$$=IntervalDayMinute
+	$$=ast.IntervalDayMinute
   }
 | DAY_SECOND
   {
-	$$=IntervalDaySecond
+	$$=ast.IntervalDaySecond
   }
 | HOUR_MICROSECOND
   {
-	$$=IntervalHourMicrosecond
+	$$=ast.IntervalHourMicrosecond
   }
 | HOUR_MINUTE
   {
-	$$=IntervalHourMinute
+	$$=ast.IntervalHourMinute
   }
 | HOUR_SECOND
   {
-	$$=IntervalHourSecond
+	$$=ast.IntervalHourSecond
   }
 | MINUTE_MICROSECOND
   {
-	$$=IntervalMinuteMicrosecond
+	$$=ast.IntervalMinuteMicrosecond
   }
 | MINUTE_SECOND
   {
-	$$=IntervalMinuteSecond
+	$$=ast.IntervalMinuteSecond
   }
 | SECOND_MICROSECOND
   {
-	$$=IntervalSecondMicrosecond
+	$$=ast.IntervalSecondMicrosecond
   }
 | YEAR_MONTH
   {
-	$$=IntervalYearMonth
+	$$=ast.IntervalYearMonth
   }
 
 interval_time_stamp:
  DAY
   {
- 	$$=IntervalDay
+ 	$$=ast.IntervalDay
   }
 | WEEK
   {
-  	$$=IntervalWeek
+  	$$=ast.IntervalWeek
   }
 | HOUR
   {
- 	$$=IntervalHour
+ 	$$=ast.IntervalHour
   }
 | MINUTE
   {
- 	$$=IntervalMinute
+ 	$$=ast.IntervalMinute
   }
 | MONTH
   {
-	$$=IntervalMonth
+	$$=ast.IntervalMonth
   }
 | QUARTER
   {
-	$$=IntervalQuarter
+	$$=ast.IntervalQuarter
   }
 | SECOND
   {
-	$$=IntervalSecond
+	$$=ast.IntervalSecond
   }
 | MICROSECOND
   {
-	$$=IntervalMicrosecond
+	$$=ast.IntervalMicrosecond
   }
 | YEAR
   {
-	$$=IntervalYear
+	$$=ast.IntervalYear
   }
 
 func_paren_opt:
@@ -5700,45 +5700,45 @@ func_datetime_precision:
 function_call_conflict:
   IF openb select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("if"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("if"), Exprs: $3}
   }
 | DATABASE openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("database"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("database"), Exprs: $3}
   }
 | SCHEMA openb select_expression_list_opt closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("schema"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("schema"), Exprs: $3}
   }
 | MOD openb select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("mod"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("mod"), Exprs: $3}
   }
 | REPLACE openb select_expression_list closeb
   {
-    $$ = &FuncExpr{Name: ast.ast.NewColIdent("replace"), Exprs: $3}
+    $$ = &ast.FuncExpr{Name: ast.NewColIdent("replace"), Exprs: $3}
   }
 
 match_option:
 /*empty*/
   {
-    $$ = NoOption
+    $$ = ast.NoOption
   }
 | IN BOOLEAN MODE
   {
-    $$ = BooleanModeOpt
+    $$ = ast.BooleanModeOpt
   }
 | IN NATURAL LANGUAGE MODE
  {
-    $$ = NaturalLanguageModeOpt
+    $$ = ast.NaturalLanguageModeOpt
  }
 | IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION
  {
-    $$ = NaturalLanguageModeWithQueryExpansionOpt
+    $$ = ast.NaturalLanguageModeWithQueryExpansionOpt
  }
 | WITH QUERY EXPANSION
  {
-    $$ = QueryExpansionOpt
+    $$ = ast.QueryExpansionOpt
  }
 
 charset:
@@ -5762,75 +5762,75 @@ convert_type_weight_string:
   }
 | AS BINARY '(' INTEGRAL ')'
   {
-    $$ = &ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
+    $$ = &ast.ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
   }
 | AS CHAR '(' INTEGRAL ')'
   {
-    $$ = &ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
+    $$ = &ast.ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
   }
 
 convert_type:
   BINARY length_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
 | CHAR length_opt charset_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2, Charset: $3}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2, Charset: $3}
   }
 | DATE
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | DATETIME length_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
 | DECIMAL_TYPE decimal_length_opt
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
 | JSON
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | NCHAR length_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
 | SIGNED
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | SIGNED INTEGER
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | TIME length_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
 | UNSIGNED
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | UNSIGNED INTEGER
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | FLOAT_TYPE length_opt
   {
-    $$ = &ConvertType{Type: string($1), Length: $2}
+    $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
 | DOUBLE
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 | REAL
   {
-    $$ = &ConvertType{Type: string($1)}
+    $$ = &ast.ConvertType{Type: string($1)}
   }
 
 
@@ -5855,7 +5855,7 @@ separator_opt:
 when_expression_list:
   when_expression
   {
-    $$ = []*When{$1}
+    $$ = []*ast.When{$1}
   }
 | when_expression_list when_expression
   {
@@ -5865,7 +5865,7 @@ when_expression_list:
 when_expression:
   WHEN expression THEN expression
   {
-    $$ = &When{Cond: $2, Val: $4}
+    $$ = &ast.When{Cond: $2, Val: $4}
   }
 
 else_expression_opt:
@@ -5880,21 +5880,21 @@ else_expression_opt:
 column_name:
   sql_id
   {
-    $$ = &ColName{Name: $1}
+    $$ = &ast.ColName{Name: $1}
   }
 | table_id '.' reserved_sql_id
   {
-    $$ = &ColName{Qualifier: TableName{Name: $1}, Name: $3}
+    $$ = &ast.ColName{Qualifier: ast.TableName{Name: $1}, Name: $3}
   }
 | table_id '.' reserved_table_id '.' reserved_sql_id
   {
-    $$ = &ColName{Qualifier: TableName{Qualifier: $1, Name: $3}, Name: $5}
+    $$ = &ast.ColName{Qualifier: ast.TableName{Qualifier: $1, Name: $3}, Name: $5}
   }
 
 num_val:
   sql_id
   {
-    // TODO(sougou): Deprecate this construct.
+    // TODO(sougou): ast.Deprecate this construct.
     if $1.Lowered() != "value" {
       mysqlex.Error("expecting value after next")
       return 1
@@ -5947,7 +5947,7 @@ ORDER BY order_list
 order_list:
   order
   {
-    $$ = OrderBy{$1}
+    $$ = ast.OrderBy{$1}
   }
 | order_list ',' order
   {
@@ -5957,20 +5957,20 @@ order_list:
 order:
   expression asc_desc_opt
   {
-    $$ = &Order{Expr: $1, Direction: $2}
+    $$ = &ast.Order{Expr: $1, Direction: $2}
   }
 
 asc_desc_opt:
   {
-    $$ = AscOrder
+    $$ = ast.AscOrder
   }
 | ASC
   {
-    $$ = AscOrder
+    $$ = ast.AscOrder
   }
 | DESC
   {
-    $$ = DescOrder
+    $$ = ast.DescOrder
   }
 
 limit_opt:
@@ -5985,15 +5985,15 @@ limit_opt:
 limit_clause:
 LIMIT expression
   {
-    $$ = &Limit{Rowcount: $2}
+    $$ = &ast.Limit{Rowcount: $2}
   }
 | LIMIT expression ',' expression
   {
-    $$ = &Limit{Offset: $2, Rowcount: $4}
+    $$ = &ast.Limit{Offset: $2, Rowcount: $4}
   }
 | LIMIT expression OFFSET expression
   {
-    $$ = &Limit{Offset: $4, Rowcount: $2}
+    $$ = &ast.Limit{Offset: $4, Rowcount: $2}
   }
 
 algorithm_lock_opt:
@@ -6021,37 +6021,37 @@ algorithm_lock_opt:
 lock_index:
   LOCK equal_opt DEFAULT
   {
-    $$ = &LockOption{Type:DefaultType}
+    $$ = &ast.LockOption{Type: ast.DefaultType}
   }
 | LOCK equal_opt NONE
   {
-    $$ = &LockOption{Type:NoneType}
+    $$ = &ast.LockOption{Type: ast.NoneType}
   }
 | LOCK equal_opt SHARED
   {
-    $$ = &LockOption{Type:SharedType}
+    $$ = &ast.LockOption{Type: ast.SharedType}
   }
 | LOCK equal_opt EXCLUSIVE
   {
-    $$ = &LockOption{Type:ExclusiveType}
+    $$ = &ast.LockOption{Type: ast.ExclusiveType}
   }
 
 algorithm_index:
   ALGORITHM equal_opt DEFAULT
   {
-    $$ = AlgorithmValue($3)
+    $$ = ast.AlgorithmValue($3)
   }
 | ALGORITHM equal_opt INPLACE
   {
-    $$ = AlgorithmValue($3)
+    $$ = ast.AlgorithmValue($3)
   }
 | ALGORITHM equal_opt COPY
   {
-    $$ = AlgorithmValue($3)
+    $$ = ast.AlgorithmValue($3)
   }
 | ALGORITHM equal_opt INSTANT
   {
-    $$ = AlgorithmValue($3)
+    $$ = ast.AlgorithmValue($3)
   }
 
 algorithm_view:
@@ -6124,19 +6124,19 @@ definer_opt:
 user:
 CURRENT_USER
   {
-    $$ = &Definer{
+    $$ = &ast.Definer{
     	Name: string($1),
     }
   }
 | CURRENT_USER '(' ')'
   {
-    $$ = &Definer{
+    $$ = &ast.Definer{
         Name: string($1),
     }
   }
 | user_username address_opt
   {
-    $$ = &Definer{
+    $$ = &ast.Definer{
         Name: $1,
         Address: $2,
     }
@@ -6149,7 +6149,7 @@ user_username:
   }
 | ID
   {
-    $$ = formatIdentifier($1)
+    $$ = ast.FormatIdentifier($1)
   }
 
 address_opt:
@@ -6158,31 +6158,31 @@ address_opt:
   }
 | AT_ID
   {
-    $$ = formatAddress($1)
+    $$ = ast.FormatAddress($1)
   }
 
 locking_clause:
 FOR UPDATE
   {
-    $$ = ForUpdateLock
+    $$ = ast.ForUpdateLock
   }
 | LOCK IN SHARE MODE
   {
-    $$ = ShareModeLock
+    $$ = ast.ShareModeLock
   }
 
 into_clause:
 INTO OUTFILE S3 STRING charset_opt format_opt export_options manifest_opt overwrite_opt
 {
-$$ = &SelectInto{Type:IntoOutfileS3, FileName:sql_types.EncodeStringSQL($4), Charset:$5, FormatOption:$6, ExportOption:$7, Manifest:$8, Overwrite:$9}
+$$ = &ast.SelectInto{Type: ast.IntoOutfileS3, FileName:sql_types.EncodeStringSQL($4), Charset:$5, FormatOption:$6, ExportOption:$7, Manifest:$8, Overwrite:$9}
 }
 | INTO DUMPFILE STRING
 {
-$$ = &SelectInto{Type:IntoDumpfile, FileName:sql_types.EncodeStringSQL($3), Charset:ast.ColumnCharset{}, FormatOption:"", ExportOption:"", Manifest:"", Overwrite:""}
+$$ = &ast.SelectInto{Type: ast.IntoDumpfile, FileName:sql_types.EncodeStringSQL($3), Charset:ast.ColumnCharset{}, FormatOption:"", ExportOption:"", Manifest:"", Overwrite:""}
 }
 | INTO OUTFILE STRING charset_opt export_options
 {
-$$ = &SelectInto{Type:IntoOutfile, FileName:sql_types.EncodeStringSQL($3), Charset:$4, FormatOption:"", ExportOption:$5, Manifest:"", Overwrite:""}
+$$ = &ast.SelectInto{Type: ast.IntoOutfile, FileName:sql_types.EncodeStringSQL($3), Charset:$4, FormatOption:"", ExportOption:$5, Manifest:"", Overwrite:""}
 }
 
 format_opt:
@@ -6320,33 +6320,33 @@ optionally_opt:
 insert_data:
   VALUES tuple_list
   {
-    $$ = &Insert{Rows: $2}
+    $$ = &ast.Insert{Rows: $2}
   }
 | select_statement
   {
-    $$ = &Insert{Rows: $1}
+    $$ = &ast.Insert{Rows: $1}
   }
 | openb ins_column_list closeb VALUES tuple_list
   {
-    $$ = &Insert{Columns: $2, Rows: $5}
+    $$ = &ast.Insert{Columns: $2, Rows: $5}
   }
 | openb closeb VALUES tuple_list
   {
-    $$ = &Insert{Rows: $4}
+    $$ = &ast.Insert{Rows: $4}
   }
 | openb ins_column_list closeb select_statement
   {
-    $$ = &Insert{Columns: $2, Rows: $4}
+    $$ = &ast.Insert{Columns: $2, Rows: $4}
   }
 
 ins_column_list:
   sql_id
   {
-    $$ = Columns{$1}
+    $$ = ast.Columns{$1}
   }
 | sql_id '.' sql_id
   {
-    $$ = Columns{$3}
+    $$ = ast.Columns{$3}
   }
 | ins_column_list ',' sql_id
   {
@@ -6369,7 +6369,7 @@ on_dup_opt:
 tuple_list:
   tuple_or_empty
   {
-    $$ = Values{$1}
+    $$ = ast.Values{$1}
   }
 | tuple_list ',' tuple_or_empty
   {
@@ -6383,13 +6383,13 @@ tuple_or_empty:
   }
 | openb closeb
   {
-    $$ = ValTuple{}
+    $$ = ast.ValTuple{}
   }
 
 row_tuple:
   openb expression_list closeb
   {
-    $$ = ValTuple($2)
+    $$ = ast.ValTuple($2)
   }
 tuple_expression:
  row_tuple
@@ -6404,7 +6404,7 @@ tuple_expression:
 update_list:
   update_expression
   {
-    $$ = UpdateExprs{$1}
+    $$ = ast.UpdateExprs{$1}
   }
 | update_list ',' update_expression
   {
@@ -6414,13 +6414,13 @@ update_list:
 update_expression:
   column_name '=' expression
   {
-    $$ = &UpdateExpr{Name: $1, Expr: $3}
+    $$ = &ast.UpdateExpr{Name: $1, Expr: $3}
   }
 
 set_list:
   set_expression
   {
-    $$ = SetExprs{$1}
+    $$ = ast.SetExprs{$1}
   }
 | set_list ',' set_expression
   {
@@ -6430,19 +6430,19 @@ set_list:
 set_expression:
   reserved_sql_id '=' ON
   {
-    $$ = &SetExpr{Name: $1, Scope: ImplicitScope, Expr: ast.NewStrLiteral("on")}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
   }
 | reserved_sql_id '=' OFF
   {
-    $$ = &SetExpr{Name: $1, Scope: ImplicitScope, Expr: ast.NewStrLiteral("off")}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
   }
 | reserved_sql_id '=' expression
   {
-    $$ = &SetExpr{Name: $1, Scope: ImplicitScope, Expr: $3}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: $3}
   }
 | charset_or_character_set_or_names charset_value collate_opt
   {
-    $$ = &SetExpr{Name: ast.ast.NewColIdent(string($1)), Scope: ImplicitScope, Expr: $2}
+    $$ = &ast.SetExpr{Name: ast.NewColIdent(string($1)), Scope: ast.ImplicitScope, Expr: $2}
   }
 |  set_session_or_global set_expression
   {
@@ -6472,7 +6472,7 @@ charset_value:
   }
 | DEFAULT
   {
-    $$ = &Default{}
+    $$ = &ast.Default{}
   }
 
 for_from:
@@ -6509,7 +6509,7 @@ to_opt:
 call_statement:
   CALL table_name openb expression_list_opt closeb
   {
-    $$ = &CallProc{Name: $2, Params: $4}
+    $$ = &ast.CallProc{Name: $2, Params: $4}
   }
 
 expression_list_opt:
@@ -6529,7 +6529,7 @@ using_opt:
 using_index_type:
   USING sql_id
   {
-    $$ = &IndexOption{Name: string($1), String: string($2.String())}
+    $$ = &ast.IndexOption{Name: string($1), String: string($2.String())}
   }
 
 sql_id:
@@ -6539,14 +6539,14 @@ sql_id:
   }
 | non_reserved_keyword
   {
-    $$ = ast.ast.NewColIdent(string($1))
+    $$ = ast.NewColIdent(string($1))
   }
 
 reserved_sql_id:
   sql_id
 | reserved_keyword
   {
-    $$ = ast.ast.NewColIdent(string($1))
+    $$ = ast.NewColIdent(string($1))
   }
 
 table_id:

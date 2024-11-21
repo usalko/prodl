@@ -126,11 +126,11 @@ func (node *With) Format(buf *TrackedBuffer) {
 	if node.Recursive {
 		buf.astPrintf(node, "recursive ")
 	}
-	ctesLength := len(node.ctes)
+	ctesLength := len(node.Ctes)
 	for i := 0; i < ctesLength-1; i++ {
-		buf.astPrintf(node, "%v, ", node.ctes[i])
+		buf.astPrintf(node, "%v, ", node.Ctes[i])
 	}
-	buf.astPrintf(node, "%v", node.ctes[ctesLength-1])
+	buf.astPrintf(node, "%v", node.Ctes[ctesLength-1])
 }
 
 // Format formats the node.
@@ -746,22 +746,22 @@ func (ct *ColumnType) Format(buf *TrackedBuffer) {
 		if ct.Options.SecondaryEngineAttribute != nil {
 			buf.astPrintf(ct, " %s %v", keywordStrings[SECONDARY_ENGINE_ATTRIBUTE], ct.Options.SecondaryEngineAttribute)
 		}
-		if ct.Options.KeyOpt == colKeyPrimary {
+		if ct.Options.KeyOpt == ColKeyPrimary {
 			buf.astPrintf(ct, " %s %s", keywordStrings[PRIMARY], keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeyUnique {
+		if ct.Options.KeyOpt == ColKeyUnique {
 			buf.astPrintf(ct, " %s", keywordStrings[UNIQUE])
 		}
-		if ct.Options.KeyOpt == colKeyUniqueKey {
+		if ct.Options.KeyOpt == ColKeyUniqueKey {
 			buf.astPrintf(ct, " %s %s", keywordStrings[UNIQUE], keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeySpatialKey {
+		if ct.Options.KeyOpt == ColKeySpatialKey {
 			buf.astPrintf(ct, " %s %s", keywordStrings[SPATIAL], keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKeyFulltextKey {
+		if ct.Options.KeyOpt == ColKeyFulltextKey {
 			buf.astPrintf(ct, " %s %s", keywordStrings[FULLTEXT], keywordStrings[KEY])
 		}
-		if ct.Options.KeyOpt == colKey {
+		if ct.Options.KeyOpt == ColKey {
 			buf.astPrintf(ct, " %s", keywordStrings[KEY])
 		}
 		if ct.Options.Reference != nil {
@@ -931,7 +931,7 @@ func (node *ShowFilter) Format(buf *TrackedBuffer) {
 
 // Format formats the node.
 func (node *Use) Format(buf *TrackedBuffer) {
-	if node.DBName.v != "" {
+	if node.DBName.V != "" {
 		buf.astPrintf(node, "use %v", node.DBName)
 	} else {
 		buf.astPrintf(node, "use")
@@ -1630,12 +1630,12 @@ func (node ColIdent) Format(buf *TrackedBuffer) {
 	for i := NoAt; i < node.At; i++ {
 		buf.WriteByte('@')
 	}
-	formatID(buf, node.val, node.At)
+	formatID(buf, node.Val, node.At)
 }
 
 // Format formats the node.
 func (node TableIdent) Format(buf *TrackedBuffer) {
-	formatID(buf, node.v, NoAt)
+	formatID(buf, node.V, NoAt)
 }
 
 // Format formats the node.

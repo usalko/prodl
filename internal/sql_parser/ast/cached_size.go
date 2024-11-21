@@ -456,7 +456,7 @@ func (cached *ColIdent) CachedSize(alloc bool) int64 {
 		size += int64(48)
 	}
 	// field val string
-	size += hack.RuntimeAllocSize(int64(len(cached.val)))
+	size += hack.RuntimeAllocSize(int64(len(cached.Val)))
 	// field lowered string
 	size += hack.RuntimeAllocSize(int64(len(cached.lowered)))
 	return size
@@ -2871,7 +2871,7 @@ func (cached *TableIdent) CachedSize(alloc bool) int64 {
 		size += int64(16)
 	}
 	// field v string
-	size += hack.RuntimeAllocSize(int64(len(cached.v)))
+	size += hack.RuntimeAllocSize(int64(len(cached.V)))
 	return size
 }
 func (cached *TableName) CachedSize(alloc bool) int64 {
@@ -3264,8 +3264,8 @@ func (cached *With) CachedSize(alloc bool) int64 {
 	}
 	// field ctes []*vitess.io/vitess/go/vt/sql_parser.CommonTableExpr
 	{
-		size += hack.RuntimeAllocSize(int64(cap(cached.ctes)) * int64(8))
-		for _, elem := range cached.ctes {
+		size += hack.RuntimeAllocSize(int64(cap(cached.Ctes)) * int64(8))
+		for _, elem := range cached.Ctes {
 			size += elem.CachedSize(true)
 		}
 	}
