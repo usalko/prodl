@@ -1674,11 +1674,6 @@ const (
 	DoubleAt
 )
 
-// encodeSQLString encodes the string as a SQL string.
-func encodeSQLString(val string) string {
-	return sql_types.EncodeStringSQL(val)
-}
-
 // ToString prints the list of table expressions as a string
 // To be used as an alternate for String for []TableExpr
 func ToString(exprs []TableExpr) string {
@@ -1874,7 +1869,31 @@ func RemoveKeyspace(in SQLNode) SQLNode {
 	})
 }
 
-func convertStringToInt(integer string) int {
+func ConvertStringToInt(integer string) int {
 	val, _ := strconv.Atoi(integer)
 	return val
+}
+
+func isLetter(ch uint16) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '$'
+}
+
+func isCarat(ch uint16) bool {
+	return ch == '.' || ch == '\'' || ch == '"' || ch == '`'
+}
+
+func digitVal(ch uint16) int {
+	switch {
+	case '0' <= ch && ch <= '9':
+		return int(ch) - '0'
+	case 'a' <= ch && ch <= 'f':
+		return int(ch) - 'a' + 10
+	case 'A' <= ch && ch <= 'F':
+		return int(ch) - 'A' + 10
+	}
+	return 16 // larger than any legal digit val
+}
+
+func isDigit(ch uint16) bool {
+	return '0' <= ch && ch <= '9'
 }

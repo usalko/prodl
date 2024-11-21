@@ -12,6 +12,7 @@ import (
 
 import (
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_types"
 )
 
 func setParseTree(mysqlex mysqLexer, stmt ast.Statement) {
@@ -6099,7 +6100,7 @@ var mysqPgo = [...]int{
 	2403, 145, 2164, 196,
 }
 
-//line mysql.y:7128
+//line mysql.y:7129
 type mysqSymType struct {
 	union             any
 	empty             struct{}
@@ -8132,76 +8133,76 @@ mysqdefault:
 
 	case 1:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:536
+//line mysql.y:537
 		{
 			setParseTree(mysqlex, mysqDollar[1].statementUnion())
 		}
 	case 2:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:541
+//line mysql.y:542
 		{
 		}
 	case 3:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:542
+//line mysql.y:543
 		{
 		}
 	case 4:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:546
+//line mysql.y:547
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 37:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:582
+//line mysql.y:583
 		{
 			setParseTree(mysqlex, nil)
 		}
 	case 38:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:588
+//line mysql.y:589
 		{
-			mysqVAL.colIdent = NewColIdentWithAt(string(mysqDollar[1].str), NoAt)
+			mysqVAL.colIdent = ast.ast.NewColIdentWithAt(string(mysqDollar[1].str), NoAt)
 		}
 	case 39:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:592
+//line mysql.y:593
 		{
-			mysqVAL.colIdent = NewColIdentWithAt(string(mysqDollar[1].str), SingleAt)
+			mysqVAL.colIdent = ast.ast.NewColIdentWithAt(string(mysqDollar[1].str), SingleAt)
 		}
 	case 40:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:596
+//line mysql.y:597
 		{
-			mysqVAL.colIdent = NewColIdentWithAt(string(mysqDollar[1].str), DoubleAt)
+			mysqVAL.colIdent = ast.ast.NewColIdentWithAt(string(mysqDollar[1].str), DoubleAt)
 		}
 	case 41:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:601
+//line mysql.y:602
 		{
-			mysqVAL.colIdent = NewColIdentWithAt("", NoAt)
+			mysqVAL.colIdent = ast.ast.NewColIdentWithAt("", NoAt)
 		}
 	case 42:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:605
+//line mysql.y:606
 		{
 			mysqVAL.colIdent = mysqDollar[1].colIdent
 		}
 	case 43:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:611
+//line mysql.y:612
 		{
-			mysqLOCAL = &OtherAdmin{}
+			mysqLOCAL = &ast.OtherAdmin{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 44:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:617
+//line mysql.y:618
 		{
 			mysqLOCAL = &Load{}
 		}
@@ -8209,7 +8210,7 @@ mysqdefault:
 	case 45:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.With
-//line mysql.y:623
+//line mysql.y:624
 		{
 			mysqLOCAL = &With{ctes: mysqDollar[2].ctesUnion(), Recursive: false}
 		}
@@ -8217,7 +8218,7 @@ mysqdefault:
 	case 46:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.With
-//line mysql.y:627
+//line mysql.y:628
 		{
 			mysqLOCAL = &With{ctes: mysqDollar[3].ctesUnion(), Recursive: true}
 		}
@@ -8225,7 +8226,7 @@ mysqdefault:
 	case 47:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.With
-//line mysql.y:632
+//line mysql.y:633
 		{
 			mysqLOCAL = nil
 		}
@@ -8233,14 +8234,14 @@ mysqdefault:
 	case 48:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.With
-//line mysql.y:636
+//line mysql.y:637
 		{
 			mysqLOCAL = mysqDollar[1].withUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 49:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:642
+//line mysql.y:643
 		{
 			mysqSLICE := (*[]*ast.CommonTableExpr)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].cteUnion())
@@ -8248,7 +8249,7 @@ mysqdefault:
 	case 50:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.CommonTableExpr
-//line mysql.y:646
+//line mysql.y:647
 		{
 			mysqLOCAL = []*CommonTableExpr{mysqDollar[1].cteUnion()}
 		}
@@ -8256,7 +8257,7 @@ mysqdefault:
 	case 51:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.CommonTableExpr
-//line mysql.y:652
+//line mysql.y:653
 		{
 			mysqLOCAL = &CommonTableExpr{TableID: mysqDollar[1].tableIdent, Columns: mysqDollar[2].columnsUnion(), Subquery: mysqDollar[4].subqueryUnion()}
 		}
@@ -8264,7 +8265,7 @@ mysqdefault:
 	case 52:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:658
+//line mysql.y:659
 		{
 			mysqLOCAL = mysqDollar[2].selStmtUnion()
 		}
@@ -8272,7 +8273,7 @@ mysqdefault:
 	case 53:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:662
+//line mysql.y:663
 		{
 			mysqLOCAL = mysqDollar[2].selStmtUnion()
 		}
@@ -8280,7 +8281,7 @@ mysqdefault:
 	case 54:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:666
+//line mysql.y:667
 		{
 			setLockInSelect(mysqDollar[2].selStmtUnion(), mysqDollar[3].lockUnion())
 			mysqLOCAL = mysqDollar[2].selStmtUnion()
@@ -8289,7 +8290,7 @@ mysqdefault:
 	case 55:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:689
+//line mysql.y:690
 		{
 			mysqDollar[1].selStmtUnion().SetOrderBy(mysqDollar[2].orderByUnion())
 			mysqDollar[1].selStmtUnion().SetLimit(mysqDollar[3].limitUnion())
@@ -8299,7 +8300,7 @@ mysqdefault:
 	case 56:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:695
+//line mysql.y:696
 		{
 			mysqDollar[1].selStmtUnion().SetLimit(mysqDollar[2].limitUnion())
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
@@ -8308,7 +8309,7 @@ mysqdefault:
 	case 57:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:700
+//line mysql.y:701
 		{
 			mysqDollar[1].selStmtUnion().SetOrderBy(mysqDollar[2].orderByUnion())
 			mysqDollar[1].selStmtUnion().SetLimit(mysqDollar[3].limitUnion())
@@ -8318,7 +8319,7 @@ mysqdefault:
 	case 58:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:706
+//line mysql.y:707
 		{
 			mysqDollar[2].selStmtUnion().SetWith(mysqDollar[1].withUnion())
 			mysqDollar[2].selStmtUnion().SetOrderBy(mysqDollar[3].orderByUnion())
@@ -8329,7 +8330,7 @@ mysqdefault:
 	case 59:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:713
+//line mysql.y:714
 		{
 			mysqDollar[2].selStmtUnion().SetWith(mysqDollar[1].withUnion())
 			mysqDollar[2].selStmtUnion().SetLimit(mysqDollar[3].limitUnion())
@@ -8339,7 +8340,7 @@ mysqdefault:
 	case 60:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:719
+//line mysql.y:720
 		{
 			mysqDollar[2].selStmtUnion().SetWith(mysqDollar[1].withUnion())
 			mysqDollar[2].selStmtUnion().SetOrderBy(mysqDollar[3].orderByUnion())
@@ -8349,14 +8350,14 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 61:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:726
+//line mysql.y:727
 		{
 			mysqDollar[2].selStmtUnion().SetWith(mysqDollar[1].withUnion())
 		}
 	case 62:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:730
+//line mysql.y:731
 		{
 			mysqLOCAL = NewSelect(Comments(mysqDollar[2].strs), SelectExprs{&Nextval{Expr: mysqDollar[5].exprUnion()}}, []string{mysqDollar[3].str} /*options*/, nil, TableExprs{&AliasedTableExpr{Expr: mysqDollar[7].tableName}}, nil /*where*/, nil /*groupBy*/, nil /*having*/)
 		}
@@ -8364,7 +8365,7 @@ mysqdefault:
 	case 63:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:736
+//line mysql.y:737
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
@@ -8372,39 +8373,39 @@ mysqdefault:
 	case 64:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:740
+//line mysql.y:741
 		{
-			mysqLOCAL = &Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
+			mysqLOCAL = &ast.Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 65:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:744
+//line mysql.y:745
 		{
-			mysqLOCAL = &Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
+			mysqLOCAL = &ast.Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 66:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:748
+//line mysql.y:749
 		{
-			mysqLOCAL = &Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
+			mysqLOCAL = &ast.Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 67:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:752
+//line mysql.y:753
 		{
-			mysqLOCAL = &Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
+			mysqLOCAL = &ast.Union{Left: mysqDollar[1].selStmtUnion(), Distinct: mysqDollar[2].booleanUnion(), Right: mysqDollar[3].selStmtUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 68:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:758
+//line mysql.y:759
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
@@ -8412,7 +8413,7 @@ mysqdefault:
 	case 69:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:762
+//line mysql.y:763
 		{
 			setLockInSelect(mysqDollar[1].selStmtUnion(), mysqDollar[2].lockUnion())
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
@@ -8421,7 +8422,7 @@ mysqdefault:
 	case 70:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:767
+//line mysql.y:768
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
@@ -8429,7 +8430,7 @@ mysqdefault:
 	case 71:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:771
+//line mysql.y:772
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
@@ -8437,7 +8438,7 @@ mysqdefault:
 	case 72:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:777
+//line mysql.y:778
 		{
 			mysqLOCAL = mysqDollar[2].selStmtUnion()
 		}
@@ -8445,7 +8446,7 @@ mysqdefault:
 	case 73:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:781
+//line mysql.y:782
 		{
 			mysqDollar[1].selStmtUnion().SetInto(mysqDollar[2].selectIntoUnion())
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
@@ -8454,7 +8455,7 @@ mysqdefault:
 	case 74:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:786
+//line mysql.y:787
 		{
 			mysqDollar[1].selStmtUnion().SetInto(mysqDollar[2].selectIntoUnion())
 			mysqDollar[1].selStmtUnion().SetLock(mysqDollar[3].lockUnion())
@@ -8464,7 +8465,7 @@ mysqdefault:
 	case 75:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:792
+//line mysql.y:793
 		{
 			mysqDollar[1].selStmtUnion().SetInto(mysqDollar[3].selectIntoUnion())
 			mysqDollar[1].selStmtUnion().SetLock(mysqDollar[2].lockUnion())
@@ -8474,7 +8475,7 @@ mysqdefault:
 	case 76:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:798
+//line mysql.y:799
 		{
 			mysqDollar[1].selStmtUnion().SetInto(mysqDollar[2].selectIntoUnion())
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
@@ -8483,23 +8484,23 @@ mysqdefault:
 	case 77:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:805
+//line mysql.y:806
 		{
-			mysqLOCAL = &Stream{Comments: Comments(mysqDollar[2].strs).Parsed(), SelectExpr: mysqDollar[3].selectExprUnion(), Table: mysqDollar[5].tableName}
+			mysqLOCAL = &Stream{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), SelectExpr: mysqDollar[3].selectExprUnion(), Table: mysqDollar[5].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 78:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:811
+//line mysql.y:812
 		{
-			mysqLOCAL = &VStream{Comments: Comments(mysqDollar[2].strs).Parsed(), SelectExpr: mysqDollar[3].selectExprUnion(), Table: mysqDollar[5].tableName, Where: NewWhere(WhereClause, mysqDollar[6].exprUnion()), Limit: mysqDollar[7].limitUnion()}
+			mysqLOCAL = &VStream{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), SelectExpr: mysqDollar[3].selectExprUnion(), Table: mysqDollar[5].tableName, Where: NewWhere(WhereClause, mysqDollar[6].exprUnion()), Limit: mysqDollar[7].limitUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 79:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:819
+//line mysql.y:820
 		{
 			mysqLOCAL = NewSelect(Comments(mysqDollar[2].strs), mysqDollar[4].selectExprsUnion() /*SelectExprs*/, mysqDollar[3].strs /*options*/, mysqDollar[5].selectIntoUnion() /*into*/, mysqDollar[6].tableExprsUnion() /*from*/, NewWhere(WhereClause, mysqDollar[7].exprUnion()), GroupBy(mysqDollar[8].exprsUnion()), NewWhere(HavingClause, mysqDollar[9].exprUnion()))
 		}
@@ -8507,7 +8508,7 @@ mysqdefault:
 	case 80:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.SelectStatement
-//line mysql.y:823
+//line mysql.y:824
 		{
 			mysqLOCAL = NewSelect(Comments(mysqDollar[2].strs), mysqDollar[4].selectExprsUnion() /*SelectExprs*/, mysqDollar[3].strs /*options*/, nil, mysqDollar[5].tableExprsUnion() /*from*/, NewWhere(WhereClause, mysqDollar[6].exprUnion()), GroupBy(mysqDollar[7].exprsUnion()), NewWhere(HavingClause, mysqDollar[8].exprUnion()))
 		}
@@ -8515,7 +8516,7 @@ mysqdefault:
 	case 81:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:831
+//line mysql.y:832
 		{
 			// insert_data returns a *Insert pre-filled with Columns & Values
 			ins := mysqDollar[6].insUnion()
@@ -8531,7 +8532,7 @@ mysqdefault:
 	case 82:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:843
+//line mysql.y:844
 		{
 			cols := make(Columns, 0, len(mysqDollar[7].updateExprsUnion()))
 			vals := make(ValTuple, 0, len(mysqDollar[8].updateExprsUnion()))
@@ -8539,13 +8540,13 @@ mysqdefault:
 				cols = append(cols, updateList.Name.Name)
 				vals = append(vals, updateList.Expr)
 			}
-			mysqLOCAL = &Insert{Action: mysqDollar[1].insertActionUnion(), Comments: Comments(mysqDollar[2].strs).Parsed(), Ignore: mysqDollar[3].ignoreUnion(), Table: mysqDollar[4].tableName, Partitions: mysqDollar[5].partitionsUnion(), Columns: cols, Rows: Values{vals}, OnDup: OnDup(mysqDollar[8].updateExprsUnion())}
+			mysqLOCAL = &Insert{Action: mysqDollar[1].insertActionUnion(), Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Ignore: mysqDollar[3].ignoreUnion(), Table: mysqDollar[4].tableName, Partitions: mysqDollar[5].partitionsUnion(), Columns: cols, Rows: Values{vals}, OnDup: OnDup(mysqDollar[8].updateExprsUnion())}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 83:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.InsertAction
-//line mysql.y:855
+//line mysql.y:856
 		{
 			mysqLOCAL = InsertAct
 		}
@@ -8553,7 +8554,7 @@ mysqdefault:
 	case 84:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.InsertAction
-//line mysql.y:859
+//line mysql.y:860
 		{
 			mysqLOCAL = ReplaceAct
 		}
@@ -8561,64 +8562,64 @@ mysqdefault:
 	case 85:
 		mysqDollar = mysqS[mysqpt-10 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:865
+//line mysql.y:866
 		{
-			mysqLOCAL = &Update{With: mysqDollar[1].withUnion(), Comments: Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), TableExprs: mysqDollar[5].tableExprsUnion(), Exprs: mysqDollar[7].updateExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion()), OrderBy: mysqDollar[9].orderByUnion(), Limit: mysqDollar[10].limitUnion()}
+			mysqLOCAL = &Update{With: mysqDollar[1].withUnion(), Comments: ast.Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), TableExprs: mysqDollar[5].tableExprsUnion(), Exprs: mysqDollar[7].updateExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion()), OrderBy: mysqDollar[9].orderByUnion(), Limit: mysqDollar[10].limitUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 86:
 		mysqDollar = mysqS[mysqpt-11 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:871
+//line mysql.y:872
 		{
-			mysqLOCAL = &Delete{With: mysqDollar[1].withUnion(), Comments: Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), TableExprs: TableExprs{&AliasedTableExpr{Expr: mysqDollar[6].tableName, As: mysqDollar[7].tableIdent}}, Partitions: mysqDollar[8].partitionsUnion(), Where: NewWhere(WhereClause, mysqDollar[9].exprUnion()), OrderBy: mysqDollar[10].orderByUnion(), Limit: mysqDollar[11].limitUnion()}
+			mysqLOCAL = &ast.Delete{With: mysqDollar[1].withUnion(), Comments: ast.Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), TableExprs: TableExprs{&AliasedTableExpr{Expr: mysqDollar[6].tableName, As: mysqDollar[7].tableIdent}}, Partitions: mysqDollar[8].partitionsUnion(), Where: NewWhere(WhereClause, mysqDollar[9].exprUnion()), OrderBy: mysqDollar[10].orderByUnion(), Limit: mysqDollar[11].limitUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 87:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:875
+//line mysql.y:876
 		{
-			mysqLOCAL = &Delete{With: mysqDollar[1].withUnion(), Comments: Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[6].tableNamesUnion(), TableExprs: mysqDollar[8].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[9].exprUnion())}
+			mysqLOCAL = &ast.Delete{With: mysqDollar[1].withUnion(), Comments: ast.Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[6].tableNamesUnion(), TableExprs: mysqDollar[8].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[9].exprUnion())}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 88:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:879
+//line mysql.y:880
 		{
-			mysqLOCAL = &Delete{With: mysqDollar[1].withUnion(), Comments: Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[5].tableNamesUnion(), TableExprs: mysqDollar[7].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion())}
+			mysqLOCAL = &ast.Delete{With: mysqDollar[1].withUnion(), Comments: ast.Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[5].tableNamesUnion(), TableExprs: mysqDollar[7].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion())}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 89:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:883
+//line mysql.y:884
 		{
-			mysqLOCAL = &Delete{With: mysqDollar[1].withUnion(), Comments: Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[5].tableNamesUnion(), TableExprs: mysqDollar[7].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion())}
+			mysqLOCAL = &ast.Delete{With: mysqDollar[1].withUnion(), Comments: ast.Comments(mysqDollar[3].strs).Parsed(), Ignore: mysqDollar[4].ignoreUnion(), Targets: mysqDollar[5].tableNamesUnion(), TableExprs: mysqDollar[7].tableExprsUnion(), Where: NewWhere(WhereClause, mysqDollar[8].exprUnion())}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 90:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:888
+//line mysql.y:889
 		{
 		}
 	case 91:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:889
+//line mysql.y:890
 		{
 		}
 	case 92:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableNames
-//line mysql.y:893
+//line mysql.y:894
 		{
 			mysqLOCAL = TableNames{mysqDollar[1].tableName.ToViewName()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 93:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:897
+//line mysql.y:898
 		{
 			mysqSLICE := (*ast.TableNames)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableName.ToViewName())
@@ -8626,14 +8627,14 @@ mysqdefault:
 	case 94:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableNames
-//line mysql.y:903
+//line mysql.y:904
 		{
 			mysqLOCAL = TableNames{mysqDollar[1].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 95:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:907
+//line mysql.y:908
 		{
 			mysqSLICE := (*ast.TableNames)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableName)
@@ -8641,14 +8642,14 @@ mysqdefault:
 	case 96:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableNames
-//line mysql.y:913
+//line mysql.y:914
 		{
 			mysqLOCAL = TableNames{mysqDollar[1].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 97:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:917
+//line mysql.y:918
 		{
 			mysqSLICE := (*ast.TableNames)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableName)
@@ -8656,7 +8657,7 @@ mysqdefault:
 	case 98:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Partitions
-//line mysql.y:922
+//line mysql.y:923
 		{
 			mysqLOCAL = nil
 		}
@@ -8664,7 +8665,7 @@ mysqdefault:
 	case 99:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Partitions
-//line mysql.y:926
+//line mysql.y:927
 		{
 			mysqLOCAL = mysqDollar[3].partitionsUnion()
 		}
@@ -8672,38 +8673,38 @@ mysqdefault:
 	case 100:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:932
+//line mysql.y:933
 		{
-			mysqLOCAL = &Set{Comments: Comments(mysqDollar[2].strs).Parsed(), Exprs: mysqDollar[3].setExprsUnion()}
+			mysqLOCAL = &Set{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Exprs: mysqDollar[3].setExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 101:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:938
+//line mysql.y:939
 		{
-			mysqLOCAL = &SetTransaction{Comments: Comments(mysqDollar[2].strs).Parsed(), Scope: mysqDollar[3].scopeUnion(), Characteristics: mysqDollar[5].characteristicsUnion()}
+			mysqLOCAL = &SetTransaction{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Scope: mysqDollar[3].scopeUnion(), Characteristics: mysqDollar[5].characteristicsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 102:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:942
+//line mysql.y:943
 		{
-			mysqLOCAL = &SetTransaction{Comments: Comments(mysqDollar[2].strs).Parsed(), Characteristics: mysqDollar[4].characteristicsUnion(), Scope: ImplicitScope}
+			mysqLOCAL = &SetTransaction{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Characteristics: mysqDollar[4].characteristicsUnion(), Scope: ImplicitScope}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 103:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.Characteristic
-//line mysql.y:948
+//line mysql.y:949
 		{
 			mysqLOCAL = []Characteristic{mysqDollar[1].characteristicUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 104:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:952
+//line mysql.y:953
 		{
 			mysqSLICE := (*[]ast.Characteristic)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].characteristicUnion())
@@ -8711,7 +8712,7 @@ mysqdefault:
 	case 105:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Characteristic
-//line mysql.y:958
+//line mysql.y:959
 		{
 			mysqLOCAL = mysqDollar[3].isolationLevelUnion()
 		}
@@ -8719,7 +8720,7 @@ mysqdefault:
 	case 106:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Characteristic
-//line mysql.y:962
+//line mysql.y:963
 		{
 			mysqLOCAL = ReadWrite
 		}
@@ -8727,7 +8728,7 @@ mysqdefault:
 	case 107:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Characteristic
-//line mysql.y:966
+//line mysql.y:967
 		{
 			mysqLOCAL = ReadOnly
 		}
@@ -8735,7 +8736,7 @@ mysqdefault:
 	case 108:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IsolationLevel
-//line mysql.y:972
+//line mysql.y:973
 		{
 			mysqLOCAL = RepeatableRead
 		}
@@ -8743,7 +8744,7 @@ mysqdefault:
 	case 109:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IsolationLevel
-//line mysql.y:976
+//line mysql.y:977
 		{
 			mysqLOCAL = ReadCommitted
 		}
@@ -8751,7 +8752,7 @@ mysqdefault:
 	case 110:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IsolationLevel
-//line mysql.y:980
+//line mysql.y:981
 		{
 			mysqLOCAL = ReadUncommitted
 		}
@@ -8759,7 +8760,7 @@ mysqdefault:
 	case 111:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IsolationLevel
-//line mysql.y:984
+//line mysql.y:985
 		{
 			mysqLOCAL = Serializable
 		}
@@ -8767,7 +8768,7 @@ mysqdefault:
 	case 112:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Scope
-//line mysql.y:990
+//line mysql.y:991
 		{
 			mysqLOCAL = SessionScope
 		}
@@ -8775,7 +8776,7 @@ mysqdefault:
 	case 113:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Scope
-//line mysql.y:994
+//line mysql.y:995
 		{
 			mysqLOCAL = GlobalScope
 		}
@@ -8783,7 +8784,7 @@ mysqdefault:
 	case 114:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:1000
+//line mysql.y:1001
 		{
 			mysqDollar[1].createTableUnion().TableSpec = mysqDollar[2].tableSpecUnion()
 			mysqDollar[1].createTableUnion().FullyParsed = true
@@ -8793,7 +8794,7 @@ mysqdefault:
 	case 115:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:1006
+//line mysql.y:1007
 		{
 			// Create table [name] like [name]
 			mysqDollar[1].createTableUnion().OptLike = mysqDollar[2].optLikeUnion()
@@ -8804,7 +8805,7 @@ mysqdefault:
 	case 116:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:1013
+//line mysql.y:1014
 		{
 			indexDef := mysqDollar[1].alterTableUnion().AlterOptions[0].(*AddIndexDefinition).IndexDefinition
 			indexDef.Columns = mysqDollar[3].indexColumnsUnion()
@@ -8817,15 +8818,15 @@ mysqdefault:
 	case 117:
 		mysqDollar = mysqS[mysqpt-12 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:1022
+//line mysql.y:1023
 		{
-			mysqLOCAL = &CreateView{ViewName: mysqDollar[8].tableName.ToViewName(), Comments: Comments(mysqDollar[2].strs).Parsed(), IsReplace: mysqDollar[3].booleanUnion(), Algorithm: mysqDollar[4].str, Definer: mysqDollar[5].definerUnion(), Security: mysqDollar[6].str, Columns: mysqDollar[9].columnsUnion(), Select: mysqDollar[11].selStmtUnion(), CheckOption: mysqDollar[12].str}
+			mysqLOCAL = &CreateView{ViewName: mysqDollar[8].tableName.ToViewName(), Comments: ast.Comments(mysqDollar[2].strs).Parsed(), IsReplace: mysqDollar[3].booleanUnion(), Algorithm: mysqDollar[4].str, Definer: mysqDollar[5].definerUnion(), Security: mysqDollar[6].str, Columns: mysqDollar[9].columnsUnion(), Select: mysqDollar[11].selStmtUnion(), CheckOption: mysqDollar[12].str}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 118:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:1026
+//line mysql.y:1027
 		{
 			mysqDollar[1].createDatabaseUnion().FullyParsed = true
 			mysqDollar[1].createDatabaseUnion().CreateOptions = mysqDollar[2].databaseOptionsUnion()
@@ -8835,7 +8836,7 @@ mysqdefault:
 	case 119:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:1033
+//line mysql.y:1034
 		{
 			mysqLOCAL = false
 		}
@@ -8843,42 +8844,42 @@ mysqdefault:
 	case 120:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:1037
+//line mysql.y:1038
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 121:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:1042
+//line mysql.y:1043
 		{
-			mysqVAL.colIdent = NewColIdent("")
+			mysqVAL.colIdent = ast.ast.NewColIdent("")
 		}
 	case 122:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1046
+//line mysql.y:1047
 		{
 			mysqVAL.colIdent = mysqDollar[2].colIdent
 		}
 	case 123:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1052
+//line mysql.y:1053
 		{
 			mysqVAL.colIdent = mysqDollar[1].colIdent
 		}
 	case 124:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []ast.VindexParam
-//line mysql.y:1057
+//line mysql.y:1058
 		{
-			var v []VindexParam
+			var v []ast.VindexParam
 			mysqLOCAL = v
 		}
 		mysqVAL.union = mysqLOCAL
 	case 125:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL []ast.VindexParam
-//line mysql.y:1062
+//line mysql.y:1063
 		{
 			mysqLOCAL = mysqDollar[2].vindexParamsUnion()
 		}
@@ -8886,29 +8887,29 @@ mysqdefault:
 	case 126:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.VindexParam
-//line mysql.y:1068
+//line mysql.y:1069
 		{
-			mysqLOCAL = make([]VindexParam, 0, 4)
+			mysqLOCAL = make([]ast.VindexParam, 0, 4)
 			mysqLOCAL = append(mysqLOCAL, mysqDollar[1].vindexParam)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 127:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1073
+//line mysql.y:1074
 		{
 			mysqSLICE := (*[]ast.VindexParam)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].vindexParam)
 		}
 	case 128:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1079
+//line mysql.y:1080
 		{
-			mysqVAL.vindexParam = VindexParam{Key: mysqDollar[1].colIdent, Val: mysqDollar[3].str}
+			mysqVAL.vindexParam = ast.VindexParam{Key: mysqDollar[1].colIdent, Val: mysqDollar[3].str}
 		}
 	case 129:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []*ast.JSONObjectParam
-//line mysql.y:1084
+//line mysql.y:1085
 		{
 			mysqLOCAL = nil
 		}
@@ -8916,7 +8917,7 @@ mysqdefault:
 	case 130:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.JSONObjectParam
-//line mysql.y:1088
+//line mysql.y:1089
 		{
 			mysqLOCAL = mysqDollar[1].jsonObjectParamsUnion()
 		}
@@ -8924,91 +8925,91 @@ mysqdefault:
 	case 131:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.JSONObjectParam
-//line mysql.y:1094
+//line mysql.y:1095
 		{
-			mysqLOCAL = []*JSONObjectParam{mysqDollar[1].jsonObjectParam}
+			mysqLOCAL = []*ast.JSONObjectParam{mysqDollar[1].jsonObjectParam}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 132:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1098
+//line mysql.y:1099
 		{
 			mysqSLICE := (*[]*ast.JSONObjectParam)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].jsonObjectParam)
 		}
 	case 133:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1104
+//line mysql.y:1105
 		{
 			mysqVAL.jsonObjectParam = &JSONObjectParam{Key: mysqDollar[1].exprUnion(), Value: mysqDollar[3].exprUnion()}
 		}
 	case 134:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.CreateTable
-//line mysql.y:1110
+//line mysql.y:1111
 		{
-			mysqLOCAL = &CreateTable{Comments: Comments(mysqDollar[2].strs).Parsed(), Table: mysqDollar[6].tableName, IfNotExists: mysqDollar[5].booleanUnion(), Temp: mysqDollar[3].booleanUnion()}
+			mysqLOCAL = &CreateTable{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Table: mysqDollar[6].tableName, IfNotExists: mysqDollar[5].booleanUnion(), Temp: mysqDollar[3].booleanUnion()}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 135:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.AlterTable
-//line mysql.y:1117
+//line mysql.y:1118
 		{
-			mysqLOCAL = &AlterTable{Comments: Comments(mysqDollar[2].strs).Parsed(), Table: mysqDollar[4].tableName}
+			mysqLOCAL = &ast.AlterTable{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Table: mysqDollar[4].tableName}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 136:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.AlterTable
-//line mysql.y:1124
+//line mysql.y:1125
 		{
-			mysqLOCAL = &AlterTable{Table: mysqDollar[7].tableName, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[4].colIdent, Type: string(mysqDollar[3].str)}, Options: mysqDollar[5].indexOptionsUnion()}}}}
+			mysqLOCAL = &ast.AlterTable{Table: mysqDollar[7].tableName, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[4].colIdent, Type: string(mysqDollar[3].str)}, Options: mysqDollar[5].indexOptionsUnion()}}}}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 137:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.AlterTable
-//line mysql.y:1129
+//line mysql.y:1130
 		{
-			mysqLOCAL = &AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Fulltext: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
+			mysqLOCAL = &ast.AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Fulltext: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 138:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.AlterTable
-//line mysql.y:1134
+//line mysql.y:1135
 		{
-			mysqLOCAL = &AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Spatial: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
+			mysqLOCAL = &ast.AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Spatial: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 139:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.AlterTable
-//line mysql.y:1139
+//line mysql.y:1140
 		{
-			mysqLOCAL = &AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Unique: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
+			mysqLOCAL = &ast.AlterTable{Table: mysqDollar[8].tableName, AlterOptions: []ast.AlterOption{&AddIndexDefinition{IndexDefinition: &IndexDefinition{Info: &IndexInfo{Name: mysqDollar[5].colIdent, Type: string(mysqDollar[3].str) + " " + string(mysqDollar[4].str), Unique: true}, Options: mysqDollar[6].indexOptionsUnion()}}}}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 140:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.CreateDatabase
-//line mysql.y:1146
+//line mysql.y:1147
 		{
-			mysqLOCAL = &CreateDatabase{Comments: Comments(mysqDollar[4].strs).Parsed(), DBName: mysqDollar[6].tableIdent, IfNotExists: mysqDollar[5].booleanUnion()}
+			mysqLOCAL = &CreateDatabase{Comments: ast.Comments(mysqDollar[4].strs).Parsed(), DBName: mysqDollar[6].tableIdent, IfNotExists: mysqDollar[5].booleanUnion()}
 			setDDL(mysqlex, mysqLOCAL)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 141:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.AlterDatabase
-//line mysql.y:1153
+//line mysql.y:1154
 		{
 			mysqLOCAL = &AlterDatabase{}
 			setDDL(mysqlex, mysqLOCAL)
@@ -9017,7 +9018,7 @@ mysqdefault:
 	case 144:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.TableSpec
-//line mysql.y:1164
+//line mysql.y:1165
 		{
 			mysqLOCAL = mysqDollar[2].tableSpecUnion()
 			mysqLOCAL.Options = mysqDollar[4].tableOptionsUnion()
@@ -9027,7 +9028,7 @@ mysqdefault:
 	case 145:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []ast.DatabaseOption
-//line mysql.y:1171
+//line mysql.y:1172
 		{
 			mysqLOCAL = nil
 		}
@@ -9035,7 +9036,7 @@ mysqdefault:
 	case 146:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.DatabaseOption
-//line mysql.y:1175
+//line mysql.y:1176
 		{
 			mysqLOCAL = mysqDollar[1].databaseOptionsUnion()
 		}
@@ -9043,7 +9044,7 @@ mysqdefault:
 	case 147:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.DatabaseOption
-//line mysql.y:1181
+//line mysql.y:1182
 		{
 			mysqLOCAL = []DatabaseOption{mysqDollar[1].databaseOption}
 		}
@@ -9051,7 +9052,7 @@ mysqdefault:
 	case 148:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.DatabaseOption
-//line mysql.y:1185
+//line mysql.y:1186
 		{
 			mysqLOCAL = []DatabaseOption{mysqDollar[1].databaseOption}
 		}
@@ -9059,28 +9060,28 @@ mysqdefault:
 	case 149:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.DatabaseOption
-//line mysql.y:1189
+//line mysql.y:1190
 		{
 			mysqLOCAL = []DatabaseOption{mysqDollar[1].databaseOption}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 150:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1193
+//line mysql.y:1194
 		{
 			mysqSLICE := (*[]ast.DatabaseOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].databaseOption)
 		}
 	case 151:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1197
+//line mysql.y:1198
 		{
 			mysqSLICE := (*[]ast.DatabaseOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].databaseOption)
 		}
 	case 152:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1201
+//line mysql.y:1202
 		{
 			mysqSLICE := (*[]ast.DatabaseOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].databaseOption)
@@ -9088,7 +9089,7 @@ mysqdefault:
 	case 153:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:1207
+//line mysql.y:1208
 		{
 			mysqLOCAL = false
 		}
@@ -9096,51 +9097,51 @@ mysqdefault:
 	case 154:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:1211
+//line mysql.y:1212
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 155:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1217
+//line mysql.y:1218
 		{
 			mysqVAL.databaseOption = DatabaseOption{Type: CharacterSetType, Value: (mysqDollar[4].colIdent.String()), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 156:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1221
+//line mysql.y:1222
 		{
-			mysqVAL.databaseOption = DatabaseOption{Type: CharacterSetType, Value: (encodeSQLString(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
+			mysqVAL.databaseOption = DatabaseOption{Type: CharacterSetType, Value: (sql_types.EncodeStringSQL(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 157:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1227
+//line mysql.y:1228
 		{
 			mysqVAL.databaseOption = DatabaseOption{Type: CollateType, Value: (mysqDollar[4].colIdent.String()), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 158:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1231
+//line mysql.y:1232
 		{
-			mysqVAL.databaseOption = DatabaseOption{Type: CollateType, Value: (encodeSQLString(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
+			mysqVAL.databaseOption = DatabaseOption{Type: CollateType, Value: (sql_types.EncodeStringSQL(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 159:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1237
+//line mysql.y:1238
 		{
 			mysqVAL.databaseOption = DatabaseOption{Type: EncryptionType, Value: (mysqDollar[4].colIdent.String()), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 160:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1241
+//line mysql.y:1242
 		{
-			mysqVAL.databaseOption = DatabaseOption{Type: EncryptionType, Value: (encodeSQLString(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
+			mysqVAL.databaseOption = DatabaseOption{Type: EncryptionType, Value: (sql_types.EncodeStringSQL(mysqDollar[4].str)), IsDefault: mysqDollar[1].booleanUnion()}
 		}
 	case 161:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.OptLike
-//line mysql.y:1247
+//line mysql.y:1248
 		{
 			mysqLOCAL = &OptLike{LikeTable: mysqDollar[2].tableName}
 		}
@@ -9148,7 +9149,7 @@ mysqdefault:
 	case 162:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.OptLike
-//line mysql.y:1251
+//line mysql.y:1252
 		{
 			mysqLOCAL = &OptLike{LikeTable: mysqDollar[3].tableName}
 		}
@@ -9156,14 +9157,14 @@ mysqdefault:
 	case 163:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.ColumnDefinition
-//line mysql.y:1257
+//line mysql.y:1258
 		{
 			mysqLOCAL = []*ColumnDefinition{mysqDollar[1].columnDefinitionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 164:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1261
+//line mysql.y:1262
 		{
 			mysqSLICE := (*[]*ast.ColumnDefinition)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].columnDefinitionUnion())
@@ -9171,7 +9172,7 @@ mysqdefault:
 	case 165:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.TableSpec
-//line mysql.y:1267
+//line mysql.y:1268
 		{
 			mysqLOCAL = &TableSpec{}
 			mysqLOCAL.AddColumn(mysqDollar[1].columnDefinitionUnion())
@@ -9180,7 +9181,7 @@ mysqdefault:
 	case 166:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.TableSpec
-//line mysql.y:1272
+//line mysql.y:1273
 		{
 			mysqLOCAL = &TableSpec{}
 			mysqLOCAL.AddConstraint(mysqDollar[1].constraintDefinitionUnion())
@@ -9188,39 +9189,39 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 167:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1277
+//line mysql.y:1278
 		{
 			mysqVAL.tableSpecUnion().AddColumn(mysqDollar[3].columnDefinitionUnion())
 		}
 	case 168:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1281
+//line mysql.y:1282
 		{
 			mysqVAL.tableSpecUnion().AddColumn(mysqDollar[3].columnDefinitionUnion())
 			mysqVAL.tableSpecUnion().AddConstraint(mysqDollar[4].constraintDefinitionUnion())
 		}
 	case 169:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1286
+//line mysql.y:1287
 		{
 			mysqVAL.tableSpecUnion().AddIndex(mysqDollar[3].indexDefinitionUnion())
 		}
 	case 170:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1290
+//line mysql.y:1291
 		{
 			mysqVAL.tableSpecUnion().AddConstraint(mysqDollar[3].constraintDefinitionUnion())
 		}
 	case 171:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1294
+//line mysql.y:1295
 		{
 			mysqVAL.tableSpecUnion().AddConstraint(mysqDollar[3].constraintDefinitionUnion())
 		}
 	case 172:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnDefinition
-//line mysql.y:1305
+//line mysql.y:1306
 		{
 			mysqDollar[2].columnType.Options = mysqDollar[4].columnTypeOptionsUnion()
 			if mysqDollar[2].columnType.Options.Collate == "" {
@@ -9233,7 +9234,7 @@ mysqdefault:
 	case 173:
 		mysqDollar = mysqS[mysqpt-10 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnDefinition
-//line mysql.y:1314
+//line mysql.y:1315
 		{
 			mysqDollar[2].columnType.Options = mysqDollar[9].columnTypeOptionsUnion()
 			mysqDollar[2].columnType.Options.As = mysqDollar[7].exprUnion()
@@ -9244,28 +9245,28 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 174:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:1323
+//line mysql.y:1324
 		{
 			mysqVAL.str = ""
 		}
 	case 175:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1327
+//line mysql.y:1328
 		{
 			mysqVAL.str = ""
 		}
 	case 176:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1336
+//line mysql.y:1337
 		{
-			mysqLOCAL = &ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: colKeyNone, Comment: nil, As: nil, Invisible: nil, Format: UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil}
+			mysqLOCAL = &ast.ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: colKeyNone, Comment: nil, As: nil, Invisible: nil, Format: UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 177:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1340
+//line mysql.y:1341
 		{
 			val := true
 			mysqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -9275,7 +9276,7 @@ mysqdefault:
 	case 178:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1346
+//line mysql.y:1347
 		{
 			val := false
 			mysqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -9285,7 +9286,7 @@ mysqdefault:
 	case 179:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1352
+//line mysql.y:1353
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Default = mysqDollar[4].exprUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9294,7 +9295,7 @@ mysqdefault:
 	case 180:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1357
+//line mysql.y:1358
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Default = mysqDollar[3].exprUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9303,7 +9304,7 @@ mysqdefault:
 	case 181:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1362
+//line mysql.y:1363
 		{
 			mysqDollar[1].columnTypeOptionsUnion().OnUpdate = mysqDollar[4].exprUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9312,7 +9313,7 @@ mysqdefault:
 	case 182:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1367
+//line mysql.y:1368
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Autoincrement = true
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9321,7 +9322,7 @@ mysqdefault:
 	case 183:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1372
+//line mysql.y:1373
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Comment = ast.NewStrLiteral(mysqDollar[3].str)
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9330,7 +9331,7 @@ mysqdefault:
 	case 184:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1377
+//line mysql.y:1378
 		{
 			mysqDollar[1].columnTypeOptionsUnion().KeyOpt = mysqDollar[2].colKeyOptUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9338,14 +9339,14 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 185:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1382
+//line mysql.y:1383
 		{
-			mysqDollar[1].columnTypeOptionsUnion().Collate = encodeSQLString(mysqDollar[3].str)
+			mysqDollar[1].columnTypeOptionsUnion().Collate = sql_types.EncodeStringSQL(mysqDollar[3].str)
 		}
 	case 186:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1386
+//line mysql.y:1387
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Collate = string(mysqDollar[3].colIdent.String())
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9353,23 +9354,23 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 187:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1391
+//line mysql.y:1392
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Format = mysqDollar[3].columnFormatUnion()
 		}
 	case 188:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1395
+//line mysql.y:1396
 		{
-			mysqDollar[1].columnTypeOptionsUnion().SRID = NewIntLiteral(mysqDollar[3].str)
+			mysqDollar[1].columnTypeOptionsUnion().SRID = ast.NewIntLiteral(mysqDollar[3].str)
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 189:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1400
+//line mysql.y:1401
 		{
 			val := false
 			mysqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -9379,7 +9380,7 @@ mysqdefault:
 	case 190:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1406
+//line mysql.y:1407
 		{
 			val := true
 			mysqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -9388,20 +9389,20 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 191:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1412
+//line mysql.y:1413
 		{
 			mysqDollar[1].columnTypeOptionsUnion().EngineAttribute = ast.NewStrLiteral(mysqDollar[4].str)
 		}
 	case 192:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:1416
+//line mysql.y:1417
 		{
 			mysqDollar[1].columnTypeOptionsUnion().SecondaryEngineAttribute = ast.NewStrLiteral(mysqDollar[4].str)
 		}
 	case 193:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnFormat
-//line mysql.y:1422
+//line mysql.y:1423
 		{
 			mysqLOCAL = FixedFormat
 		}
@@ -9409,7 +9410,7 @@ mysqdefault:
 	case 194:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnFormat
-//line mysql.y:1426
+//line mysql.y:1427
 		{
 			mysqLOCAL = DynamicFormat
 		}
@@ -9417,7 +9418,7 @@ mysqdefault:
 	case 195:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnFormat
-//line mysql.y:1430
+//line mysql.y:1431
 		{
 			mysqLOCAL = DefaultFormat
 		}
@@ -9425,7 +9426,7 @@ mysqdefault:
 	case 196:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnStorage
-//line mysql.y:1436
+//line mysql.y:1437
 		{
 			mysqLOCAL = VirtualStorage
 		}
@@ -9433,7 +9434,7 @@ mysqdefault:
 	case 197:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnStorage
-//line mysql.y:1440
+//line mysql.y:1441
 		{
 			mysqLOCAL = StoredStorage
 		}
@@ -9441,15 +9442,15 @@ mysqdefault:
 	case 198:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1445
+//line mysql.y:1446
 		{
-			mysqLOCAL = &ColumnTypeOptions{}
+			mysqLOCAL = &ast.ColumnTypeOptions{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 199:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1449
+//line mysql.y:1450
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Storage = mysqDollar[2].columnStorageUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9458,7 +9459,7 @@ mysqdefault:
 	case 200:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1454
+//line mysql.y:1455
 		{
 			val := true
 			mysqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -9468,7 +9469,7 @@ mysqdefault:
 	case 201:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1460
+//line mysql.y:1461
 		{
 			val := false
 			mysqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -9478,7 +9479,7 @@ mysqdefault:
 	case 202:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1466
+//line mysql.y:1467
 		{
 			mysqDollar[1].columnTypeOptionsUnion().Comment = ast.NewStrLiteral(mysqDollar[3].str)
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9487,7 +9488,7 @@ mysqdefault:
 	case 203:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1471
+//line mysql.y:1472
 		{
 			mysqDollar[1].columnTypeOptionsUnion().KeyOpt = mysqDollar[2].colKeyOptUnion()
 			mysqLOCAL = mysqDollar[1].columnTypeOptionsUnion()
@@ -9496,7 +9497,7 @@ mysqdefault:
 	case 204:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1476
+//line mysql.y:1477
 		{
 			val := false
 			mysqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -9506,7 +9507,7 @@ mysqdefault:
 	case 205:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColumnTypeOptions
-//line mysql.y:1482
+//line mysql.y:1483
 		{
 			val := true
 			mysqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -9516,7 +9517,7 @@ mysqdefault:
 	case 206:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1490
+//line mysql.y:1491
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -9524,47 +9525,47 @@ mysqdefault:
 	case 208:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1497
+//line mysql.y:1498
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("current_timestamp"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("current_timestamp"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 209:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1501
+//line mysql.y:1502
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("localtime"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("localtime"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 210:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1505
+//line mysql.y:1506
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("localtimestamp"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("localtimestamp"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 211:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1509
+//line mysql.y:1510
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("utc_timestamp"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("utc_timestamp"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 212:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1513
+//line mysql.y:1514
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("now"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("now"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 215:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1524
+//line mysql.y:1525
 		{
 			mysqLOCAL = &NullVal{}
 		}
@@ -9572,7 +9573,7 @@ mysqdefault:
 	case 217:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1531
+//line mysql.y:1532
 		{
 			mysqLOCAL = mysqDollar[2].exprUnion()
 		}
@@ -9580,7 +9581,7 @@ mysqdefault:
 	case 218:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1535
+//line mysql.y:1536
 		{
 			mysqLOCAL = &UnaryExpr{Operator: UMinusOp, Expr: mysqDollar[2].exprUnion()}
 		}
@@ -9588,7 +9589,7 @@ mysqdefault:
 	case 219:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1541
+//line mysql.y:1542
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -9596,7 +9597,7 @@ mysqdefault:
 	case 220:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1545
+//line mysql.y:1546
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -9604,7 +9605,7 @@ mysqdefault:
 	case 221:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1549
+//line mysql.y:1550
 		{
 			mysqLOCAL = mysqDollar[1].boolValUnion()
 		}
@@ -9612,357 +9613,357 @@ mysqdefault:
 	case 222:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1553
+//line mysql.y:1554
 		{
-			mysqLOCAL = NewHexLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewHexLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 223:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1557
+//line mysql.y:1558
 		{
-			mysqLOCAL = NewHexNumLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewHexNumLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 224:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1561
+//line mysql.y:1562
 		{
-			mysqLOCAL = NewBitLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewBitLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 225:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1565
+//line mysql.y:1566
 		{
-			mysqLOCAL = NewArgument(mysqDollar[1].str[1:])
+			mysqLOCAL = ast.NewArgument(mysqDollar[1].str[1:])
 			bindVariable(mysqlex, mysqDollar[1].str[1:])
 		}
 		mysqVAL.union = mysqLOCAL
 	case 226:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1570
+//line mysql.y:1571
 		{
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: NewBitLiteral(mysqDollar[2].str)}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewBitLiteral(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 227:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1574
+//line mysql.y:1575
 		{
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: NewHexNumLiteral(mysqDollar[2].str)}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewHexNumLiteral(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 228:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1578
+//line mysql.y:1579
 		{
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: NewHexLiteral(mysqDollar[2].str)}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewHexLiteral(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 229:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1582
+//line mysql.y:1583
 		{
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: mysqDollar[2].colNameUnion()}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: mysqDollar[2].colNameUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 230:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1586
+//line mysql.y:1587
 		{
 			bindVariable(mysqlex, mysqDollar[2].str[1:])
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: NewArgument(mysqDollar[2].str[1:])}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewArgument(mysqDollar[2].str[1:])}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 231:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1593
+//line mysql.y:1594
 		{
-			mysqVAL.str = Armscii8Str
+			mysqVAL.str = ast.Armscii8Str
 		}
 	case 232:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1597
+//line mysql.y:1598
 		{
-			mysqVAL.str = ASCIIStr
+			mysqVAL.str = ast.ASCIIStr
 		}
 	case 233:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1601
+//line mysql.y:1602
 		{
-			mysqVAL.str = Big5Str
+			mysqVAL.str = ast.Big5Str
 		}
 	case 234:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1605
+//line mysql.y:1606
 		{
-			mysqVAL.str = UBinaryStr
+			mysqVAL.str = ast.UBinaryStr
 		}
 	case 235:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1609
+//line mysql.y:1610
 		{
-			mysqVAL.str = Cp1250Str
+			mysqVAL.str = ast.Cp1250Str
 		}
 	case 236:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1613
+//line mysql.y:1614
 		{
-			mysqVAL.str = Cp1251Str
+			mysqVAL.str = ast.Cp1251Str
 		}
 	case 237:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1617
+//line mysql.y:1618
 		{
-			mysqVAL.str = Cp1256Str
+			mysqVAL.str = ast.Cp1256Str
 		}
 	case 238:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1621
+//line mysql.y:1622
 		{
-			mysqVAL.str = Cp1257Str
+			mysqVAL.str = ast.Cp1257Str
 		}
 	case 239:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1625
+//line mysql.y:1626
 		{
-			mysqVAL.str = Cp850Str
+			mysqVAL.str = ast.Cp850Str
 		}
 	case 240:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1629
+//line mysql.y:1630
 		{
-			mysqVAL.str = Cp852Str
+			mysqVAL.str = ast.Cp852Str
 		}
 	case 241:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1633
+//line mysql.y:1634
 		{
-			mysqVAL.str = Cp866Str
+			mysqVAL.str = ast.Cp866Str
 		}
 	case 242:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1637
+//line mysql.y:1638
 		{
-			mysqVAL.str = Cp932Str
+			mysqVAL.str = ast.Cp932Str
 		}
 	case 243:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1641
+//line mysql.y:1642
 		{
-			mysqVAL.str = Dec8Str
+			mysqVAL.str = ast.Dec8Str
 		}
 	case 244:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1645
+//line mysql.y:1646
 		{
-			mysqVAL.str = EucjpmsStr
+			mysqVAL.str = ast.EucjpmsStr
 		}
 	case 245:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1649
+//line mysql.y:1650
 		{
-			mysqVAL.str = EuckrStr
+			mysqVAL.str = ast.EuckrStr
 		}
 	case 246:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1653
+//line mysql.y:1654
 		{
-			mysqVAL.str = Gb18030Str
+			mysqVAL.str = ast.Gb18030Str
 		}
 	case 247:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1657
+//line mysql.y:1658
 		{
-			mysqVAL.str = Gb2312Str
+			mysqVAL.str = ast.Gb2312Str
 		}
 	case 248:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1661
+//line mysql.y:1662
 		{
-			mysqVAL.str = GbkStr
+			mysqVAL.str = ast.GbkStr
 		}
 	case 249:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1665
+//line mysql.y:1666
 		{
-			mysqVAL.str = Geostd8Str
+			mysqVAL.str = ast.Geostd8Str
 		}
 	case 250:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1669
+//line mysql.y:1670
 		{
-			mysqVAL.str = GreekStr
+			mysqVAL.str = ast.GreekStr
 		}
 	case 251:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1673
+//line mysql.y:1674
 		{
-			mysqVAL.str = HebrewStr
+			mysqVAL.str = ast.HebrewStr
 		}
 	case 252:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1677
+//line mysql.y:1678
 		{
-			mysqVAL.str = Hp8Str
+			mysqVAL.str = ast.Hp8Str
 		}
 	case 253:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1681
+//line mysql.y:1682
 		{
-			mysqVAL.str = Keybcs2Str
+			mysqVAL.str = ast.Keybcs2Str
 		}
 	case 254:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1685
+//line mysql.y:1686
 		{
-			mysqVAL.str = Koi8rStr
+			mysqVAL.str = ast.Koi8rStr
 		}
 	case 255:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1689
+//line mysql.y:1690
 		{
-			mysqVAL.str = Koi8uStr
+			mysqVAL.str = ast.Koi8uStr
 		}
 	case 256:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1693
+//line mysql.y:1694
 		{
-			mysqVAL.str = Latin1Str
+			mysqVAL.str = ast.Latin1Str
 		}
 	case 257:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1697
+//line mysql.y:1698
 		{
-			mysqVAL.str = Latin2Str
+			mysqVAL.str = ast.Latin2Str
 		}
 	case 258:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1701
+//line mysql.y:1702
 		{
-			mysqVAL.str = Latin5Str
+			mysqVAL.str = ast.Latin5Str
 		}
 	case 259:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1705
+//line mysql.y:1706
 		{
-			mysqVAL.str = Latin7Str
+			mysqVAL.str = ast.Latin7Str
 		}
 	case 260:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1709
+//line mysql.y:1710
 		{
-			mysqVAL.str = MacceStr
+			mysqVAL.str = ast.MacceStr
 		}
 	case 261:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1713
+//line mysql.y:1714
 		{
-			mysqVAL.str = MacromanStr
+			mysqVAL.str = ast.MacromanStr
 		}
 	case 262:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1717
+//line mysql.y:1718
 		{
-			mysqVAL.str = SjisStr
+			mysqVAL.str = ast.SjisStr
 		}
 	case 263:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1721
+//line mysql.y:1722
 		{
-			mysqVAL.str = Swe7Str
+			mysqVAL.str = ast.Swe7Str
 		}
 	case 264:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1725
+//line mysql.y:1726
 		{
-			mysqVAL.str = Tis620Str
+			mysqVAL.str = ast.Tis620Str
 		}
 	case 265:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1729
+//line mysql.y:1730
 		{
-			mysqVAL.str = Ucs2Str
+			mysqVAL.str = ast.Ucs2Str
 		}
 	case 266:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1733
+//line mysql.y:1734
 		{
-			mysqVAL.str = UjisStr
+			mysqVAL.str = ast.UjisStr
 		}
 	case 267:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1737
+//line mysql.y:1738
 		{
-			mysqVAL.str = Utf16Str
+			mysqVAL.str = ast.Utf16Str
 		}
 	case 268:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1741
+//line mysql.y:1742
 		{
-			mysqVAL.str = Utf16leStr
+			mysqVAL.str = ast.Utf16leStr
 		}
 	case 269:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1745
+//line mysql.y:1746
 		{
-			mysqVAL.str = Utf32Str
+			mysqVAL.str = ast.Utf32Str
 		}
 	case 270:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1749
+//line mysql.y:1750
 		{
-			mysqVAL.str = Utf8Str
+			mysqVAL.str = ast.Utf8Str
 		}
 	case 271:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1753
+//line mysql.y:1754
 		{
-			mysqVAL.str = Utf8mb4Str
+			mysqVAL.str = ast.Utf8mb4Str
 		}
 	case 272:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1757
+//line mysql.y:1758
 		{
-			mysqVAL.str = Utf8Str
+			mysqVAL.str = ast.Utf8Str
 		}
 	case 275:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1767
+//line mysql.y:1768
 		{
-			mysqLOCAL = NewIntLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewIntLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 276:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1771
+//line mysql.y:1772
 		{
-			mysqLOCAL = NewFloatLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewFloatLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 277:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1775
+//line mysql.y:1776
 		{
-			mysqLOCAL = NewDecimalLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewDecimalLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 278:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1781
+//line mysql.y:1782
 		{
 			mysqLOCAL = ast.NewStrLiteral(mysqDollar[1].str)
 		}
@@ -9970,23 +9971,23 @@ mysqdefault:
 	case 279:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1785
+//line mysql.y:1786
 		{
-			mysqLOCAL = &UnaryExpr{Operator: NStringOp, Expr: ast.NewStrLiteral(mysqDollar[1].str)}
+			mysqLOCAL = &ast.UnaryExpr{Operator: NStringOp, Expr: ast.NewStrLiteral(mysqDollar[1].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 280:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1789
+//line mysql.y:1790
 		{
-			mysqLOCAL = &IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewStrLiteral(mysqDollar[2].str)}
+			mysqLOCAL = &ast.IntroducerExpr{CharacterSet: mysqDollar[1].str, Expr: ast.NewStrLiteral(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 281:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1795
+//line mysql.y:1796
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -9994,16 +9995,16 @@ mysqdefault:
 	case 282:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:1799
+//line mysql.y:1800
 		{
-			mysqLOCAL = NewArgument(mysqDollar[1].str[1:])
+			mysqLOCAL = ast.NewArgument(mysqDollar[1].str[1:])
 			bindVariable(mysqlex, mysqDollar[1].str[1:])
 		}
 		mysqVAL.union = mysqLOCAL
 	case 283:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ColumnKeyOption
-//line mysql.y:1806
+//line mysql.y:1807
 		{
 			mysqLOCAL = colKeyPrimary
 		}
@@ -10011,7 +10012,7 @@ mysqdefault:
 	case 284:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnKeyOption
-//line mysql.y:1810
+//line mysql.y:1811
 		{
 			mysqLOCAL = colKeyUnique
 		}
@@ -10019,7 +10020,7 @@ mysqdefault:
 	case 285:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ColumnKeyOption
-//line mysql.y:1814
+//line mysql.y:1815
 		{
 			mysqLOCAL = colKeyUniqueKey
 		}
@@ -10027,14 +10028,14 @@ mysqdefault:
 	case 286:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColumnKeyOption
-//line mysql.y:1818
+//line mysql.y:1819
 		{
 			mysqLOCAL = colKey
 		}
 		mysqVAL.union = mysqLOCAL
 	case 287:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1824
+//line mysql.y:1825
 		{
 			mysqVAL.columnType = mysqDollar[1].columnType
 			mysqVAL.columnType.Unsigned = mysqDollar[2].booleanUnion()
@@ -10042,74 +10043,74 @@ mysqdefault:
 		}
 	case 291:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1835
+//line mysql.y:1836
 		{
 			mysqVAL.columnType = mysqDollar[1].columnType
 			mysqVAL.columnType.Length = mysqDollar[2].literalUnion()
 		}
 	case 292:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1840
+//line mysql.y:1841
 		{
 			mysqVAL.columnType = mysqDollar[1].columnType
 		}
 	case 293:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1846
+//line mysql.y:1847
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 294:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1850
+//line mysql.y:1851
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 295:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1854
+//line mysql.y:1855
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 296:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1858
+//line mysql.y:1859
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 297:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1862
+//line mysql.y:1863
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 298:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1866
+//line mysql.y:1867
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 299:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1870
+//line mysql.y:1871
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 300:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1874
+//line mysql.y:1875
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 301:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1878
+//line mysql.y:1879
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 302:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1884
+//line mysql.y:1885
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 			mysqVAL.columnType.Length = mysqDollar[2].LengthScaleOption.Length
@@ -10117,7 +10118,7 @@ mysqdefault:
 		}
 	case 303:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1890
+//line mysql.y:1891
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 			mysqVAL.columnType.Length = mysqDollar[2].LengthScaleOption.Length
@@ -10125,7 +10126,7 @@ mysqdefault:
 		}
 	case 304:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1896
+//line mysql.y:1897
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 			mysqVAL.columnType.Length = mysqDollar[2].LengthScaleOption.Length
@@ -10133,7 +10134,7 @@ mysqdefault:
 		}
 	case 305:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1902
+//line mysql.y:1903
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 			mysqVAL.columnType.Length = mysqDollar[2].LengthScaleOption.Length
@@ -10141,7 +10142,7 @@ mysqdefault:
 		}
 	case 306:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1908
+//line mysql.y:1909
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 			mysqVAL.columnType.Length = mysqDollar[2].LengthScaleOption.Length
@@ -10149,43 +10150,43 @@ mysqdefault:
 		}
 	case 307:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1916
+//line mysql.y:1917
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 308:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1920
+//line mysql.y:1921
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 309:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1924
+//line mysql.y:1925
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 310:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1928
+//line mysql.y:1929
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 311:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1932
+//line mysql.y:1933
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 312:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1938
+//line mysql.y:1939
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion(), Charset: mysqDollar[3].columnCharset}
 		}
 	case 313:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1942
+//line mysql.y:1943
 		{
 			// CHAR BYTE is an alias for binary. See also:
 			// https://dev.mysql.com/doc/refman/8.0/en/string-type-syntax.html
@@ -10193,153 +10194,153 @@ mysqdefault:
 		}
 	case 314:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:1948
+//line mysql.y:1949
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion(), Charset: mysqDollar[3].columnCharset}
 		}
 	case 315:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1952
+//line mysql.y:1953
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 316:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1956
+//line mysql.y:1957
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
 	case 317:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1960
+//line mysql.y:1961
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Charset: mysqDollar[2].columnCharset}
 		}
 	case 318:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1964
+//line mysql.y:1965
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Charset: mysqDollar[2].columnCharset}
 		}
 	case 319:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1968
+//line mysql.y:1969
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Charset: mysqDollar[2].columnCharset}
 		}
 	case 320:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:1972
+//line mysql.y:1973
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), Charset: mysqDollar[2].columnCharset}
 		}
 	case 321:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1976
+//line mysql.y:1977
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 322:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1980
+//line mysql.y:1981
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 323:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1984
+//line mysql.y:1985
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 324:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1988
+//line mysql.y:1989
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 325:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:1992
+//line mysql.y:1993
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 326:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:1996
+//line mysql.y:1997
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), EnumValues: mysqDollar[3].strs, Charset: mysqDollar[5].columnCharset}
 		}
 	case 327:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:2001
+//line mysql.y:2002
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str), EnumValues: mysqDollar[3].strs, Charset: mysqDollar[5].columnCharset}
 		}
 	case 328:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2007
+//line mysql.y:2008
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 329:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2011
+//line mysql.y:2012
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 330:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2015
+//line mysql.y:2016
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 331:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2019
+//line mysql.y:2020
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 332:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2023
+//line mysql.y:2024
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 333:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2027
+//line mysql.y:2028
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 334:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2031
+//line mysql.y:2032
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 335:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2035
+//line mysql.y:2036
 		{
 			mysqVAL.columnType = ColumnType{Type: string(mysqDollar[1].str)}
 		}
 	case 336:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2041
+//line mysql.y:2042
 		{
 			mysqVAL.strs = make([]string, 0, 4)
-			mysqVAL.strs = append(mysqVAL.strs, encodeSQLString(mysqDollar[1].str))
+			mysqVAL.strs = append(mysqVAL.strs, sql_types.EncodeStringSQL(mysqDollar[1].str))
 		}
 	case 337:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2046
+//line mysql.y:2047
 		{
-			mysqVAL.strs = append(mysqDollar[1].strs, encodeSQLString(mysqDollar[3].str))
+			mysqVAL.strs = append(mysqDollar[1].strs, sql_types.EncodeStringSQL(mysqDollar[3].str))
 		}
 	case 338:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:2051
+//line mysql.y:2052
 		{
 			mysqLOCAL = nil
 		}
@@ -10347,53 +10348,53 @@ mysqdefault:
 	case 339:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:2055
+//line mysql.y:2056
 		{
-			mysqLOCAL = NewIntLiteral(mysqDollar[2].str)
+			mysqLOCAL = ast.NewIntLiteral(mysqDollar[2].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 340:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2060
+//line mysql.y:2061
 		{
 			mysqVAL.LengthScaleOption = LengthScaleOption{}
 		}
 	case 341:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:2064
+//line mysql.y:2065
 		{
 			mysqVAL.LengthScaleOption = LengthScaleOption{
-				Length: NewIntLiteral(mysqDollar[2].str),
-				Scale:  NewIntLiteral(mysqDollar[4].str),
+				Length: ast.NewIntLiteral(mysqDollar[2].str),
+				Scale:  ast.NewIntLiteral(mysqDollar[4].str),
 			}
 		}
 	case 342:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2072
+//line mysql.y:2073
 		{
 			mysqVAL.LengthScaleOption = LengthScaleOption{}
 		}
 	case 343:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2076
+//line mysql.y:2077
 		{
 			mysqVAL.LengthScaleOption = LengthScaleOption{
-				Length: NewIntLiteral(mysqDollar[2].str),
+				Length: ast.NewIntLiteral(mysqDollar[2].str),
 			}
 		}
 	case 344:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:2082
+//line mysql.y:2083
 		{
 			mysqVAL.LengthScaleOption = LengthScaleOption{
-				Length: NewIntLiteral(mysqDollar[2].str),
-				Scale:  NewIntLiteral(mysqDollar[4].str),
+				Length: ast.NewIntLiteral(mysqDollar[2].str),
+				Scale:  ast.NewIntLiteral(mysqDollar[4].str),
 			}
 		}
 	case 345:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2090
+//line mysql.y:2091
 		{
 			mysqLOCAL = false
 		}
@@ -10401,7 +10402,7 @@ mysqdefault:
 	case 346:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2094
+//line mysql.y:2095
 		{
 			mysqLOCAL = true
 		}
@@ -10409,7 +10410,7 @@ mysqdefault:
 	case 347:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2098
+//line mysql.y:2099
 		{
 			mysqLOCAL = false
 		}
@@ -10417,7 +10418,7 @@ mysqdefault:
 	case 348:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2103
+//line mysql.y:2104
 		{
 			mysqLOCAL = false
 		}
@@ -10425,74 +10426,74 @@ mysqdefault:
 	case 349:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2107
+//line mysql.y:2108
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 350:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2112
+//line mysql.y:2113
 		{
-			mysqVAL.columnCharset = ColumnCharset{}
+			mysqVAL.columnCharset = ast.ColumnCharset{}
 		}
 	case 351:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2116
+//line mysql.y:2117
 		{
-			mysqVAL.columnCharset = ColumnCharset{Name: string(mysqDollar[2].colIdent.String()), Binary: mysqDollar[3].booleanUnion()}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: string(mysqDollar[2].colIdent.String()), Binary: mysqDollar[3].booleanUnion()}
 		}
 	case 352:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2120
+//line mysql.y:2121
 		{
-			mysqVAL.columnCharset = ColumnCharset{Name: encodeSQLString(mysqDollar[2].str), Binary: mysqDollar[3].booleanUnion()}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: sql_types.EncodeStringSQL(mysqDollar[2].str), Binary: mysqDollar[3].booleanUnion()}
 		}
 	case 353:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2124
+//line mysql.y:2125
 		{
-			mysqVAL.columnCharset = ColumnCharset{Name: string(mysqDollar[2].str)}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: string(mysqDollar[2].str)}
 		}
 	case 354:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2128
+//line mysql.y:2129
 		{
 			// ASCII: Shorthand for CHARACTER SET latin1.
-			mysqVAL.columnCharset = ColumnCharset{Name: "latin1", Binary: mysqDollar[2].booleanUnion()}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: "latin1", Binary: mysqDollar[2].booleanUnion()}
 		}
 	case 355:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2133
+//line mysql.y:2134
 		{
 			// UNICODE: Shorthand for CHARACTER SET ucs2.
-			mysqVAL.columnCharset = ColumnCharset{Name: "ucs2", Binary: mysqDollar[2].booleanUnion()}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: "ucs2", Binary: mysqDollar[2].booleanUnion()}
 		}
 	case 356:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2138
+//line mysql.y:2139
 		{
 			// BINARY: Shorthand for default CHARACTER SET but with binary collation
-			mysqVAL.columnCharset = ColumnCharset{Name: "", Binary: true}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: "", Binary: true}
 		}
 	case 357:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2143
+//line mysql.y:2144
 		{
 			// BINARY ASCII: Shorthand for CHARACTER SET latin1 with binary collation
-			mysqVAL.columnCharset = ColumnCharset{Name: "latin1", Binary: true}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: "latin1", Binary: true}
 		}
 	case 358:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2148
+//line mysql.y:2149
 		{
 			// BINARY UNICODE: Shorthand for CHARACTER SET ucs2 with binary collation
-			mysqVAL.columnCharset = ColumnCharset{Name: "ucs2", Binary: true}
+			mysqVAL.columnCharset = ast.ColumnCharset{Name: "ucs2", Binary: true}
 		}
 	case 359:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2154
+//line mysql.y:2155
 		{
 			mysqLOCAL = false
 		}
@@ -10500,33 +10501,33 @@ mysqdefault:
 	case 360:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2158
+//line mysql.y:2159
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 361:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2163
+//line mysql.y:2164
 		{
 			mysqVAL.str = ""
 		}
 	case 362:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2167
+//line mysql.y:2168
 		{
 			mysqVAL.str = string(mysqDollar[2].colIdent.String())
 		}
 	case 363:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2171
+//line mysql.y:2172
 		{
-			mysqVAL.str = encodeSQLString(mysqDollar[2].str)
+			mysqVAL.str = sql_types.EncodeStringSQL(mysqDollar[2].str)
 		}
 	case 364:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.IndexDefinition
-//line mysql.y:2178
+//line mysql.y:2179
 		{
 			mysqLOCAL = &IndexDefinition{Info: mysqDollar[1].indexInfoUnion(), Columns: mysqDollar[3].indexColumnsUnion(), Options: mysqDollar[5].indexOptionsUnion()}
 		}
@@ -10534,7 +10535,7 @@ mysqdefault:
 	case 365:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexOption
-//line mysql.y:2183
+//line mysql.y:2184
 		{
 			mysqLOCAL = nil
 		}
@@ -10542,7 +10543,7 @@ mysqdefault:
 	case 366:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexOption
-//line mysql.y:2187
+//line mysql.y:2188
 		{
 			mysqLOCAL = mysqDollar[1].indexOptionsUnion()
 		}
@@ -10550,14 +10551,14 @@ mysqdefault:
 	case 367:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexOption
-//line mysql.y:2193
+//line mysql.y:2194
 		{
-			mysqLOCAL = []*IndexOption{mysqDollar[1].indexOptionUnion()}
+			mysqLOCAL = []*ast.IndexOption{mysqDollar[1].indexOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 368:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2197
+//line mysql.y:2198
 		{
 			mysqSLICE := (*[]*ast.IndexOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].indexOptionUnion())
@@ -10565,7 +10566,7 @@ mysqdefault:
 	case 369:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2203
+//line mysql.y:2204
 		{
 			mysqLOCAL = mysqDollar[1].indexOptionUnion()
 		}
@@ -10573,16 +10574,16 @@ mysqdefault:
 	case 370:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2207
+//line mysql.y:2208
 		{
 			// should not be string
-			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), Value: ast.ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 371:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2212
+//line mysql.y:2213
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), Value: ast.NewStrLiteral(mysqDollar[2].str)}
 		}
@@ -10590,7 +10591,7 @@ mysqdefault:
 	case 372:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2216
+//line mysql.y:2217
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str)}
 		}
@@ -10598,7 +10599,7 @@ mysqdefault:
 	case 373:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2220
+//line mysql.y:2221
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str)}
 		}
@@ -10606,7 +10607,7 @@ mysqdefault:
 	case 374:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2224
+//line mysql.y:2225
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str) + " " + string(mysqDollar[2].str), String: mysqDollar[3].colIdent.String()}
 		}
@@ -10614,7 +10615,7 @@ mysqdefault:
 	case 375:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2228
+//line mysql.y:2229
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), Value: ast.NewStrLiteral(mysqDollar[3].str)}
 		}
@@ -10622,152 +10623,152 @@ mysqdefault:
 	case 376:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:2232
+//line mysql.y:2233
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), Value: ast.NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 377:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2238
+//line mysql.y:2239
 		{
 			mysqVAL.str = ""
 		}
 	case 378:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2242
+//line mysql.y:2243
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 379:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.IndexInfo
-//line mysql.y:2248
+//line mysql.y:2249
 		{
-			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str), ConstraintName: NewColIdent(mysqDollar[1].str), Name: NewColIdent("PRIMARY"), Primary: true, Unique: true}
+			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str), ConstraintName: ast.ast.NewColIdent(mysqDollar[1].str), Name: ast.ast.NewColIdent("PRIMARY"), Primary: true, Unique: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 380:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexInfo
-//line mysql.y:2252
+//line mysql.y:2253
 		{
-			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str) + " " + string(mysqDollar[2].str), Name: NewColIdent(mysqDollar[3].str), Spatial: true, Unique: false}
+			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str) + " " + string(mysqDollar[2].str), Name: ast.ast.NewColIdent(mysqDollar[3].str), Spatial: true, Unique: false}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 381:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexInfo
-//line mysql.y:2256
+//line mysql.y:2257
 		{
-			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str) + " " + string(mysqDollar[2].str), Name: NewColIdent(mysqDollar[3].str), Fulltext: true, Unique: false}
+			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str) + " " + string(mysqDollar[2].str), Name: ast.ast.NewColIdent(mysqDollar[3].str), Fulltext: true, Unique: false}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 382:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.IndexInfo
-//line mysql.y:2260
+//line mysql.y:2261
 		{
-			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str), ConstraintName: NewColIdent(mysqDollar[1].str), Name: NewColIdent(mysqDollar[4].str), Unique: true}
+			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str), ConstraintName: ast.ast.NewColIdent(mysqDollar[1].str), Name: ast.ast.NewColIdent(mysqDollar[4].str), Unique: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 383:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.IndexInfo
-//line mysql.y:2264
+//line mysql.y:2265
 		{
-			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str), Name: NewColIdent(mysqDollar[2].str), Unique: false}
+			mysqLOCAL = &IndexInfo{Type: string(mysqDollar[1].str), Name: ast.ast.NewColIdent(mysqDollar[2].str), Unique: false}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 384:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2269
+//line mysql.y:2270
 		{
 			mysqVAL.str = ""
 		}
 	case 385:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2273
+//line mysql.y:2274
 		{
 			mysqVAL.str = mysqDollar[2].str
 		}
 	case 386:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2279
+//line mysql.y:2280
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 387:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2283
+//line mysql.y:2284
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 388:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2287
+//line mysql.y:2288
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 389:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2294
+//line mysql.y:2295
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 390:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2298
+//line mysql.y:2299
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 391:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2303
+//line mysql.y:2304
 		{
 			mysqVAL.str = "key"
 		}
 	case 392:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2307
+//line mysql.y:2308
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 393:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2313
+//line mysql.y:2314
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 394:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2317
+//line mysql.y:2318
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 395:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2322
+//line mysql.y:2323
 		{
 			mysqVAL.str = ""
 		}
 	case 396:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2326
+//line mysql.y:2327
 		{
 			mysqVAL.str = string(mysqDollar[1].colIdent.String())
 		}
 	case 397:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexColumn
-//line mysql.y:2332
+//line mysql.y:2333
 		{
 			mysqLOCAL = []*IndexColumn{mysqDollar[1].indexColumnUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 398:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2336
+//line mysql.y:2337
 		{
 			mysqSLICE := (*[]*ast.IndexColumn)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].indexColumnUnion())
@@ -10775,7 +10776,7 @@ mysqdefault:
 	case 399:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.IndexColumn
-//line mysql.y:2342
+//line mysql.y:2343
 		{
 			mysqLOCAL = &IndexColumn{Column: mysqDollar[1].colIdent, Length: mysqDollar[2].literalUnion(), Direction: mysqDollar[3].orderDirectionUnion()}
 		}
@@ -10783,7 +10784,7 @@ mysqdefault:
 	case 400:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.IndexColumn
-//line mysql.y:2346
+//line mysql.y:2347
 		{
 			mysqLOCAL = &IndexColumn{Expression: mysqDollar[2].exprUnion(), Direction: mysqDollar[4].orderDirectionUnion()}
 		}
@@ -10791,47 +10792,47 @@ mysqdefault:
 	case 401:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ConstraintDefinition
-//line mysql.y:2352
+//line mysql.y:2353
 		{
-			mysqLOCAL = &ConstraintDefinition{Name: mysqDollar[2].colIdent, Details: mysqDollar[3].constraintInfoUnion()}
+			mysqLOCAL = &ast.ConstraintDefinition{Name: mysqDollar[2].colIdent, Details: mysqDollar[3].constraintInfoUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 402:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConstraintDefinition
-//line mysql.y:2356
+//line mysql.y:2357
 		{
-			mysqLOCAL = &ConstraintDefinition{Details: mysqDollar[1].constraintInfoUnion()}
+			mysqLOCAL = &ast.ConstraintDefinition{Details: mysqDollar[1].constraintInfoUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 403:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ConstraintDefinition
-//line mysql.y:2362
+//line mysql.y:2363
 		{
-			mysqLOCAL = &ConstraintDefinition{Name: mysqDollar[2].colIdent, Details: mysqDollar[3].constraintInfoUnion()}
+			mysqLOCAL = &ast.ConstraintDefinition{Name: mysqDollar[2].colIdent, Details: mysqDollar[3].constraintInfoUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 404:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConstraintDefinition
-//line mysql.y:2366
+//line mysql.y:2367
 		{
-			mysqLOCAL = &ConstraintDefinition{Details: mysqDollar[1].constraintInfoUnion()}
+			mysqLOCAL = &ast.ConstraintDefinition{Details: mysqDollar[1].constraintInfoUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 405:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.ConstraintInfo
-//line mysql.y:2372
+//line mysql.y:2373
 		{
-			mysqLOCAL = &ForeignKeyDefinition{IndexName: NewColIdent(mysqDollar[3].str), Source: mysqDollar[5].columnsUnion(), ReferenceDefinition: mysqDollar[7].referenceDefinitionUnion()}
+			mysqLOCAL = &ForeignKeyDefinition{IndexName: ast.ast.NewColIdent(mysqDollar[3].str), Source: mysqDollar[5].columnsUnion(), ReferenceDefinition: mysqDollar[7].referenceDefinitionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 406:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2378
+//line mysql.y:2379
 		{
 			mysqLOCAL = &ReferenceDefinition{ReferencedTable: mysqDollar[2].tableName, ReferencedColumns: mysqDollar[4].columnsUnion(), Match: mysqDollar[6].matchActionUnion()}
 		}
@@ -10839,7 +10840,7 @@ mysqdefault:
 	case 407:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2382
+//line mysql.y:2383
 		{
 			mysqLOCAL = &ReferenceDefinition{ReferencedTable: mysqDollar[2].tableName, ReferencedColumns: mysqDollar[4].columnsUnion(), Match: mysqDollar[6].matchActionUnion(), OnDelete: mysqDollar[7].referenceActionUnion()}
 		}
@@ -10847,7 +10848,7 @@ mysqdefault:
 	case 408:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2386
+//line mysql.y:2387
 		{
 			mysqLOCAL = &ReferenceDefinition{ReferencedTable: mysqDollar[2].tableName, ReferencedColumns: mysqDollar[4].columnsUnion(), Match: mysqDollar[6].matchActionUnion(), OnUpdate: mysqDollar[7].referenceActionUnion()}
 		}
@@ -10855,7 +10856,7 @@ mysqdefault:
 	case 409:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2390
+//line mysql.y:2391
 		{
 			mysqLOCAL = &ReferenceDefinition{ReferencedTable: mysqDollar[2].tableName, ReferencedColumns: mysqDollar[4].columnsUnion(), Match: mysqDollar[6].matchActionUnion(), OnDelete: mysqDollar[7].referenceActionUnion(), OnUpdate: mysqDollar[8].referenceActionUnion()}
 		}
@@ -10863,7 +10864,7 @@ mysqdefault:
 	case 410:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2394
+//line mysql.y:2395
 		{
 			mysqLOCAL = &ReferenceDefinition{ReferencedTable: mysqDollar[2].tableName, ReferencedColumns: mysqDollar[4].columnsUnion(), Match: mysqDollar[6].matchActionUnion(), OnUpdate: mysqDollar[7].referenceActionUnion(), OnDelete: mysqDollar[8].referenceActionUnion()}
 		}
@@ -10871,7 +10872,7 @@ mysqdefault:
 	case 411:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2399
+//line mysql.y:2400
 		{
 			mysqLOCAL = nil
 		}
@@ -10879,7 +10880,7 @@ mysqdefault:
 	case 412:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ReferenceDefinition
-//line mysql.y:2403
+//line mysql.y:2404
 		{
 			mysqLOCAL = mysqDollar[1].referenceDefinitionUnion()
 		}
@@ -10887,15 +10888,15 @@ mysqdefault:
 	case 413:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.ConstraintInfo
-//line mysql.y:2409
+//line mysql.y:2410
 		{
-			mysqLOCAL = &CheckConstraintDefinition{Expr: mysqDollar[3].exprUnion(), Enforced: mysqDollar[5].booleanUnion()}
+			mysqLOCAL = &ast.CheckConstraintDefinition{Expr: mysqDollar[3].exprUnion(), Enforced: mysqDollar[5].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 414:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2415
+//line mysql.y:2416
 		{
 			mysqLOCAL = mysqDollar[2].matchActionUnion()
 		}
@@ -10903,7 +10904,7 @@ mysqdefault:
 	case 415:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2421
+//line mysql.y:2422
 		{
 			mysqLOCAL = Full
 		}
@@ -10911,7 +10912,7 @@ mysqdefault:
 	case 416:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2425
+//line mysql.y:2426
 		{
 			mysqLOCAL = Partial
 		}
@@ -10919,7 +10920,7 @@ mysqdefault:
 	case 417:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2429
+//line mysql.y:2430
 		{
 			mysqLOCAL = Simple
 		}
@@ -10927,7 +10928,7 @@ mysqdefault:
 	case 418:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2434
+//line mysql.y:2435
 		{
 			mysqLOCAL = DefaultMatch
 		}
@@ -10935,7 +10936,7 @@ mysqdefault:
 	case 419:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.MatchAction
-//line mysql.y:2438
+//line mysql.y:2439
 		{
 			mysqLOCAL = mysqDollar[1].matchActionUnion()
 		}
@@ -10943,7 +10944,7 @@ mysqdefault:
 	case 420:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2444
+//line mysql.y:2445
 		{
 			mysqLOCAL = mysqDollar[3].referenceActionUnion()
 		}
@@ -10951,7 +10952,7 @@ mysqdefault:
 	case 421:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2450
+//line mysql.y:2451
 		{
 			mysqLOCAL = mysqDollar[3].referenceActionUnion()
 		}
@@ -10959,65 +10960,65 @@ mysqdefault:
 	case 422:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2456
+//line mysql.y:2457
 		{
-			mysqLOCAL = Restrict
+			mysqLOCAL = ast.Restrict
 		}
 		mysqVAL.union = mysqLOCAL
 	case 423:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2460
+//line mysql.y:2461
 		{
-			mysqLOCAL = Cascade
+			mysqLOCAL = ast.Cascade
 		}
 		mysqVAL.union = mysqLOCAL
 	case 424:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2464
+//line mysql.y:2465
 		{
-			mysqLOCAL = NoAction
+			mysqLOCAL = ast.NoAction
 		}
 		mysqVAL.union = mysqLOCAL
 	case 425:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2468
+//line mysql.y:2469
 		{
-			mysqLOCAL = SetDefault
+			mysqLOCAL = ast.SetDefault
 		}
 		mysqVAL.union = mysqLOCAL
 	case 426:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ReferenceAction
-//line mysql.y:2472
+//line mysql.y:2473
 		{
-			mysqLOCAL = SetNull
+			mysqLOCAL = ast.SetNull
 		}
 		mysqVAL.union = mysqLOCAL
 	case 427:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2477
+//line mysql.y:2478
 		{
 			mysqVAL.str = ""
 		}
 	case 428:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2481
+//line mysql.y:2482
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 429:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2485
+//line mysql.y:2486
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 430:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2491
+//line mysql.y:2492
 		{
 			mysqLOCAL = true
 		}
@@ -11025,7 +11026,7 @@ mysqdefault:
 	case 431:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2495
+//line mysql.y:2496
 		{
 			mysqLOCAL = false
 		}
@@ -11033,7 +11034,7 @@ mysqdefault:
 	case 432:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2500
+//line mysql.y:2501
 		{
 			mysqLOCAL = true
 		}
@@ -11041,7 +11042,7 @@ mysqdefault:
 	case 433:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2504
+//line mysql.y:2505
 		{
 			mysqLOCAL = mysqDollar[1].booleanUnion()
 		}
@@ -11049,7 +11050,7 @@ mysqdefault:
 	case 434:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.TableOptions
-//line mysql.y:2509
+//line mysql.y:2510
 		{
 			mysqLOCAL = nil
 		}
@@ -11057,7 +11058,7 @@ mysqdefault:
 	case 435:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableOptions
-//line mysql.y:2513
+//line mysql.y:2514
 		{
 			mysqLOCAL = mysqDollar[1].tableOptionsUnion()
 		}
@@ -11065,21 +11066,21 @@ mysqdefault:
 	case 436:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableOptions
-//line mysql.y:2519
+//line mysql.y:2520
 		{
 			mysqLOCAL = TableOptions{mysqDollar[1].tableOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 437:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2523
+//line mysql.y:2524
 		{
 			mysqSLICE := (*ast.TableOptions)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableOptionUnion())
 		}
 	case 438:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2527
+//line mysql.y:2528
 		{
 			mysqSLICE := (*ast.TableOptions)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].tableOptionUnion())
@@ -11087,14 +11088,14 @@ mysqdefault:
 	case 439:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableOptions
-//line mysql.y:2533
+//line mysql.y:2534
 		{
 			mysqLOCAL = TableOptions{mysqDollar[1].tableOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 440:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2537
+//line mysql.y:2538
 		{
 			mysqSLICE := (*ast.TableOptions)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].tableOptionUnion())
@@ -11102,297 +11103,297 @@ mysqdefault:
 	case 441:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2543
+//line mysql.y:2544
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 442:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2547
+//line mysql.y:2548
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 443:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2551
+//line mysql.y:2552
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 444:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2555
+//line mysql.y:2556
 		{
-			mysqLOCAL = &TableOption{Name: (string(mysqDollar[2].str)), String: mysqDollar[4].str, CaseSensitive: true}
+			mysqLOCAL = &ast.TableOption{Name: (string(mysqDollar[2].str)), String: mysqDollar[4].str, CaseSensitive: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 445:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2559
+//line mysql.y:2560
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[2].str), String: mysqDollar[4].str, CaseSensitive: true}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[2].str), String: mysqDollar[4].str, CaseSensitive: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 446:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2563
+//line mysql.y:2564
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 447:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2567
+//line mysql.y:2568
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 448:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2571
+//line mysql.y:2572
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 449:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2575
+//line mysql.y:2576
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 450:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2579
+//line mysql.y:2580
 		{
-			mysqLOCAL = &TableOption{Name: (string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)), Value: NewStrLiteral(mysqDollar[4].str)}
+			mysqLOCAL = &ast.TableOption{Name: (string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)), Value: NewStrLiteral(mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 451:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2583
+//line mysql.y:2584
 		{
-			mysqLOCAL = &TableOption{Name: (string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)), Value: NewStrLiteral(mysqDollar[4].str)}
+			mysqLOCAL = &ast.TableOption{Name: (string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)), Value: NewStrLiteral(mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 452:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2587
+//line mysql.y:2588
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 453:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2591
+//line mysql.y:2592
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 454:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2595
+//line mysql.y:2596
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: mysqDollar[3].tableIdent.String(), CaseSensitive: true}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: mysqDollar[3].tableIdent.String(), CaseSensitive: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 455:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2599
+//line mysql.y:2600
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 456:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2603
+//line mysql.y:2604
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 457:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2607
+//line mysql.y:2608
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 458:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2611
+//line mysql.y:2612
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 459:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2615
+//line mysql.y:2616
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 460:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2619
+//line mysql.y:2620
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 461:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2623
+//line mysql.y:2624
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 462:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2627
+//line mysql.y:2628
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 463:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2631
+//line mysql.y:2632
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 464:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2635
+//line mysql.y:2636
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewStrLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewStrLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 465:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2639
+//line mysql.y:2640
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 466:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2643
+//line mysql.y:2644
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 467:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2647
+//line mysql.y:2648
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 468:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2651
+//line mysql.y:2652
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 469:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2655
+//line mysql.y:2656
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Value: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Value: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 470:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2659
+//line mysql.y:2660
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), String: (mysqDollar[3].colIdent.String() + mysqDollar[4].str)}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), String: (mysqDollar[3].colIdent.String() + mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 471:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.TableOption
-//line mysql.y:2663
+//line mysql.y:2664
 		{
-			mysqLOCAL = &TableOption{Name: string(mysqDollar[1].str), Tables: mysqDollar[4].tableNamesUnion()}
+			mysqLOCAL = &ast.TableOption{Name: string(mysqDollar[1].str), Tables: mysqDollar[4].tableNamesUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 472:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2668
+//line mysql.y:2669
 		{
 			mysqVAL.str = ""
 		}
 	case 473:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2672
+//line mysql.y:2673
 		{
 			mysqVAL.str = " " + string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 474:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2676
+//line mysql.y:2677
 		{
 			mysqVAL.str = " " + string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 484:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2695
+//line mysql.y:2696
 		{
 			mysqVAL.str = mysqDollar[1].colIdent.String()
 		}
 	case 485:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2699
+//line mysql.y:2700
 		{
-			mysqVAL.str = encodeSQLString(mysqDollar[1].str)
+			mysqVAL.str = sql_types.EncodeStringSQL(mysqDollar[1].str)
 		}
 	case 486:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:2703
+//line mysql.y:2704
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 487:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2708
+//line mysql.y:2709
 		{
 			mysqVAL.str = ""
 		}
 	case 489:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2714
+//line mysql.y:2715
 		{
 			mysqLOCAL = false
 		}
@@ -11400,7 +11401,7 @@ mysqdefault:
 	case 490:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:2718
+//line mysql.y:2719
 		{
 			mysqLOCAL = true
 		}
@@ -11408,7 +11409,7 @@ mysqdefault:
 	case 491:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ColName
-//line mysql.y:2723
+//line mysql.y:2724
 		{
 			mysqLOCAL = nil
 		}
@@ -11416,27 +11417,27 @@ mysqdefault:
 	case 492:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ColName
-//line mysql.y:2727
+//line mysql.y:2728
 		{
 			mysqLOCAL = mysqDollar[2].colNameUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 493:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:2732
+//line mysql.y:2733
 		{
 			mysqVAL.str = ""
 		}
 	case 494:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:2736
+//line mysql.y:2737
 		{
 			mysqVAL.str = string(mysqDollar[2].str)
 		}
 	case 495:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:2741
+//line mysql.y:2742
 		{
 			mysqLOCAL = nil
 		}
@@ -11444,15 +11445,15 @@ mysqdefault:
 	case 496:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:2745
+//line mysql.y:2746
 		{
-			mysqLOCAL = NewIntLiteral(mysqDollar[2].str)
+			mysqLOCAL = ast.NewIntLiteral(mysqDollar[2].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 497:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:2749
+//line mysql.y:2750
 		{
 			mysqLOCAL = NewDecimalLiteral(mysqDollar[2].str)
 		}
@@ -11460,7 +11461,7 @@ mysqdefault:
 	case 498:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2754
+//line mysql.y:2755
 		{
 			mysqLOCAL = nil
 		}
@@ -11468,14 +11469,14 @@ mysqdefault:
 	case 499:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2758
+//line mysql.y:2759
 		{
 			mysqLOCAL = mysqDollar[1].alterOptionsUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 500:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:2762
+//line mysql.y:2763
 		{
 			mysqSLICE := (*[]ast.AlterOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, &OrderByOption{Cols: mysqDollar[5].columnsUnion()})
@@ -11483,14 +11484,14 @@ mysqdefault:
 	case 501:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2766
+//line mysql.y:2767
 		{
 			mysqLOCAL = mysqDollar[1].alterOptionsUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 502:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2770
+//line mysql.y:2771
 		{
 			mysqSLICE := (*[]ast.AlterOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].alterOptionsUnion()...)
@@ -11498,7 +11499,7 @@ mysqdefault:
 	case 503:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2774
+//line mysql.y:2775
 		{
 			mysqLOCAL = append(append(mysqDollar[1].alterOptionsUnion(), mysqDollar[3].alterOptionsUnion()...), &OrderByOption{Cols: mysqDollar[7].columnsUnion()})
 		}
@@ -11506,21 +11507,21 @@ mysqdefault:
 	case 504:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2780
+//line mysql.y:2781
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 505:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2784
+//line mysql.y:2785
 		{
 			mysqSLICE := (*[]ast.AlterOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].alterOptionUnion())
 		}
 	case 506:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2788
+//line mysql.y:2789
 		{
 			mysqSLICE := (*[]ast.AlterOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].alterOptionUnion())
@@ -11528,7 +11529,7 @@ mysqdefault:
 	case 507:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2794
+//line mysql.y:2795
 		{
 			mysqLOCAL = mysqDollar[1].tableOptionsUnion()
 		}
@@ -11536,7 +11537,7 @@ mysqdefault:
 	case 508:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2798
+//line mysql.y:2799
 		{
 			mysqLOCAL = &AddConstraintDefinition{ConstraintDefinition: mysqDollar[2].constraintDefinitionUnion()}
 		}
@@ -11544,7 +11545,7 @@ mysqdefault:
 	case 509:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2802
+//line mysql.y:2803
 		{
 			mysqLOCAL = &AddConstraintDefinition{ConstraintDefinition: mysqDollar[2].constraintDefinitionUnion()}
 		}
@@ -11552,7 +11553,7 @@ mysqdefault:
 	case 510:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2806
+//line mysql.y:2807
 		{
 			mysqLOCAL = &AddIndexDefinition{IndexDefinition: mysqDollar[2].indexDefinitionUnion()}
 		}
@@ -11560,65 +11561,65 @@ mysqdefault:
 	case 511:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2810
+//line mysql.y:2811
 		{
-			mysqLOCAL = &AddColumns{Columns: mysqDollar[4].columnDefinitionsUnion()}
+			mysqLOCAL = &ast.AddColumns{Columns: mysqDollar[4].columnDefinitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 512:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2814
+//line mysql.y:2815
 		{
-			mysqLOCAL = &AddColumns{Columns: []*ColumnDefinition{mysqDollar[3].columnDefinitionUnion()}, First: mysqDollar[4].booleanUnion(), After: mysqDollar[5].colNameUnion()}
+			mysqLOCAL = &ast.AddColumns{Columns: []*ColumnDefinition{mysqDollar[3].columnDefinitionUnion()}, First: mysqDollar[4].booleanUnion(), After: mysqDollar[5].colNameUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 513:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2818
+//line mysql.y:2819
 		{
-			mysqLOCAL = &AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: true}
+			mysqLOCAL = &ast.AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 514:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2822
+//line mysql.y:2823
 		{
-			mysqLOCAL = &AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: mysqDollar[6].exprUnion()}
+			mysqLOCAL = &ast.AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: mysqDollar[6].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 515:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2826
+//line mysql.y:2827
 		{
-			mysqLOCAL = &AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: mysqDollar[7].exprUnion()}
+			mysqLOCAL = &ast.AlterColumn{Column: mysqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: mysqDollar[7].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 516:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2830
+//line mysql.y:2831
 		{
 			val := false
-			mysqLOCAL = &AlterColumn{Column: mysqDollar[3].colNameUnion(), Invisible: &val}
+			mysqLOCAL = &ast.AlterColumn{Column: mysqDollar[3].colNameUnion(), Invisible: &val}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 517:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2835
+//line mysql.y:2836
 		{
 			val := true
-			mysqLOCAL = &AlterColumn{Column: mysqDollar[3].colNameUnion(), Invisible: &val}
+			mysqLOCAL = &ast.AlterColumn{Column: mysqDollar[3].colNameUnion(), Invisible: &val}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 518:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2840
+//line mysql.y:2841
 		{
 			mysqLOCAL = &AlterCheck{Name: mysqDollar[3].colIdent, Enforced: mysqDollar[4].booleanUnion()}
 		}
@@ -11626,7 +11627,7 @@ mysqdefault:
 	case 519:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2844
+//line mysql.y:2845
 		{
 			mysqLOCAL = &AlterIndex{Name: mysqDollar[3].colIdent, Invisible: false}
 		}
@@ -11634,7 +11635,7 @@ mysqdefault:
 	case 520:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2848
+//line mysql.y:2849
 		{
 			mysqLOCAL = &AlterIndex{Name: mysqDollar[3].colIdent, Invisible: true}
 		}
@@ -11642,7 +11643,7 @@ mysqdefault:
 	case 521:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2852
+//line mysql.y:2853
 		{
 			mysqLOCAL = &ChangeColumn{OldColumn: mysqDollar[3].colNameUnion(), NewColDefinition: mysqDollar[4].columnDefinitionUnion(), First: mysqDollar[5].booleanUnion(), After: mysqDollar[6].colNameUnion()}
 		}
@@ -11650,7 +11651,7 @@ mysqdefault:
 	case 522:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2856
+//line mysql.y:2857
 		{
 			mysqLOCAL = &ModifyColumn{NewColDefinition: mysqDollar[3].columnDefinitionUnion(), First: mysqDollar[4].booleanUnion(), After: mysqDollar[5].colNameUnion()}
 		}
@@ -11658,7 +11659,7 @@ mysqdefault:
 	case 523:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2860
+//line mysql.y:2861
 		{
 			mysqLOCAL = &AlterCharset{CharacterSet: mysqDollar[4].str, Collate: mysqDollar[5].str}
 		}
@@ -11666,7 +11667,7 @@ mysqdefault:
 	case 524:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2864
+//line mysql.y:2865
 		{
 			mysqLOCAL = &KeyState{Enable: false}
 		}
@@ -11674,7 +11675,7 @@ mysqdefault:
 	case 525:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2868
+//line mysql.y:2869
 		{
 			mysqLOCAL = &KeyState{Enable: true}
 		}
@@ -11682,7 +11683,7 @@ mysqdefault:
 	case 526:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2872
+//line mysql.y:2873
 		{
 			mysqLOCAL = &TablespaceOperation{Import: false}
 		}
@@ -11690,7 +11691,7 @@ mysqdefault:
 	case 527:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2876
+//line mysql.y:2877
 		{
 			mysqLOCAL = &TablespaceOperation{Import: true}
 		}
@@ -11698,7 +11699,7 @@ mysqdefault:
 	case 528:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2880
+//line mysql.y:2881
 		{
 			mysqLOCAL = &DropColumn{Name: mysqDollar[3].colNameUnion()}
 		}
@@ -11706,47 +11707,47 @@ mysqdefault:
 	case 529:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2884
+//line mysql.y:2885
 		{
-			mysqLOCAL = &DropKey{Type: NormalKeyType, Name: mysqDollar[3].colIdent}
+			mysqLOCAL = &ast.DropKey{Type: NormalKeyType, Name: mysqDollar[3].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 530:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2888
+//line mysql.y:2889
 		{
-			mysqLOCAL = &DropKey{Type: PrimaryKeyType}
+			mysqLOCAL = &ast.DropKey{Type: PrimaryKeyType}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 531:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2892
+//line mysql.y:2893
 		{
-			mysqLOCAL = &DropKey{Type: ForeignKeyType, Name: mysqDollar[4].colIdent}
+			mysqLOCAL = &ast.DropKey{Type: ForeignKeyType, Name: mysqDollar[4].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 532:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2896
+//line mysql.y:2897
 		{
-			mysqLOCAL = &DropKey{Type: CheckKeyType, Name: mysqDollar[3].colIdent}
+			mysqLOCAL = &ast.DropKey{Type: CheckKeyType, Name: mysqDollar[3].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 533:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2900
+//line mysql.y:2901
 		{
-			mysqLOCAL = &DropKey{Type: CheckKeyType, Name: mysqDollar[3].colIdent}
+			mysqLOCAL = &ast.DropKey{Type: CheckKeyType, Name: mysqDollar[3].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 534:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2904
+//line mysql.y:2905
 		{
 			mysqLOCAL = &Force{}
 		}
@@ -11754,15 +11755,15 @@ mysqdefault:
 	case 535:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2908
+//line mysql.y:2909
 		{
-			mysqLOCAL = &RenameTableName{Table: mysqDollar[3].tableName}
+			mysqLOCAL = &ast.RenameTableName{Table: mysqDollar[3].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 536:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2912
+//line mysql.y:2913
 		{
 			mysqLOCAL = &RenameIndex{OldName: mysqDollar[3].colIdent, NewName: mysqDollar[5].colIdent}
 		}
@@ -11770,14 +11771,14 @@ mysqdefault:
 	case 537:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:2918
+//line mysql.y:2919
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 538:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:2922
+//line mysql.y:2923
 		{
 			mysqSLICE := (*[]ast.AlterOption)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].alterOptionUnion())
@@ -11785,7 +11786,7 @@ mysqdefault:
 	case 539:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2928
+//line mysql.y:2929
 		{
 			mysqLOCAL = AlgorithmValue(string(mysqDollar[3].str))
 		}
@@ -11793,7 +11794,7 @@ mysqdefault:
 	case 540:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2932
+//line mysql.y:2933
 		{
 			mysqLOCAL = AlgorithmValue(string(mysqDollar[3].str))
 		}
@@ -11801,7 +11802,7 @@ mysqdefault:
 	case 541:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2936
+//line mysql.y:2937
 		{
 			mysqLOCAL = AlgorithmValue(string(mysqDollar[3].str))
 		}
@@ -11809,7 +11810,7 @@ mysqdefault:
 	case 542:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2940
+//line mysql.y:2941
 		{
 			mysqLOCAL = AlgorithmValue(string(mysqDollar[3].str))
 		}
@@ -11817,7 +11818,7 @@ mysqdefault:
 	case 543:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2944
+//line mysql.y:2945
 		{
 			mysqLOCAL = &LockOption{Type: DefaultType}
 		}
@@ -11825,7 +11826,7 @@ mysqdefault:
 	case 544:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2948
+//line mysql.y:2949
 		{
 			mysqLOCAL = &LockOption{Type: NoneType}
 		}
@@ -11833,7 +11834,7 @@ mysqdefault:
 	case 545:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2952
+//line mysql.y:2953
 		{
 			mysqLOCAL = &LockOption{Type: SharedType}
 		}
@@ -11841,7 +11842,7 @@ mysqdefault:
 	case 546:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2956
+//line mysql.y:2957
 		{
 			mysqLOCAL = &LockOption{Type: ExclusiveType}
 		}
@@ -11849,7 +11850,7 @@ mysqdefault:
 	case 547:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2960
+//line mysql.y:2961
 		{
 			mysqLOCAL = &Validation{With: true}
 		}
@@ -11857,7 +11858,7 @@ mysqdefault:
 	case 548:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:2964
+//line mysql.y:2965
 		{
 			mysqLOCAL = &Validation{With: false}
 		}
@@ -11865,7 +11866,7 @@ mysqdefault:
 	case 549:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:2970
+//line mysql.y:2971
 		{
 			mysqDollar[1].alterTableUnion().FullyParsed = true
 			mysqDollar[1].alterTableUnion().AlterOptions = mysqDollar[2].alterOptionsUnion()
@@ -11876,18 +11877,18 @@ mysqdefault:
 	case 550:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:2977
+//line mysql.y:2978
 		{
 			mysqDollar[1].alterTableUnion().FullyParsed = true
 			mysqDollar[1].alterTableUnion().AlterOptions = mysqDollar[2].alterOptionsUnion()
-			mysqDollar[1].alterTableUnion().PartitionSpec = &PartitionSpec{Action: RemoveAction}
+			mysqDollar[1].alterTableUnion().PartitionSpec = &ast.PartitionSpec{Action: RemoveAction}
 			mysqLOCAL = mysqDollar[1].alterTableUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 551:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:2984
+//line mysql.y:2985
 		{
 			mysqDollar[1].alterTableUnion().FullyParsed = true
 			mysqDollar[1].alterTableUnion().AlterOptions = mysqDollar[2].alterOptionsUnion()
@@ -11898,7 +11899,7 @@ mysqdefault:
 	case 552:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:2991
+//line mysql.y:2992
 		{
 			mysqDollar[1].alterTableUnion().FullyParsed = true
 			mysqDollar[1].alterTableUnion().PartitionSpec = mysqDollar[2].partSpecUnion()
@@ -11908,15 +11909,15 @@ mysqdefault:
 	case 553:
 		mysqDollar = mysqS[mysqpt-11 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:2997
+//line mysql.y:2998
 		{
-			mysqLOCAL = &AlterView{ViewName: mysqDollar[7].tableName.ToViewName(), Comments: Comments(mysqDollar[2].strs).Parsed(), Algorithm: mysqDollar[3].str, Definer: mysqDollar[4].definerUnion(), Security: mysqDollar[5].str, Columns: mysqDollar[8].columnsUnion(), Select: mysqDollar[10].selStmtUnion(), CheckOption: mysqDollar[11].str}
+			mysqLOCAL = &ast.AlterView{ViewName: mysqDollar[7].tableName.ToViewName(), Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Algorithm: mysqDollar[3].str, Definer: mysqDollar[4].definerUnion(), Security: mysqDollar[5].str, Columns: mysqDollar[8].columnsUnion(), Select: mysqDollar[10].selStmtUnion(), CheckOption: mysqDollar[11].str}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 554:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3007
+//line mysql.y:3008
 		{
 			mysqDollar[1].alterDatabaseUnion().FullyParsed = true
 			mysqDollar[1].alterDatabaseUnion().DBName = mysqDollar[2].tableIdent
@@ -11927,7 +11928,7 @@ mysqdefault:
 	case 555:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3014
+//line mysql.y:3015
 		{
 			mysqDollar[1].alterDatabaseUnion().FullyParsed = true
 			mysqDollar[1].alterDatabaseUnion().DBName = mysqDollar[2].tableIdent
@@ -11938,13 +11939,13 @@ mysqdefault:
 	case 556:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3021
+//line mysql.y:3022
 		{
-			mysqLOCAL = &AlterVschema{
+			mysqLOCAL = &ast.AlterVschema{
 				Action: CreateVindexDDLAction,
 				Table:  mysqDollar[6].tableName,
 				VindexSpec: &VindexSpec{
-					Name:   NewColIdent(mysqDollar[6].tableName.Name.String()),
+					Name:   ast.ast.NewColIdent(mysqDollar[6].tableName.Name.String()),
 					Type:   mysqDollar[7].colIdent,
 					Params: mysqDollar[8].vindexParamsUnion(),
 				},
@@ -11954,13 +11955,13 @@ mysqdefault:
 	case 557:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3033
+//line mysql.y:3034
 		{
-			mysqLOCAL = &AlterVschema{
+			mysqLOCAL = &ast.AlterVschema{
 				Action: DropVindexDDLAction,
 				Table:  mysqDollar[6].tableName,
 				VindexSpec: &VindexSpec{
-					Name: NewColIdent(mysqDollar[6].tableName.Name.String()),
+					Name: ast.ast.NewColIdent(mysqDollar[6].tableName.Name.String()),
 				},
 			}
 		}
@@ -11968,25 +11969,25 @@ mysqdefault:
 	case 558:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3043
+//line mysql.y:3044
 		{
-			mysqLOCAL = &AlterVschema{Action: AddVschemaTableDDLAction, Table: mysqDollar[6].tableName}
+			mysqLOCAL = &ast.AlterVschema{Action: AddVschemaTableDDLAction, Table: mysqDollar[6].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 559:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3047
+//line mysql.y:3048
 		{
-			mysqLOCAL = &AlterVschema{Action: DropVschemaTableDDLAction, Table: mysqDollar[6].tableName}
+			mysqLOCAL = &ast.AlterVschema{Action: DropVschemaTableDDLAction, Table: mysqDollar[6].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 560:
 		mysqDollar = mysqS[mysqpt-13 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3051
+//line mysql.y:3052
 		{
-			mysqLOCAL = &AlterVschema{
+			mysqLOCAL = &ast.AlterVschema{
 				Action: AddColVindexDDLAction,
 				Table:  mysqDollar[5].tableName,
 				VindexSpec: &VindexSpec{
@@ -12001,9 +12002,9 @@ mysqdefault:
 	case 561:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3064
+//line mysql.y:3065
 		{
-			mysqLOCAL = &AlterVschema{
+			mysqLOCAL = &ast.AlterVschema{
 				Action: DropColVindexDDLAction,
 				Table:  mysqDollar[5].tableName,
 				VindexSpec: &VindexSpec{
@@ -12015,17 +12016,17 @@ mysqdefault:
 	case 562:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3074
+//line mysql.y:3075
 		{
-			mysqLOCAL = &AlterVschema{Action: AddSequenceDDLAction, Table: mysqDollar[6].tableName}
+			mysqLOCAL = &ast.AlterVschema{Action: AddSequenceDDLAction, Table: mysqDollar[6].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 563:
 		mysqDollar = mysqS[mysqpt-10 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3078
+//line mysql.y:3079
 		{
-			mysqLOCAL = &AlterVschema{
+			mysqLOCAL = &ast.AlterVschema{
 				Action: AddAutoIncDDLAction,
 				Table:  mysqDollar[5].tableName,
 				AutoIncSpec: &AutoIncSpec{
@@ -12038,9 +12039,9 @@ mysqdefault:
 	case 564:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3089
+//line mysql.y:3090
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: RetryMigrationType,
 				UUID: string(mysqDollar[4].str),
 			}
@@ -12049,9 +12050,9 @@ mysqdefault:
 	case 565:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3096
+//line mysql.y:3097
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: CleanupMigrationType,
 				UUID: string(mysqDollar[4].str),
 			}
@@ -12060,9 +12061,9 @@ mysqdefault:
 	case 566:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3103
+//line mysql.y:3104
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: CompleteMigrationType,
 				UUID: string(mysqDollar[4].str),
 			}
@@ -12071,9 +12072,9 @@ mysqdefault:
 	case 567:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3110
+//line mysql.y:3111
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: CancelMigrationType,
 				UUID: string(mysqDollar[4].str),
 			}
@@ -12082,9 +12083,9 @@ mysqdefault:
 	case 568:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3117
+//line mysql.y:3118
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: CancelAllMigrationType,
 			}
 		}
@@ -12092,9 +12093,9 @@ mysqdefault:
 	case 569:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3123
+//line mysql.y:3124
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type:   ThrottleMigrationType,
 				UUID:   string(mysqDollar[4].str),
 				Expire: mysqDollar[6].str,
@@ -12105,9 +12106,9 @@ mysqdefault:
 	case 570:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3132
+//line mysql.y:3133
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type:   ThrottleAllMigrationType,
 				Expire: mysqDollar[6].str,
 				Ratio:  mysqDollar[7].literalUnion(),
@@ -12117,9 +12118,9 @@ mysqdefault:
 	case 571:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3140
+//line mysql.y:3141
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: UnthrottleMigrationType,
 				UUID: string(mysqDollar[4].str),
 			}
@@ -12128,9 +12129,9 @@ mysqdefault:
 	case 572:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3147
+//line mysql.y:3148
 		{
-			mysqLOCAL = &AlterMigration{
+			mysqLOCAL = &ast.AlterMigration{
 				Type: UnthrottleAllMigrationType,
 			}
 		}
@@ -12138,7 +12139,7 @@ mysqdefault:
 	case 573:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3154
+//line mysql.y:3155
 		{
 			mysqLOCAL = nil
 		}
@@ -12146,7 +12147,7 @@ mysqdefault:
 	case 574:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3158
+//line mysql.y:3159
 		{
 			mysqDollar[3].partitionOptionUnion().Partitions = mysqDollar[4].integerUnion()
 			mysqDollar[3].partitionOptionUnion().SubPartition = mysqDollar[5].subPartitionUnion()
@@ -12157,11 +12158,11 @@ mysqdefault:
 	case 575:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3167
+//line mysql.y:3168
 		{
 			mysqLOCAL = &PartitionOption{
 				IsLinear: mysqDollar[1].booleanUnion(),
-				Type:     HashType,
+				Type:     ast.HashType,
 				Expr:     mysqDollar[4].exprUnion(),
 			}
 		}
@@ -12169,7 +12170,7 @@ mysqdefault:
 	case 576:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3175
+//line mysql.y:3176
 		{
 			mysqLOCAL = &PartitionOption{
 				IsLinear:     mysqDollar[1].booleanUnion(),
@@ -12182,7 +12183,7 @@ mysqdefault:
 	case 577:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3184
+//line mysql.y:3185
 		{
 			mysqLOCAL = &PartitionOption{
 				Type: mysqDollar[1].partitionByTypeUnion(),
@@ -12193,7 +12194,7 @@ mysqdefault:
 	case 578:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionOption
-//line mysql.y:3191
+//line mysql.y:3192
 		{
 			mysqLOCAL = &PartitionOption{
 				Type:    mysqDollar[1].partitionByTypeUnion(),
@@ -12204,7 +12205,7 @@ mysqdefault:
 	case 579:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartition
-//line mysql.y:3199
+//line mysql.y:3200
 		{
 			mysqLOCAL = nil
 		}
@@ -12212,11 +12213,11 @@ mysqdefault:
 	case 580:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartition
-//line mysql.y:3203
+//line mysql.y:3204
 		{
-			mysqLOCAL = &SubPartition{
+			mysqLOCAL = &ast.SubPartition{
 				IsLinear:      mysqDollar[3].booleanUnion(),
-				Type:          HashType,
+				Type:          ast.HashType,
 				Expr:          mysqDollar[6].exprUnion(),
 				SubPartitions: mysqDollar[8].integerUnion(),
 			}
@@ -12225,9 +12226,9 @@ mysqdefault:
 	case 581:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartition
-//line mysql.y:3212
+//line mysql.y:3213
 		{
-			mysqLOCAL = &SubPartition{
+			mysqLOCAL = &ast.SubPartition{
 				IsLinear:      mysqDollar[3].booleanUnion(),
 				Type:          KeyType,
 				KeyAlgorithm:  mysqDollar[5].integerUnion(),
@@ -12239,7 +12240,7 @@ mysqdefault:
 	case 582:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []*ast.PartitionDefinition
-//line mysql.y:3223
+//line mysql.y:3224
 		{
 			mysqLOCAL = nil
 		}
@@ -12247,7 +12248,7 @@ mysqdefault:
 	case 583:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL []*ast.PartitionDefinition
-//line mysql.y:3227
+//line mysql.y:3228
 		{
 			mysqLOCAL = mysqDollar[2].partDefsUnion()
 		}
@@ -12255,7 +12256,7 @@ mysqdefault:
 	case 584:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3232
+//line mysql.y:3233
 		{
 			mysqLOCAL = false
 		}
@@ -12263,7 +12264,7 @@ mysqdefault:
 	case 585:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3236
+//line mysql.y:3237
 		{
 			mysqLOCAL = true
 		}
@@ -12271,7 +12272,7 @@ mysqdefault:
 	case 586:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3241
+//line mysql.y:3242
 		{
 			mysqLOCAL = 0
 		}
@@ -12279,23 +12280,23 @@ mysqdefault:
 	case 587:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3245
+//line mysql.y:3246
 		{
-			mysqLOCAL = convertStringToInt(mysqDollar[3].str)
+			mysqLOCAL = ast.ConvertStringToInt(mysqDollar[3].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 588:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:3251
+//line mysql.y:3252
 		{
-			mysqLOCAL = &JSONTableExpr{Expr: mysqDollar[3].exprUnion(), Filter: mysqDollar[5].exprUnion(), Columns: mysqDollar[6].jtColumnListUnion(), Alias: mysqDollar[8].tableIdent}
+			mysqLOCAL = &ast.JSONTableExpr{Expr: mysqDollar[3].exprUnion(), Filter: mysqDollar[5].exprUnion(), Columns: mysqDollar[6].jtColumnListUnion(), Alias: mysqDollar[8].tableIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 589:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL []*ast.JtColumnDefinition
-//line mysql.y:3257
+//line mysql.y:3258
 		{
 			mysqLOCAL = mysqDollar[3].jtColumnListUnion()
 		}
@@ -12303,14 +12304,14 @@ mysqdefault:
 	case 590:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.JtColumnDefinition
-//line mysql.y:3263
+//line mysql.y:3264
 		{
-			mysqLOCAL = []*JtColumnDefinition{mysqDollar[1].jtColumnDefinitionUnion()}
+			mysqLOCAL = []*ast.JtColumnDefinition{mysqDollar[1].jtColumnDefinitionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 591:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:3267
+//line mysql.y:3268
 		{
 			mysqSLICE := (*[]*ast.JtColumnDefinition)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].jtColumnDefinitionUnion())
@@ -12318,64 +12319,64 @@ mysqdefault:
 	case 592:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3273
+//line mysql.y:3274
 		{
-			mysqLOCAL = &JtColumnDefinition{JtOrdinal: &JtOrdinalColDef{Name: mysqDollar[1].colIdent}}
+			mysqLOCAL = &ast.JtColumnDefinition{JtOrdinal: &JtOrdinalColDef{Name: mysqDollar[1].colIdent}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 593:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3277
+//line mysql.y:3278
 		{
-			mysqDollar[2].columnType.Options = &ColumnTypeOptions{Collate: mysqDollar[3].str}
-			jtPath := &JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion()}
-			mysqLOCAL = &JtColumnDefinition{JtPath: jtPath}
+			mysqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: mysqDollar[3].str}
+			jtPath := &ast.JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion()}
+			mysqLOCAL = &ast.JtColumnDefinition{JtPath: jtPath}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 594:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3283
+//line mysql.y:3284
 		{
-			mysqDollar[2].columnType.Options = &ColumnTypeOptions{Collate: mysqDollar[3].str}
-			jtPath := &JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion()}
-			mysqLOCAL = &JtColumnDefinition{JtPath: jtPath}
+			mysqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: mysqDollar[3].str}
+			jtPath := &ast.JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion()}
+			mysqLOCAL = &ast.JtColumnDefinition{JtPath: jtPath}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 595:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3289
+//line mysql.y:3290
 		{
-			mysqDollar[2].columnType.Options = &ColumnTypeOptions{Collate: mysqDollar[3].str}
-			jtPath := &JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), ErrorOnResponse: mysqDollar[7].jtOnResponseUnion()}
-			mysqLOCAL = &JtColumnDefinition{JtPath: jtPath}
+			mysqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: mysqDollar[3].str}
+			jtPath := &ast.JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), ErrorOnResponse: mysqDollar[7].jtOnResponseUnion()}
+			mysqLOCAL = &ast.JtColumnDefinition{JtPath: jtPath}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 596:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3295
+//line mysql.y:3296
 		{
-			mysqDollar[2].columnType.Options = &ColumnTypeOptions{Collate: mysqDollar[3].str}
-			jtPath := &JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion(), ErrorOnResponse: mysqDollar[8].jtOnResponseUnion()}
-			mysqLOCAL = &JtColumnDefinition{JtPath: jtPath}
+			mysqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: mysqDollar[3].str}
+			jtPath := &ast.JtPathColDef{Name: mysqDollar[1].colIdent, Type: mysqDollar[2].columnType, JtColExists: mysqDollar[4].booleanUnion(), Path: mysqDollar[6].exprUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion(), ErrorOnResponse: mysqDollar[8].jtOnResponseUnion()}
+			mysqLOCAL = &ast.JtColumnDefinition{JtPath: jtPath}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 597:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.JtColumnDefinition
-//line mysql.y:3301
+//line mysql.y:3302
 		{
 			jtNestedPath := &JtNestedPathColDef{Path: mysqDollar[3].exprUnion(), Columns: mysqDollar[4].jtColumnListUnion()}
-			mysqLOCAL = &JtColumnDefinition{JtNestedPath: jtNestedPath}
+			mysqLOCAL = &ast.JtColumnDefinition{JtNestedPath: jtNestedPath}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 598:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3307
+//line mysql.y:3308
 		{
 			mysqLOCAL = false
 		}
@@ -12383,7 +12384,7 @@ mysqdefault:
 	case 599:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3311
+//line mysql.y:3312
 		{
 			mysqLOCAL = true
 		}
@@ -12391,7 +12392,7 @@ mysqdefault:
 	case 600:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3315
+//line mysql.y:3316
 		{
 			mysqLOCAL = false
 		}
@@ -12399,7 +12400,7 @@ mysqdefault:
 	case 601:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3319
+//line mysql.y:3320
 		{
 			mysqLOCAL = true
 		}
@@ -12407,7 +12408,7 @@ mysqdefault:
 	case 602:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.JtOnResponse
-//line mysql.y:3325
+//line mysql.y:3326
 		{
 			mysqLOCAL = mysqDollar[1].jtOnResponseUnion()
 		}
@@ -12415,7 +12416,7 @@ mysqdefault:
 	case 603:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.JtOnResponse
-//line mysql.y:3331
+//line mysql.y:3332
 		{
 			mysqLOCAL = mysqDollar[1].jtOnResponseUnion()
 		}
@@ -12423,7 +12424,7 @@ mysqdefault:
 	case 604:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.JtOnResponse
-//line mysql.y:3337
+//line mysql.y:3338
 		{
 			mysqLOCAL = &JtOnResponse{ResponseType: ErrorJSONType}
 		}
@@ -12431,7 +12432,7 @@ mysqdefault:
 	case 605:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.JtOnResponse
-//line mysql.y:3341
+//line mysql.y:3342
 		{
 			mysqLOCAL = &JtOnResponse{ResponseType: NullJSONType}
 		}
@@ -12439,7 +12440,7 @@ mysqdefault:
 	case 606:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.JtOnResponse
-//line mysql.y:3345
+//line mysql.y:3346
 		{
 			mysqLOCAL = &JtOnResponse{ResponseType: DefaultJSONType, Expr: mysqDollar[2].exprUnion()}
 		}
@@ -12447,7 +12448,7 @@ mysqdefault:
 	case 607:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.PartitionByType
-//line mysql.y:3351
+//line mysql.y:3352
 		{
 			mysqLOCAL = RangeType
 		}
@@ -12455,7 +12456,7 @@ mysqdefault:
 	case 608:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.PartitionByType
-//line mysql.y:3355
+//line mysql.y:3356
 		{
 			mysqLOCAL = ListType
 		}
@@ -12463,7 +12464,7 @@ mysqdefault:
 	case 609:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3360
+//line mysql.y:3361
 		{
 			mysqLOCAL = -1
 		}
@@ -12471,15 +12472,15 @@ mysqdefault:
 	case 610:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3364
+//line mysql.y:3365
 		{
-			mysqLOCAL = convertStringToInt(mysqDollar[2].str)
+			mysqLOCAL = ast.ConvertStringToInt(mysqDollar[2].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 611:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3369
+//line mysql.y:3370
 		{
 			mysqLOCAL = -1
 		}
@@ -12487,191 +12488,191 @@ mysqdefault:
 	case 612:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3373
+//line mysql.y:3374
 		{
-			mysqLOCAL = convertStringToInt(mysqDollar[2].str)
+			mysqLOCAL = ast.ConvertStringToInt(mysqDollar[2].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 613:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3379
+//line mysql.y:3380
 		{
-			mysqLOCAL = &PartitionSpec{Action: AddAction, Definitions: []*PartitionDefinition{mysqDollar[4].partDefUnion()}}
+			mysqLOCAL = &ast.PartitionSpec{Action: AddAction, Definitions: []*PartitionDefinition{mysqDollar[4].partDefUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 614:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3383
+//line mysql.y:3384
 		{
-			mysqLOCAL = &PartitionSpec{Action: DropAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.DropAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 615:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3387
+//line mysql.y:3388
 		{
-			mysqLOCAL = &PartitionSpec{Action: ReorganizeAction, Names: mysqDollar[3].partitionsUnion(), Definitions: mysqDollar[6].partDefsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.ReorganizeAction, Names: mysqDollar[3].partitionsUnion(), Definitions: mysqDollar[6].partDefsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 616:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3391
+//line mysql.y:3392
 		{
-			mysqLOCAL = &PartitionSpec{Action: DiscardAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.DiscardAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 617:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3395
+//line mysql.y:3396
 		{
-			mysqLOCAL = &PartitionSpec{Action: DiscardAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.DiscardAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 618:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3399
+//line mysql.y:3400
 		{
-			mysqLOCAL = &PartitionSpec{Action: ImportAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.ImportAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 619:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3403
+//line mysql.y:3404
 		{
-			mysqLOCAL = &PartitionSpec{Action: ImportAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.ImportAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 620:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3407
+//line mysql.y:3408
 		{
-			mysqLOCAL = &PartitionSpec{Action: TruncateAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.TruncateAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 621:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3411
+//line mysql.y:3412
 		{
-			mysqLOCAL = &PartitionSpec{Action: TruncateAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.TruncateAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 622:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3415
+//line mysql.y:3416
 		{
-			mysqLOCAL = &PartitionSpec{Action: CoalesceAction, Number: NewIntLiteral(mysqDollar[3].str)}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.CoalesceAction, Number: ast.NewIntLiteral(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 623:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3419
+//line mysql.y:3420
 		{
-			mysqLOCAL = &PartitionSpec{Action: ExchangeAction, Names: Partitions{mysqDollar[3].colIdent}, TableName: mysqDollar[6].tableName, WithoutValidation: mysqDollar[7].booleanUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.ExchangeAction, Names: Partitions{mysqDollar[3].colIdent}, TableName: mysqDollar[6].tableName, WithoutValidation: mysqDollar[7].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 624:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3423
+//line mysql.y:3424
 		{
-			mysqLOCAL = &PartitionSpec{Action: AnalyzeAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.AnalyzeAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 625:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3427
+//line mysql.y:3428
 		{
-			mysqLOCAL = &PartitionSpec{Action: AnalyzeAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.AnalyzeAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 626:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3431
+//line mysql.y:3432
 		{
-			mysqLOCAL = &PartitionSpec{Action: CheckAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.CheckAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 627:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3435
+//line mysql.y:3436
 		{
-			mysqLOCAL = &PartitionSpec{Action: CheckAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.CheckAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 628:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3439
+//line mysql.y:3440
 		{
-			mysqLOCAL = &PartitionSpec{Action: OptimizeAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.OptimizeAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 629:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3443
+//line mysql.y:3444
 		{
-			mysqLOCAL = &PartitionSpec{Action: OptimizeAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.OptimizeAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 630:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3447
+//line mysql.y:3448
 		{
-			mysqLOCAL = &PartitionSpec{Action: RebuildAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.RebuildAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 631:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3451
+//line mysql.y:3452
 		{
-			mysqLOCAL = &PartitionSpec{Action: RebuildAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.RebuildAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 632:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3455
+//line mysql.y:3456
 		{
-			mysqLOCAL = &PartitionSpec{Action: RepairAction, Names: mysqDollar[3].partitionsUnion()}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.RepairAction, Names: mysqDollar[3].partitionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 633:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3459
+//line mysql.y:3460
 		{
-			mysqLOCAL = &PartitionSpec{Action: RepairAction, IsAll: true}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.RepairAction, IsAll: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 634:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionSpec
-//line mysql.y:3463
+//line mysql.y:3464
 		{
-			mysqLOCAL = &PartitionSpec{Action: UpgradeAction}
+			mysqLOCAL = &ast.PartitionSpec{Action: ast.UpgradeAction}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 635:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3468
+//line mysql.y:3469
 		{
 			mysqLOCAL = false
 		}
@@ -12679,7 +12680,7 @@ mysqdefault:
 	case 636:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3472
+//line mysql.y:3473
 		{
 			mysqLOCAL = false
 		}
@@ -12687,7 +12688,7 @@ mysqdefault:
 	case 637:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3476
+//line mysql.y:3477
 		{
 			mysqLOCAL = true
 		}
@@ -12695,36 +12696,36 @@ mysqdefault:
 	case 638:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.PartitionDefinition
-//line mysql.y:3483
+//line mysql.y:3484
 		{
 			mysqLOCAL = []*PartitionDefinition{mysqDollar[1].partDefUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 639:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:3487
+//line mysql.y:3488
 		{
 			mysqSLICE := (*[]*ast.PartitionDefinition)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].partDefUnion())
 		}
 	case 640:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:3493
+//line mysql.y:3494
 		{
 			mysqVAL.partDefUnion().Options = mysqDollar[2].partitionDefinitionOptionsUnion()
 		}
 	case 641:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3498
+//line mysql.y:3499
 		{
-			mysqLOCAL = &PartitionDefinitionOptions{}
+			mysqLOCAL = &ast.PartitionDefinitionOptions{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 642:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3502
+//line mysql.y:3503
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().ValueRange = mysqDollar[2].partitionValueRangeUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12733,7 +12734,7 @@ mysqdefault:
 	case 643:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3507
+//line mysql.y:3508
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().Comment = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12742,7 +12743,7 @@ mysqdefault:
 	case 644:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3512
+//line mysql.y:3513
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().Engine = mysqDollar[2].partitionEngineUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12751,7 +12752,7 @@ mysqdefault:
 	case 645:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3517
+//line mysql.y:3518
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().DataDirectory = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12760,7 +12761,7 @@ mysqdefault:
 	case 646:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3522
+//line mysql.y:3523
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().IndexDirectory = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12769,7 +12770,7 @@ mysqdefault:
 	case 647:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3527
+//line mysql.y:3528
 		{
 			val := mysqDollar[2].integerUnion()
 			mysqDollar[1].partitionDefinitionOptionsUnion().MaxRows = &val
@@ -12779,7 +12780,7 @@ mysqdefault:
 	case 648:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3533
+//line mysql.y:3534
 		{
 			val := mysqDollar[2].integerUnion()
 			mysqDollar[1].partitionDefinitionOptionsUnion().MinRows = &val
@@ -12789,7 +12790,7 @@ mysqdefault:
 	case 649:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3539
+//line mysql.y:3540
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().TableSpace = mysqDollar[2].str
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12798,7 +12799,7 @@ mysqdefault:
 	case 650:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinitionOptions
-//line mysql.y:3544
+//line mysql.y:3545
 		{
 			mysqDollar[1].partitionDefinitionOptionsUnion().SubPartitionDefinitions = mysqDollar[2].subPartitionDefinitionsUnion()
 			mysqLOCAL = mysqDollar[1].partitionDefinitionOptionsUnion()
@@ -12807,7 +12808,7 @@ mysqdefault:
 	case 651:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SubPartitionDefinitions
-//line mysql.y:3550
+//line mysql.y:3551
 		{
 			mysqLOCAL = mysqDollar[2].subPartitionDefinitionsUnion()
 		}
@@ -12815,14 +12816,14 @@ mysqdefault:
 	case 652:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SubPartitionDefinitions
-//line mysql.y:3556
+//line mysql.y:3557
 		{
-			mysqLOCAL = SubPartitionDefinitions{mysqDollar[1].subPartitionDefinitionUnion()}
+			mysqLOCAL = ast.SubPartitionDefinitions{mysqDollar[1].subPartitionDefinitionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 653:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:3560
+//line mysql.y:3561
 		{
 			mysqSLICE := (*ast.SubPartitionDefinitions)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].subPartitionDefinitionUnion())
@@ -12830,23 +12831,23 @@ mysqdefault:
 	case 654:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinition
-//line mysql.y:3566
+//line mysql.y:3567
 		{
-			mysqLOCAL = &SubPartitionDefinition{Name: mysqDollar[2].colIdent, Options: mysqDollar[3].subPartitionDefinitionOptionsUnion()}
+			mysqLOCAL = &ast.SubPartitionDefinition{Name: mysqDollar[2].colIdent, Options: mysqDollar[3].subPartitionDefinitionOptionsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 655:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3571
+//line mysql.y:3572
 		{
-			mysqLOCAL = &SubPartitionDefinitionOptions{}
+			mysqLOCAL = &ast.SubPartitionDefinitionOptions{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 656:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3575
+//line mysql.y:3576
 		{
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().Comment = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].subPartitionDefinitionOptionsUnion()
@@ -12855,7 +12856,7 @@ mysqdefault:
 	case 657:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3580
+//line mysql.y:3581
 		{
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().Engine = mysqDollar[2].partitionEngineUnion()
 			mysqLOCAL = mysqDollar[1].subPartitionDefinitionOptionsUnion()
@@ -12864,7 +12865,7 @@ mysqdefault:
 	case 658:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3585
+//line mysql.y:3586
 		{
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().DataDirectory = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].subPartitionDefinitionOptionsUnion()
@@ -12873,7 +12874,7 @@ mysqdefault:
 	case 659:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3590
+//line mysql.y:3591
 		{
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().IndexDirectory = mysqDollar[2].literalUnion()
 			mysqLOCAL = mysqDollar[1].subPartitionDefinitionOptionsUnion()
@@ -12882,7 +12883,7 @@ mysqdefault:
 	case 660:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3595
+//line mysql.y:3596
 		{
 			val := mysqDollar[2].integerUnion()
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().MaxRows = &val
@@ -12892,7 +12893,7 @@ mysqdefault:
 	case 661:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3601
+//line mysql.y:3602
 		{
 			val := mysqDollar[2].integerUnion()
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().MinRows = &val
@@ -12902,7 +12903,7 @@ mysqdefault:
 	case 662:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SubPartitionDefinitionOptions
-//line mysql.y:3607
+//line mysql.y:3608
 		{
 			mysqDollar[1].subPartitionDefinitionOptionsUnion().TableSpace = mysqDollar[2].str
 			mysqLOCAL = mysqDollar[1].subPartitionDefinitionOptionsUnion()
@@ -12911,10 +12912,10 @@ mysqdefault:
 	case 663:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionValueRange
-//line mysql.y:3614
+//line mysql.y:3615
 		{
-			mysqLOCAL = &PartitionValueRange{
-				Type:  LessThanType,
+			mysqLOCAL = &ast.PartitionValueRange{
+				Type:  ast.LessThanType,
 				Range: mysqDollar[4].valTupleUnion(),
 			}
 		}
@@ -12922,10 +12923,10 @@ mysqdefault:
 	case 664:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionValueRange
-//line mysql.y:3621
+//line mysql.y:3622
 		{
-			mysqLOCAL = &PartitionValueRange{
-				Type:     LessThanType,
+			mysqLOCAL = &ast.PartitionValueRange{
+				Type:     ast.LessThanType,
 				Maxvalue: true,
 			}
 		}
@@ -12933,9 +12934,9 @@ mysqdefault:
 	case 665:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionValueRange
-//line mysql.y:3628
+//line mysql.y:3629
 		{
-			mysqLOCAL = &PartitionValueRange{
+			mysqLOCAL = &ast.PartitionValueRange{
 				Type:  InType,
 				Range: mysqDollar[3].valTupleUnion(),
 			}
@@ -12944,7 +12945,7 @@ mysqdefault:
 	case 666:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3636
+//line mysql.y:3637
 		{
 			mysqLOCAL = false
 		}
@@ -12952,7 +12953,7 @@ mysqdefault:
 	case 667:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3640
+//line mysql.y:3641
 		{
 			mysqLOCAL = true
 		}
@@ -12960,585 +12961,585 @@ mysqdefault:
 	case 668:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionEngine
-//line mysql.y:3646
+//line mysql.y:3647
 		{
-			mysqLOCAL = &PartitionEngine{Storage: mysqDollar[1].booleanUnion(), Name: mysqDollar[4].tableIdent.String()}
+			mysqLOCAL = &ast.PartitionEngine{Storage: mysqDollar[1].booleanUnion(), Name: mysqDollar[4].tableIdent.String()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 669:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:3652
+//line mysql.y:3653
 		{
-			mysqLOCAL = NewStrLiteral(mysqDollar[3].str)
+			mysqLOCAL = ast.NewStrLiteral(mysqDollar[3].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 670:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:3658
+//line mysql.y:3659
 		{
-			mysqLOCAL = NewStrLiteral(mysqDollar[4].str)
+			mysqLOCAL = ast.NewStrLiteral(mysqDollar[4].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 671:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Literal
-//line mysql.y:3664
+//line mysql.y:3665
 		{
-			mysqLOCAL = NewStrLiteral(mysqDollar[4].str)
+			mysqLOCAL = ast.NewStrLiteral(mysqDollar[4].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 672:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3670
+//line mysql.y:3671
 		{
-			mysqLOCAL = convertStringToInt(mysqDollar[3].str)
+			mysqLOCAL = ast.ConvertStringToInt(mysqDollar[3].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 673:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL int
-//line mysql.y:3676
+//line mysql.y:3677
 		{
-			mysqLOCAL = convertStringToInt(mysqDollar[3].str)
+			mysqLOCAL = ast.ConvertStringToInt(mysqDollar[3].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 674:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:3682
+//line mysql.y:3683
 		{
 			mysqVAL.str = mysqDollar[3].tableIdent.String()
 		}
 	case 675:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.PartitionDefinition
-//line mysql.y:3688
+//line mysql.y:3689
 		{
-			mysqLOCAL = &PartitionDefinition{Name: mysqDollar[2].colIdent}
+			mysqLOCAL = &ast.PartitionDefinition{Name: mysqDollar[2].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 676:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:3694
+//line mysql.y:3695
 		{
 			mysqVAL.str = ""
 		}
 	case 677:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:3698
+//line mysql.y:3699
 		{
 			mysqVAL.str = ""
 		}
 	case 678:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3704
+//line mysql.y:3705
 		{
-			mysqLOCAL = &RenameTable{TablePairs: mysqDollar[3].renameTablePairsUnion()}
+			mysqLOCAL = &ast.RenameTable{TablePairs: mysqDollar[3].renameTablePairsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 679:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL []*ast.RenameTablePair
-//line mysql.y:3710
+//line mysql.y:3711
 		{
-			mysqLOCAL = []*RenameTablePair{{FromTable: mysqDollar[1].tableName, ToTable: mysqDollar[3].tableName}}
+			mysqLOCAL = []*ast.RenameTablePair{{FromTable: mysqDollar[1].tableName, ToTable: mysqDollar[3].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 680:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:3714
+//line mysql.y:3715
 		{
 			mysqSLICE := (*[]*ast.RenameTablePair)(mysqIaddr(mysqVAL.union))
-			*mysqSLICE = append(*mysqSLICE, &RenameTablePair{FromTable: mysqDollar[3].tableName, ToTable: mysqDollar[5].tableName})
+			*mysqSLICE = append(*mysqSLICE, &ast.RenameTablePair{FromTable: mysqDollar[3].tableName, ToTable: mysqDollar[5].tableName})
 		}
 	case 681:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3720
+//line mysql.y:3721
 		{
-			mysqLOCAL = &DropTable{FromTables: mysqDollar[6].tableNamesUnion(), IfExists: mysqDollar[5].booleanUnion(), Comments: Comments(mysqDollar[2].strs).Parsed(), Temp: mysqDollar[3].booleanUnion()}
+			mysqLOCAL = &ast.DropTable{FromTables: mysqDollar[6].tableNamesUnion(), IfExists: mysqDollar[5].booleanUnion(), Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Temp: mysqDollar[3].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 682:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3724
+//line mysql.y:3725
 		{
 			// Change this to an alter statement
 			if mysqDollar[4].colIdent.Lowered() == "primary" {
-				mysqLOCAL = &AlterTable{FullyParsed: true, Table: mysqDollar[6].tableName, AlterOptions: append([]AlterOption{&DropKey{Type: PrimaryKeyType}}, mysqDollar[7].alterOptionsUnion()...)}
+				mysqLOCAL = &ast.AlterTable{FullyParsed: true, Table: mysqDollar[6].tableName, AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: PrimaryKeyType}}, mysqDollar[7].alterOptionsUnion()...)}
 			} else {
-				mysqLOCAL = &AlterTable{FullyParsed: true, Table: mysqDollar[6].tableName, AlterOptions: append([]AlterOption{&DropKey{Type: NormalKeyType, Name: mysqDollar[4].colIdent}}, mysqDollar[7].alterOptionsUnion()...)}
+				mysqLOCAL = &ast.AlterTable{FullyParsed: true, Table: mysqDollar[6].tableName, AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: NormalKeyType, Name: mysqDollar[4].colIdent}}, mysqDollar[7].alterOptionsUnion()...)}
 			}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 683:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3733
+//line mysql.y:3734
 		{
-			mysqLOCAL = &DropView{FromTables: mysqDollar[5].tableNamesUnion(), Comments: Comments(mysqDollar[2].strs).Parsed(), IfExists: mysqDollar[4].booleanUnion()}
+			mysqLOCAL = &ast.DropView{FromTables: mysqDollar[5].tableNamesUnion(), Comments: ast.Comments(mysqDollar[2].strs).Parsed(), IfExists: mysqDollar[4].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 684:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3737
+//line mysql.y:3738
 		{
-			mysqLOCAL = &DropDatabase{Comments: Comments(mysqDollar[2].strs).Parsed(), DBName: mysqDollar[5].tableIdent, IfExists: mysqDollar[4].booleanUnion()}
+			mysqLOCAL = &ast.DropDatabase{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), DBName: mysqDollar[5].tableIdent, IfExists: mysqDollar[4].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 685:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3743
+//line mysql.y:3744
 		{
-			mysqLOCAL = &TruncateTable{Table: mysqDollar[3].tableName}
+			mysqLOCAL = &ast.TruncateTable{Table: mysqDollar[3].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 686:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3747
+//line mysql.y:3748
 		{
-			mysqLOCAL = &TruncateTable{Table: mysqDollar[2].tableName}
+			mysqLOCAL = &ast.TruncateTable{Table: mysqDollar[2].tableName}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 687:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3752
+//line mysql.y:3753
 		{
-			mysqLOCAL = &OtherRead{}
+			mysqLOCAL = &ast.OtherRead{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 688:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3758
+//line mysql.y:3759
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Charset, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Charset, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 689:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3762
+//line mysql.y:3763
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Collation, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Collation, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 690:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3766
+//line mysql.y:3767
 		{
-			mysqLOCAL = &Show{&ShowBasic{Full: mysqDollar[2].booleanUnion(), Command: Column, Tbl: mysqDollar[5].tableName, DbName: mysqDollar[6].tableIdent, Filter: mysqDollar[7].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Full: mysqDollar[2].booleanUnion(), Command: Column, Tbl: mysqDollar[5].tableName, DbName: mysqDollar[6].tableIdent, Filter: mysqDollar[7].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 691:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3770
+//line mysql.y:3771
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Database, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Database, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 692:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3774
+//line mysql.y:3775
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Database, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Database, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 693:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3778
+//line mysql.y:3779
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Keyspace, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Keyspace, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 694:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3782
+//line mysql.y:3783
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Keyspace, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Keyspace, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 695:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3786
+//line mysql.y:3787
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Function, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Function, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 696:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3790
+//line mysql.y:3791
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Index, Tbl: mysqDollar[5].tableName, DbName: mysqDollar[6].tableIdent, Filter: mysqDollar[7].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Index, Tbl: mysqDollar[5].tableName, DbName: mysqDollar[6].tableIdent, Filter: mysqDollar[7].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 697:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3794
+//line mysql.y:3795
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: OpenTable, DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: OpenTable, DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 698:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3798
+//line mysql.y:3799
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Privilege}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Privilege}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 699:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3802
+//line mysql.y:3803
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Procedure, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Procedure, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 700:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3806
+//line mysql.y:3807
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: StatusSession, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: StatusSession, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 701:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3810
+//line mysql.y:3811
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: StatusGlobal, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: StatusGlobal, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 702:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3814
+//line mysql.y:3815
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VariableSession, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VariableSession, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 703:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3818
+//line mysql.y:3819
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VariableGlobal, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VariableGlobal, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 704:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3822
+//line mysql.y:3823
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: TableStatus, DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: TableStatus, DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 705:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3826
+//line mysql.y:3827
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Table, Full: mysqDollar[2].booleanUnion(), DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Table, Full: mysqDollar[2].booleanUnion(), DbName: mysqDollar[4].tableIdent, Filter: mysqDollar[5].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 706:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3830
+//line mysql.y:3831
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Trigger, DbName: mysqDollar[3].tableIdent, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Trigger, DbName: mysqDollar[3].tableIdent, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 707:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3834
+//line mysql.y:3835
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateDb, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateDb, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 708:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3838
+//line mysql.y:3839
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateE, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateE, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 709:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3842
+//line mysql.y:3843
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateF, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateF, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 710:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3846
+//line mysql.y:3847
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateProc, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateProc, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 711:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3850
+//line mysql.y:3851
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateTbl, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateTbl, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 712:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3854
+//line mysql.y:3855
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateTr, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateTr, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 713:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3858
+//line mysql.y:3859
 		{
-			mysqLOCAL = &Show{&ShowCreate{Command: CreateV, Op: mysqDollar[4].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowCreate{Command: CreateV, Op: mysqDollar[4].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 714:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3862
+//line mysql.y:3863
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Engines}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Engines}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 715:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3866
+//line mysql.y:3867
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Plugins}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Plugins}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 716:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3870
+//line mysql.y:3871
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: GtidExecGlobal, DbName: mysqDollar[4].tableIdent}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: GtidExecGlobal, DbName: mysqDollar[4].tableIdent}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 717:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3874
+//line mysql.y:3875
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VGtidExecGlobal, DbName: mysqDollar[4].tableIdent}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VGtidExecGlobal, DbName: mysqDollar[4].tableIdent}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 718:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3878
+//line mysql.y:3879
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessVariables, Filter: mysqDollar[4].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessVariables, Filter: mysqDollar[4].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 719:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3882
+//line mysql.y:3883
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessMigrations, Filter: mysqDollar[4].showFilterUnion(), DbName: mysqDollar[3].tableIdent}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessMigrations, Filter: mysqDollar[4].showFilterUnion(), DbName: mysqDollar[3].tableIdent}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 720:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3886
+//line mysql.y:3887
 		{
-			mysqLOCAL = &ShowMigrationLogs{UUID: string(mysqDollar[3].str)}
+			mysqLOCAL = &ast.ShowMigrationLogs{UUID: string(mysqDollar[3].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 721:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3890
+//line mysql.y:3891
 		{
-			mysqLOCAL = &ShowThrottledApps{}
+			mysqLOCAL = &ast.ShowThrottledApps{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 722:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3894
+//line mysql.y:3895
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessReplicationStatus, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessReplicationStatus, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 723:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3898
+//line mysql.y:3899
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VschemaTables}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VschemaTables}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 724:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3902
+//line mysql.y:3903
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VschemaVindexes}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VschemaVindexes}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 725:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3906
+//line mysql.y:3907
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VschemaVindexes, Tbl: mysqDollar[5].tableName}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VschemaVindexes, Tbl: mysqDollar[5].tableName}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 726:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3910
+//line mysql.y:3911
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: Warnings}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: Warnings}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 727:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3914
+//line mysql.y:3915
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessShards, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessShards, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 728:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3918
+//line mysql.y:3919
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessTablets, Filter: mysqDollar[3].showFilterUnion()}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessTablets, Filter: mysqDollar[3].showFilterUnion()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 729:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3922
+//line mysql.y:3923
 		{
-			mysqLOCAL = &Show{&ShowBasic{Command: VitessTarget}}
+			mysqLOCAL = &ast.Show{&ast.ShowBasic{Command: VitessTarget}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 730:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3929
+//line mysql.y:3930
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].colIdent.String())}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].colIdent.String())}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 731:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3933
+//line mysql.y:3934
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 732:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3937
+//line mysql.y:3938
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str) + " " + mysqDollar[3].colIdent.String()}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str) + " " + mysqDollar[3].colIdent.String()}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 733:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3941
+//line mysql.y:3942
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 734:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3945
+//line mysql.y:3946
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 735:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3949
+//line mysql.y:3950
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str) + " " + String(mysqDollar[4].tableName)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str) + " " + String(mysqDollar[4].tableName)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 736:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3953
+//line mysql.y:3954
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str) + " " + String(mysqDollar[4].tableName)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str) + " " + string(mysqDollar[3].str) + " " + String(mysqDollar[4].tableName)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 737:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3957
+//line mysql.y:3958
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[3].str)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[3].str)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 738:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:3961
+//line mysql.y:3962
 		{
-			mysqLOCAL = &Show{&ShowOther{Command: string(mysqDollar[2].str)}}
+			mysqLOCAL = &ast.Show{&ast.ShowOther{Command: string(mysqDollar[2].str)}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 739:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:3967
+//line mysql.y:3968
 		{
 			mysqVAL.str = ""
 		}
 	case 740:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:3971
+//line mysql.y:3972
 		{
 			mysqVAL.str = "extended "
 		}
 	case 741:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3977
+//line mysql.y:3978
 		{
 			mysqLOCAL = false
 		}
@@ -13546,45 +13547,45 @@ mysqdefault:
 	case 742:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:3981
+//line mysql.y:3982
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 743:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:3987
+//line mysql.y:3988
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 744:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:3991
+//line mysql.y:3992
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 745:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:3997
+//line mysql.y:3998
 		{
-			mysqVAL.tableIdent = NewTableIdent("")
+			mysqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 746:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4001
+//line mysql.y:4002
 		{
 			mysqVAL.tableIdent = mysqDollar[2].tableIdent
 		}
 	case 747:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4005
+//line mysql.y:4006
 		{
 			mysqVAL.tableIdent = mysqDollar[2].tableIdent
 		}
 	case 748:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ShowFilter
-//line mysql.y:4011
+//line mysql.y:4012
 		{
 			mysqLOCAL = nil
 		}
@@ -13592,23 +13593,23 @@ mysqdefault:
 	case 749:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ShowFilter
-//line mysql.y:4015
+//line mysql.y:4016
 		{
-			mysqLOCAL = &ShowFilter{Like: string(mysqDollar[2].str)}
+			mysqLOCAL = &ast.ShowFilter{Like: string(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 750:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ShowFilter
-//line mysql.y:4019
+//line mysql.y:4020
 		{
-			mysqLOCAL = &ShowFilter{Filter: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.ShowFilter{Filter: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 751:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ShowFilter
-//line mysql.y:4025
+//line mysql.y:4026
 		{
 			mysqLOCAL = nil
 		}
@@ -13616,215 +13617,215 @@ mysqdefault:
 	case 752:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ShowFilter
-//line mysql.y:4029
+//line mysql.y:4030
 		{
-			mysqLOCAL = &ShowFilter{Like: string(mysqDollar[2].str)}
+			mysqLOCAL = &ast.ShowFilter{Like: string(mysqDollar[2].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 753:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4035
+//line mysql.y:4036
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 754:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4039
+//line mysql.y:4040
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 755:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4043
+//line mysql.y:4044
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 756:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4049
+//line mysql.y:4050
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 757:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4053
+//line mysql.y:4054
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 758:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4059
+//line mysql.y:4060
 		{
-			mysqLOCAL = &Use{DBName: mysqDollar[2].tableIdent}
+			mysqLOCAL = &ast.Use{DBName: mysqDollar[2].tableIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 759:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4063
+//line mysql.y:4064
 		{
-			mysqLOCAL = &Use{DBName: TableIdent{v: ""}}
+			mysqLOCAL = &ast.Use{DBName: ast.TableIdent{v: ""}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 760:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4067
+//line mysql.y:4068
 		{
-			mysqLOCAL = &Use{DBName: NewTableIdent(mysqDollar[2].tableIdent.String() + "@" + string(mysqDollar[3].str))}
+			mysqLOCAL = &ast.Use{DBName: ast.ast.NewTableIdent(mysqDollar[2].tableIdent.String() + "@" + string(mysqDollar[3].str))}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 761:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4073
+//line mysql.y:4074
 		{
-			mysqLOCAL = &Begin{}
+			mysqLOCAL = &ast.Begin{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 762:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4077
+//line mysql.y:4078
 		{
-			mysqLOCAL = &Begin{}
+			mysqLOCAL = &ast.Begin{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 763:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4083
+//line mysql.y:4084
 		{
-			mysqLOCAL = &Commit{}
+			mysqLOCAL = &ast.Commit{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 764:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4089
+//line mysql.y:4090
 		{
-			mysqLOCAL = &Rollback{}
+			mysqLOCAL = &ast.Rollback{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 765:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4093
+//line mysql.y:4094
 		{
-			mysqLOCAL = &SRollback{Name: mysqDollar[5].colIdent}
+			mysqLOCAL = &ast.SRollback{Name: mysqDollar[5].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 766:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4098
+//line mysql.y:4099
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 767:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4100
+//line mysql.y:4101
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 768:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4103
+//line mysql.y:4104
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 769:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4105
+//line mysql.y:4106
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 770:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4110
+//line mysql.y:4111
 		{
-			mysqLOCAL = &Savepoint{Name: mysqDollar[2].colIdent}
+			mysqLOCAL = &ast.Savepoint{Name: mysqDollar[2].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 771:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4116
+//line mysql.y:4117
 		{
-			mysqLOCAL = &Release{Name: mysqDollar[3].colIdent}
+			mysqLOCAL = &ast.Release{Name: mysqDollar[3].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 772:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4121
+//line mysql.y:4122
 		{
-			mysqLOCAL = EmptyType
+			mysqLOCAL = ast.EmptyType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 773:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4125
+//line mysql.y:4126
 		{
-			mysqLOCAL = JSONType
+			mysqLOCAL = ast.JSONType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 774:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4129
+//line mysql.y:4130
 		{
-			mysqLOCAL = TreeType
+			mysqLOCAL = ast.TreeType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 775:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4133
+//line mysql.y:4134
 		{
-			mysqLOCAL = VitessType
+			mysqLOCAL = ast.VitessType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 776:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4137
+//line mysql.y:4138
 		{
-			mysqLOCAL = TraditionalType
+			mysqLOCAL = ast.TraditionalType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 777:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ExplainType
-//line mysql.y:4141
+//line mysql.y:4142
 		{
-			mysqLOCAL = AnalyzeType
+			mysqLOCAL = ast.AnalyzeType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 778:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4147
+//line mysql.y:4148
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 779:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4151
+//line mysql.y:4152
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 780:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4155
+//line mysql.y:4156
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 781:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4161
+//line mysql.y:4162
 		{
 			mysqLOCAL = mysqDollar[1].selStmtUnion()
 		}
@@ -13832,7 +13833,7 @@ mysqdefault:
 	case 782:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4165
+//line mysql.y:4166
 		{
 			mysqLOCAL = mysqDollar[1].statementUnion()
 		}
@@ -13840,7 +13841,7 @@ mysqdefault:
 	case 783:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4169
+//line mysql.y:4170
 		{
 			mysqLOCAL = mysqDollar[1].statementUnion()
 		}
@@ -13848,80 +13849,80 @@ mysqdefault:
 	case 784:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4173
+//line mysql.y:4174
 		{
 			mysqLOCAL = mysqDollar[1].statementUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 785:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4178
+//line mysql.y:4179
 		{
 			mysqVAL.str = ""
 		}
 	case 786:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4182
+//line mysql.y:4183
 		{
 			mysqVAL.str = mysqDollar[1].colIdent.val
 		}
 	case 787:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4186
+//line mysql.y:4187
 		{
-			mysqVAL.str = encodeSQLString(mysqDollar[1].str)
+			mysqVAL.str = sql_types.EncodeStringSQL(mysqDollar[1].str)
 		}
 	case 788:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4192
+//line mysql.y:4193
 		{
-			mysqLOCAL = &ExplainTab{Table: mysqDollar[2].tableName, Wild: mysqDollar[3].str}
+			mysqLOCAL = &ast.ExplainTab{Table: mysqDollar[2].tableName, Wild: mysqDollar[3].str}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 789:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4196
+//line mysql.y:4197
 		{
-			mysqLOCAL = &ExplainStmt{Type: mysqDollar[2].explainTypeUnion(), Statement: mysqDollar[3].statementUnion()}
+			mysqLOCAL = &ast.ExplainStmt{Type: mysqDollar[2].explainTypeUnion(), Statement: mysqDollar[3].statementUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 790:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4202
+//line mysql.y:4203
 		{
-			mysqLOCAL = &OtherAdmin{}
+			mysqLOCAL = &ast.OtherAdmin{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 791:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4206
+//line mysql.y:4207
 		{
-			mysqLOCAL = &OtherAdmin{}
+			mysqLOCAL = &ast.OtherAdmin{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 792:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4212
+//line mysql.y:4213
 		{
-			mysqLOCAL = &LockTables{Tables: mysqDollar[3].tableAndLockTypesUnion()}
+			mysqLOCAL = &ast.LockTables{Tables: mysqDollar[3].tableAndLockTypesUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 793:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableAndLockTypes
-//line mysql.y:4218
+//line mysql.y:4219
 		{
-			mysqLOCAL = TableAndLockTypes{mysqDollar[1].tableAndLockTypeUnion()}
+			mysqLOCAL = ast.TableAndLockTypes{mysqDollar[1].tableAndLockTypeUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 794:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4222
+//line mysql.y:4223
 		{
 			mysqSLICE := (*ast.TableAndLockTypes)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableAndLockTypeUnion())
@@ -13929,195 +13930,195 @@ mysqdefault:
 	case 795:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.TableAndLockType
-//line mysql.y:4228
+//line mysql.y:4229
 		{
-			mysqLOCAL = &TableAndLockType{Table: mysqDollar[1].aliasedTableNameUnion(), Lock: mysqDollar[2].lockTypeUnion()}
+			mysqLOCAL = &ast.TableAndLockType{Table: mysqDollar[1].aliasedTableNameUnion(), Lock: mysqDollar[2].lockTypeUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 796:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.LockType
-//line mysql.y:4234
+//line mysql.y:4235
 		{
-			mysqLOCAL = Read
+			mysqLOCAL = ast.Read
 		}
 		mysqVAL.union = mysqLOCAL
 	case 797:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.LockType
-//line mysql.y:4238
+//line mysql.y:4239
 		{
-			mysqLOCAL = ReadLocal
+			mysqLOCAL = ast.ReadLocal
 		}
 		mysqVAL.union = mysqLOCAL
 	case 798:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.LockType
-//line mysql.y:4242
+//line mysql.y:4243
 		{
-			mysqLOCAL = Write
+			mysqLOCAL = ast.Write
 		}
 		mysqVAL.union = mysqLOCAL
 	case 799:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.LockType
-//line mysql.y:4246
+//line mysql.y:4247
 		{
-			mysqLOCAL = LowPriorityWrite
+			mysqLOCAL = ast.LowPriorityWrite
 		}
 		mysqVAL.union = mysqLOCAL
 	case 800:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4252
+//line mysql.y:4253
 		{
-			mysqLOCAL = &UnlockTables{}
+			mysqLOCAL = &ast.UnlockTables{}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 801:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4258
+//line mysql.y:4259
 		{
-			mysqLOCAL = &RevertMigration{Comments: Comments(mysqDollar[2].strs).Parsed(), UUID: string(mysqDollar[4].str)}
+			mysqLOCAL = &ast.RevertMigration{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), UUID: string(mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 802:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4264
+//line mysql.y:4265
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion(), FlushOptions: mysqDollar[3].strs}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion(), FlushOptions: mysqDollar[3].strs}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 803:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4268
+//line mysql.y:4269
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion()}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 804:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4272
+//line mysql.y:4273
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion(), WithLock: true}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion(), WithLock: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 805:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4276
+//line mysql.y:4277
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion()}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 806:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4280
+//line mysql.y:4281
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion(), WithLock: true}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion(), WithLock: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 807:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4284
+//line mysql.y:4285
 		{
-			mysqLOCAL = &Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion(), ForExport: true}
+			mysqLOCAL = &ast.Flush{IsLocal: mysqDollar[2].booleanUnion(), TableNames: mysqDollar[4].tableNamesUnion(), ForExport: true}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 808:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4290
+//line mysql.y:4291
 		{
 			mysqVAL.strs = []string{mysqDollar[1].str}
 		}
 	case 809:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4294
+//line mysql.y:4295
 		{
 			mysqVAL.strs = append(mysqDollar[1].strs, mysqDollar[3].str)
 		}
 	case 810:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4300
+//line mysql.y:4301
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 811:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4304
+//line mysql.y:4305
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 812:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4308
+//line mysql.y:4309
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 813:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4312
+//line mysql.y:4313
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 814:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4316
+//line mysql.y:4317
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 815:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4320
+//line mysql.y:4321
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 816:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4324
+//line mysql.y:4325
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 817:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4328
+//line mysql.y:4329
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str) + mysqDollar[3].str
 		}
 	case 818:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4332
+//line mysql.y:4333
 		{
 			mysqVAL.str = string(mysqDollar[1].str) + " " + string(mysqDollar[2].str)
 		}
 	case 819:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4336
+//line mysql.y:4337
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 820:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4340
+//line mysql.y:4341
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 821:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4344
+//line mysql.y:4345
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 822:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4349
+//line mysql.y:4350
 		{
 			mysqLOCAL = false
 		}
@@ -14125,7 +14126,7 @@ mysqdefault:
 	case 823:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4353
+//line mysql.y:4354
 		{
 			mysqLOCAL = true
 		}
@@ -14133,52 +14134,52 @@ mysqdefault:
 	case 824:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4357
+//line mysql.y:4358
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 825:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4362
+//line mysql.y:4363
 		{
 			mysqVAL.str = ""
 		}
 	case 826:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4366
+//line mysql.y:4367
 		{
 			mysqVAL.str = " " + string(mysqDollar[1].str) + " " + string(mysqDollar[2].str) + " " + mysqDollar[3].colIdent.String()
 		}
 	case 827:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4371
+//line mysql.y:4372
 		{
 			setAllowComments(mysqlex, true)
 		}
 	case 828:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4375
+//line mysql.y:4376
 		{
 			mysqVAL.strs = mysqDollar[2].strs
 			setAllowComments(mysqlex, false)
 		}
 	case 829:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4381
+//line mysql.y:4382
 		{
 			mysqVAL.strs = nil
 		}
 	case 830:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4385
+//line mysql.y:4386
 		{
 			mysqVAL.strs = append(mysqDollar[1].strs, mysqDollar[2].str)
 		}
 	case 831:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4391
+//line mysql.y:4392
 		{
 			mysqLOCAL = true
 		}
@@ -14186,7 +14187,7 @@ mysqdefault:
 	case 832:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4395
+//line mysql.y:4396
 		{
 			mysqLOCAL = false
 		}
@@ -14194,33 +14195,33 @@ mysqdefault:
 	case 833:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4399
+//line mysql.y:4400
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 834:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4404
+//line mysql.y:4405
 		{
 			mysqVAL.str = ""
 		}
 	case 835:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4408
+//line mysql.y:4409
 		{
 			mysqVAL.str = SQLNoCacheStr
 		}
 	case 836:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4412
+//line mysql.y:4413
 		{
 			mysqVAL.str = SQLCacheStr
 		}
 	case 837:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4417
+//line mysql.y:4418
 		{
 			mysqLOCAL = false
 		}
@@ -14228,7 +14229,7 @@ mysqdefault:
 	case 838:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4421
+//line mysql.y:4422
 		{
 			mysqLOCAL = true
 		}
@@ -14236,7 +14237,7 @@ mysqdefault:
 	case 839:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:4425
+//line mysql.y:4426
 		{
 			mysqLOCAL = true
 		}
@@ -14244,21 +14245,21 @@ mysqdefault:
 	case 840:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4431
+//line mysql.y:4432
 		{
-			mysqLOCAL = &PrepareStmt{Name: mysqDollar[3].colIdent, Comments: Comments(mysqDollar[2].strs).Parsed(), Statement: mysqDollar[5].exprUnion()}
+			mysqLOCAL = &PrepareStmt{Name: mysqDollar[3].colIdent, Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Statement: mysqDollar[5].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 841:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4435
+//line mysql.y:4436
 		{
 			mysqLOCAL = &PrepareStmt{
 				Name:     mysqDollar[3].colIdent,
-				Comments: Comments(mysqDollar[2].strs).Parsed(),
+				Comments: ast.Comments(mysqDollar[2].strs).Parsed(),
 				Statement: &ColName{
-					Name: NewColIdentWithAt(string(mysqDollar[5].str), SingleAt),
+					Name: ast.ast.NewColIdentWithAt(string(mysqDollar[5].str), SingleAt),
 				},
 			}
 		}
@@ -14266,15 +14267,15 @@ mysqdefault:
 	case 842:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4447
+//line mysql.y:4448
 		{
-			mysqLOCAL = &ExecuteStmt{Name: mysqDollar[3].colIdent, Comments: Comments(mysqDollar[2].strs).Parsed(), Arguments: mysqDollar[4].columnsUnion()}
+			mysqLOCAL = &ExecuteStmt{Name: mysqDollar[3].colIdent, Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Arguments: mysqDollar[4].columnsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 843:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4452
+//line mysql.y:4453
 		{
 			mysqLOCAL = nil
 		}
@@ -14282,7 +14283,7 @@ mysqdefault:
 	case 844:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4456
+//line mysql.y:4457
 		{
 			mysqLOCAL = mysqDollar[2].columnsUnion()
 		}
@@ -14290,23 +14291,23 @@ mysqdefault:
 	case 845:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4462
+//line mysql.y:4463
 		{
-			mysqLOCAL = &DeallocateStmt{Type: DeallocateType, Comments: Comments(mysqDollar[2].strs).Parsed(), Name: mysqDollar[4].colIdent}
+			mysqLOCAL = &DeallocateStmt{Type: DeallocateType, Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Name: mysqDollar[4].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 846:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:4466
+//line mysql.y:4467
 		{
-			mysqLOCAL = &DeallocateStmt{Type: DropType, Comments: Comments(mysqDollar[2].strs).Parsed(), Name: mysqDollar[4].colIdent}
+			mysqLOCAL = &DeallocateStmt{Type: DropType, Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Name: mysqDollar[4].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 847:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.SelectExprs
-//line mysql.y:4471
+//line mysql.y:4472
 		{
 			mysqLOCAL = nil
 		}
@@ -14314,94 +14315,94 @@ mysqdefault:
 	case 848:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectExprs
-//line mysql.y:4475
+//line mysql.y:4476
 		{
 			mysqLOCAL = mysqDollar[1].selectExprsUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 849:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4480
+//line mysql.y:4481
 		{
 			mysqVAL.strs = nil
 		}
 	case 850:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4484
+//line mysql.y:4485
 		{
 			mysqVAL.strs = []string{mysqDollar[1].str}
 		}
 	case 851:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4488
+//line mysql.y:4489
 		{ // TODO: This is a hack since I couldn't get it to work in a nicer way. I got 'conflicts: 8 shift/reduce'
 			mysqVAL.strs = []string{mysqDollar[1].str, mysqDollar[2].str}
 		}
 	case 852:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4492
+//line mysql.y:4493
 		{
 			mysqVAL.strs = []string{mysqDollar[1].str, mysqDollar[2].str, mysqDollar[3].str}
 		}
 	case 853:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:4496
+//line mysql.y:4497
 		{
 			mysqVAL.strs = []string{mysqDollar[1].str, mysqDollar[2].str, mysqDollar[3].str, mysqDollar[4].str}
 		}
 	case 854:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4502
+//line mysql.y:4503
 		{
 			mysqVAL.str = SQLNoCacheStr
 		}
 	case 855:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4506
+//line mysql.y:4507
 		{
 			mysqVAL.str = SQLCacheStr
 		}
 	case 856:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4510
+//line mysql.y:4511
 		{
 			mysqVAL.str = DistinctStr
 		}
 	case 857:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4514
+//line mysql.y:4515
 		{
 			mysqVAL.str = DistinctStr
 		}
 	case 858:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4518
+//line mysql.y:4519
 		{
 			mysqVAL.str = StraightJoinHint
 		}
 	case 859:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4522
+//line mysql.y:4523
 		{
 			mysqVAL.str = SQLCalcFoundRowsStr
 		}
 	case 860:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4526
+//line mysql.y:4527
 		{
 			mysqVAL.str = AllStr // These are not picked up by NewSelect, and so ALL will be dropped. But this is OK, since it's redundant anyway
 		}
 	case 861:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectExprs
-//line mysql.y:4532
+//line mysql.y:4533
 		{
 			mysqLOCAL = SelectExprs{mysqDollar[1].selectExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 862:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4536
+//line mysql.y:4537
 		{
 			mysqSLICE := (*ast.SelectExprs)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].selectExprUnion())
@@ -14409,7 +14410,7 @@ mysqdefault:
 	case 863:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SelectExpr
-//line mysql.y:4542
+//line mysql.y:4543
 		{
 			mysqLOCAL = &StarExpr{}
 		}
@@ -14417,7 +14418,7 @@ mysqdefault:
 	case 864:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.SelectExpr
-//line mysql.y:4546
+//line mysql.y:4547
 		{
 			mysqLOCAL = &AliasedExpr{Expr: mysqDollar[1].exprUnion(), As: mysqDollar[2].colIdent}
 		}
@@ -14425,7 +14426,7 @@ mysqdefault:
 	case 865:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.SelectExpr
-//line mysql.y:4550
+//line mysql.y:4551
 		{
 			mysqLOCAL = &StarExpr{TableName: TableName{Name: mysqDollar[1].tableIdent}}
 		}
@@ -14433,47 +14434,47 @@ mysqdefault:
 	case 866:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.SelectExpr
-//line mysql.y:4554
+//line mysql.y:4555
 		{
 			mysqLOCAL = &StarExpr{TableName: TableName{Qualifier: mysqDollar[1].tableIdent, Name: mysqDollar[3].tableIdent}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 867:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4559
+//line mysql.y:4560
 		{
 			mysqVAL.colIdent = ColIdent{}
 		}
 	case 868:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4563
+//line mysql.y:4564
 		{
 			mysqVAL.colIdent = mysqDollar[1].colIdent
 		}
 	case 869:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4567
+//line mysql.y:4568
 		{
 			mysqVAL.colIdent = mysqDollar[2].colIdent
 		}
 	case 871:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4574
+//line mysql.y:4575
 		{
-			mysqVAL.colIdent = NewColIdent(string(mysqDollar[1].str))
+			mysqVAL.colIdent = ast.ast.NewColIdent(string(mysqDollar[1].str))
 		}
 	case 872:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.TableExprs
-//line mysql.y:4579
+//line mysql.y:4580
 		{
-			mysqLOCAL = TableExprs{&AliasedTableExpr{Expr: TableName{Name: NewTableIdent("dual")}}}
+			mysqLOCAL = TableExprs{&AliasedTableExpr{Expr: TableName{Name: ast.NewTableIdent("dual")}}}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 873:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableExprs
-//line mysql.y:4583
+//line mysql.y:4584
 		{
 			mysqLOCAL = mysqDollar[1].tableExprsUnion()
 		}
@@ -14481,7 +14482,7 @@ mysqdefault:
 	case 874:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.TableExprs
-//line mysql.y:4589
+//line mysql.y:4590
 		{
 			mysqLOCAL = mysqDollar[2].tableExprsUnion()
 		}
@@ -14489,14 +14490,14 @@ mysqdefault:
 	case 875:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableExprs
-//line mysql.y:4595
+//line mysql.y:4596
 		{
 			mysqLOCAL = TableExprs{mysqDollar[1].tableExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 876:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4599
+//line mysql.y:4600
 		{
 			mysqSLICE := (*ast.TableExprs)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].tableExprUnion())
@@ -14504,7 +14505,7 @@ mysqdefault:
 	case 879:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4609
+//line mysql.y:4610
 		{
 			mysqLOCAL = mysqDollar[1].aliasedTableNameUnion()
 		}
@@ -14512,7 +14513,7 @@ mysqdefault:
 	case 880:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4613
+//line mysql.y:4614
 		{
 			mysqLOCAL = &AliasedTableExpr{Expr: mysqDollar[1].derivedTableUnion(), As: mysqDollar[3].tableIdent, Columns: mysqDollar[4].columnsUnion()}
 		}
@@ -14520,7 +14521,7 @@ mysqdefault:
 	case 881:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4617
+//line mysql.y:4618
 		{
 			mysqLOCAL = &ParenTableExpr{Exprs: mysqDollar[2].tableExprsUnion()}
 		}
@@ -14528,7 +14529,7 @@ mysqdefault:
 	case 882:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4621
+//line mysql.y:4622
 		{
 			mysqLOCAL = mysqDollar[1].tableExprUnion()
 		}
@@ -14536,7 +14537,7 @@ mysqdefault:
 	case 883:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.DerivedTable
-//line mysql.y:4627
+//line mysql.y:4628
 		{
 			mysqLOCAL = &DerivedTable{Lateral: false, Select: mysqDollar[2].selStmtUnion()}
 		}
@@ -14544,7 +14545,7 @@ mysqdefault:
 	case 884:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.DerivedTable
-//line mysql.y:4631
+//line mysql.y:4632
 		{
 			mysqLOCAL = &DerivedTable{Lateral: true, Select: mysqDollar[3].selStmtUnion()}
 		}
@@ -14552,7 +14553,7 @@ mysqdefault:
 	case 885:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.AliasedTableExpr
-//line mysql.y:4637
+//line mysql.y:4638
 		{
 			mysqLOCAL = &AliasedTableExpr{Expr: mysqDollar[1].tableName, As: mysqDollar[2].tableIdent, Hints: mysqDollar[3].indexHintsUnion()}
 		}
@@ -14560,7 +14561,7 @@ mysqdefault:
 	case 886:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL *ast.AliasedTableExpr
-//line mysql.y:4641
+//line mysql.y:4642
 		{
 			mysqLOCAL = &AliasedTableExpr{Expr: mysqDollar[1].tableName, Partitions: mysqDollar[4].partitionsUnion(), As: mysqDollar[6].tableIdent, Hints: mysqDollar[7].indexHintsUnion()}
 		}
@@ -14568,7 +14569,7 @@ mysqdefault:
 	case 887:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4646
+//line mysql.y:4647
 		{
 			mysqLOCAL = nil
 		}
@@ -14576,7 +14577,7 @@ mysqdefault:
 	case 888:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4650
+//line mysql.y:4651
 		{
 			mysqLOCAL = mysqDollar[2].columnsUnion()
 		}
@@ -14584,14 +14585,14 @@ mysqdefault:
 	case 889:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4656
+//line mysql.y:4657
 		{
 			mysqLOCAL = Columns{mysqDollar[1].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 890:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4660
+//line mysql.y:4661
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].colIdent)
@@ -14599,22 +14600,22 @@ mysqdefault:
 	case 891:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4666
+//line mysql.y:4667
 		{
-			mysqLOCAL = Columns{NewColIdentWithAt(string(mysqDollar[1].str), SingleAt)}
+			mysqLOCAL = Columns{ast.NewColIdentWithAt(string(mysqDollar[1].str), SingleAt)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 892:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4670
+//line mysql.y:4671
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
-			*mysqSLICE = append(*mysqSLICE, NewColIdentWithAt(string(mysqDollar[3].str), SingleAt))
+			*mysqSLICE = append(*mysqSLICE, ast.ast.NewColIdentWithAt(string(mysqDollar[3].str), SingleAt))
 		}
 	case 893:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4676
+//line mysql.y:4677
 		{
 			mysqLOCAL = Columns{mysqDollar[1].colIdent}
 		}
@@ -14622,36 +14623,36 @@ mysqdefault:
 	case 894:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:4680
+//line mysql.y:4681
 		{
-			mysqLOCAL = Columns{NewColIdent(string(mysqDollar[1].str))}
+			mysqLOCAL = Columns{ast.NewColIdent(string(mysqDollar[1].str))}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 895:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4684
+//line mysql.y:4685
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].colIdent)
 		}
 	case 896:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4688
+//line mysql.y:4689
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
-			*mysqSLICE = append(*mysqSLICE, NewColIdent(string(mysqDollar[3].str)))
+			*mysqSLICE = append(*mysqSLICE, ast.ast.NewColIdent(string(mysqDollar[3].str)))
 		}
 	case 897:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Partitions
-//line mysql.y:4694
+//line mysql.y:4695
 		{
 			mysqLOCAL = Partitions{mysqDollar[1].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 898:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4698
+//line mysql.y:4699
 		{
 			mysqSLICE := (*ast.Partitions)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].colIdent)
@@ -14659,7 +14660,7 @@ mysqdefault:
 	case 899:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4711
+//line mysql.y:4712
 		{
 			mysqLOCAL = &JoinTableExpr{LeftExpr: mysqDollar[1].tableExprUnion(), Join: mysqDollar[2].joinTypeUnion(), RightExpr: mysqDollar[3].tableExprUnion(), Condition: mysqDollar[4].joinCondition}
 		}
@@ -14667,7 +14668,7 @@ mysqdefault:
 	case 900:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4715
+//line mysql.y:4716
 		{
 			mysqLOCAL = &JoinTableExpr{LeftExpr: mysqDollar[1].tableExprUnion(), Join: mysqDollar[2].joinTypeUnion(), RightExpr: mysqDollar[3].tableExprUnion(), Condition: mysqDollar[4].joinCondition}
 		}
@@ -14675,7 +14676,7 @@ mysqdefault:
 	case 901:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4719
+//line mysql.y:4720
 		{
 			mysqLOCAL = &JoinTableExpr{LeftExpr: mysqDollar[1].tableExprUnion(), Join: mysqDollar[2].joinTypeUnion(), RightExpr: mysqDollar[3].tableExprUnion(), Condition: mysqDollar[4].joinCondition}
 		}
@@ -14683,87 +14684,87 @@ mysqdefault:
 	case 902:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.TableExpr
-//line mysql.y:4723
+//line mysql.y:4724
 		{
 			mysqLOCAL = &JoinTableExpr{LeftExpr: mysqDollar[1].tableExprUnion(), Join: mysqDollar[2].joinTypeUnion(), RightExpr: mysqDollar[3].tableExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 903:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4729
+//line mysql.y:4730
 		{
 			mysqVAL.joinCondition = &JoinCondition{On: mysqDollar[2].exprUnion()}
 		}
 	case 904:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:4731
+//line mysql.y:4732
 		{
 			mysqVAL.joinCondition = &JoinCondition{Using: mysqDollar[3].columnsUnion()}
 		}
 	case 905:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4735
+//line mysql.y:4736
 		{
 			mysqVAL.joinCondition = &JoinCondition{}
 		}
 	case 906:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4737
+//line mysql.y:4738
 		{
 			mysqVAL.joinCondition = mysqDollar[1].joinCondition
 		}
 	case 907:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4741
+//line mysql.y:4742
 		{
 			mysqVAL.joinCondition = &JoinCondition{}
 		}
 	case 908:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4743
+//line mysql.y:4744
 		{
 			mysqVAL.joinCondition = &JoinCondition{On: mysqDollar[2].exprUnion()}
 		}
 	case 909:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4746
+//line mysql.y:4747
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 910:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4748
+//line mysql.y:4749
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 911:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:4751
+//line mysql.y:4752
 		{
-			mysqVAL.tableIdent = NewTableIdent("")
+			mysqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 912:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4755
+//line mysql.y:4756
 		{
 			mysqVAL.tableIdent = mysqDollar[1].tableIdent
 		}
 	case 913:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4759
+//line mysql.y:4760
 		{
 			mysqVAL.tableIdent = mysqDollar[2].tableIdent
 		}
 	case 915:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4766
+//line mysql.y:4767
 		{
-			mysqVAL.tableIdent = NewTableIdent(string(mysqDollar[1].str))
+			mysqVAL.tableIdent = ast.NewTableIdent(string(mysqDollar[1].str))
 		}
 	case 916:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4772
+//line mysql.y:4773
 		{
 			mysqLOCAL = NormalJoinType
 		}
@@ -14771,7 +14772,7 @@ mysqdefault:
 	case 917:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4776
+//line mysql.y:4777
 		{
 			mysqLOCAL = NormalJoinType
 		}
@@ -14779,7 +14780,7 @@ mysqdefault:
 	case 918:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4780
+//line mysql.y:4781
 		{
 			mysqLOCAL = NormalJoinType
 		}
@@ -14787,7 +14788,7 @@ mysqdefault:
 	case 919:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4786
+//line mysql.y:4787
 		{
 			mysqLOCAL = StraightJoinType
 		}
@@ -14795,7 +14796,7 @@ mysqdefault:
 	case 920:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4792
+//line mysql.y:4793
 		{
 			mysqLOCAL = LeftJoinType
 		}
@@ -14803,7 +14804,7 @@ mysqdefault:
 	case 921:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4796
+//line mysql.y:4797
 		{
 			mysqLOCAL = LeftJoinType
 		}
@@ -14811,7 +14812,7 @@ mysqdefault:
 	case 922:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4800
+//line mysql.y:4801
 		{
 			mysqLOCAL = RightJoinType
 		}
@@ -14819,7 +14820,7 @@ mysqdefault:
 	case 923:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4804
+//line mysql.y:4805
 		{
 			mysqLOCAL = RightJoinType
 		}
@@ -14827,7 +14828,7 @@ mysqdefault:
 	case 924:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4810
+//line mysql.y:4811
 		{
 			mysqLOCAL = NaturalJoinType
 		}
@@ -14835,7 +14836,7 @@ mysqdefault:
 	case 925:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.JoinType
-//line mysql.y:4814
+//line mysql.y:4815
 		{
 			if mysqDollar[2].joinTypeUnion() == LeftJoinType {
 				mysqLOCAL = NaturalLeftJoinType
@@ -14846,38 +14847,38 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 926:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4824
+//line mysql.y:4825
 		{
 			mysqVAL.tableName = mysqDollar[2].tableName
 		}
 	case 927:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4828
+//line mysql.y:4829
 		{
 			mysqVAL.tableName = mysqDollar[1].tableName
 		}
 	case 928:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:4834
+//line mysql.y:4835
 		{
 			mysqVAL.tableName = TableName{Name: mysqDollar[1].tableIdent}
 		}
 	case 929:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4838
+//line mysql.y:4839
 		{
 			mysqVAL.tableName = TableName{Qualifier: mysqDollar[1].tableIdent, Name: mysqDollar[3].tableIdent}
 		}
 	case 930:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:4844
+//line mysql.y:4845
 		{
 			mysqVAL.tableName = TableName{Name: mysqDollar[1].tableIdent}
 		}
 	case 931:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.IndexHints
-//line mysql.y:4849
+//line mysql.y:4850
 		{
 			mysqLOCAL = nil
 		}
@@ -14885,7 +14886,7 @@ mysqdefault:
 	case 932:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IndexHints
-//line mysql.y:4853
+//line mysql.y:4854
 		{
 			mysqLOCAL = mysqDollar[1].indexHintsUnion()
 		}
@@ -14893,14 +14894,14 @@ mysqdefault:
 	case 933:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IndexHints
-//line mysql.y:4859
+//line mysql.y:4860
 		{
 			mysqLOCAL = IndexHints{mysqDollar[1].indexHintUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 934:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:4863
+//line mysql.y:4864
 		{
 			mysqSLICE := (*ast.IndexHints)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].indexHintUnion())
@@ -14908,7 +14909,7 @@ mysqdefault:
 	case 935:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.IndexHint
-//line mysql.y:4869
+//line mysql.y:4870
 		{
 			mysqLOCAL = &IndexHint{Type: UseOp, ForType: mysqDollar[3].indexHintForTypeUnion(), Indexes: mysqDollar[5].columnsUnion()}
 		}
@@ -14916,7 +14917,7 @@ mysqdefault:
 	case 936:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.IndexHint
-//line mysql.y:4873
+//line mysql.y:4874
 		{
 			mysqLOCAL = &IndexHint{Type: UseOp, ForType: mysqDollar[3].indexHintForTypeUnion()}
 		}
@@ -14924,7 +14925,7 @@ mysqdefault:
 	case 937:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.IndexHint
-//line mysql.y:4877
+//line mysql.y:4878
 		{
 			mysqLOCAL = &IndexHint{Type: IgnoreOp, ForType: mysqDollar[3].indexHintForTypeUnion(), Indexes: mysqDollar[5].columnsUnion()}
 		}
@@ -14932,7 +14933,7 @@ mysqdefault:
 	case 938:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL *ast.IndexHint
-//line mysql.y:4881
+//line mysql.y:4882
 		{
 			mysqLOCAL = &IndexHint{Type: ForceOp, ForType: mysqDollar[3].indexHintForTypeUnion(), Indexes: mysqDollar[5].columnsUnion()}
 		}
@@ -14940,7 +14941,7 @@ mysqdefault:
 	case 939:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.IndexHintForType
-//line mysql.y:4886
+//line mysql.y:4887
 		{
 			mysqLOCAL = NoForType
 		}
@@ -14948,7 +14949,7 @@ mysqdefault:
 	case 940:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IndexHintForType
-//line mysql.y:4890
+//line mysql.y:4891
 		{
 			mysqLOCAL = JoinForType
 		}
@@ -14956,7 +14957,7 @@ mysqdefault:
 	case 941:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.IndexHintForType
-//line mysql.y:4894
+//line mysql.y:4895
 		{
 			mysqLOCAL = OrderByForType
 		}
@@ -14964,7 +14965,7 @@ mysqdefault:
 	case 942:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.IndexHintForType
-//line mysql.y:4898
+//line mysql.y:4899
 		{
 			mysqLOCAL = GroupByForType
 		}
@@ -14972,7 +14973,7 @@ mysqdefault:
 	case 943:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4904
+//line mysql.y:4905
 		{
 			mysqLOCAL = nil
 		}
@@ -14980,7 +14981,7 @@ mysqdefault:
 	case 944:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4908
+//line mysql.y:4909
 		{
 			mysqLOCAL = mysqDollar[2].exprUnion()
 		}
@@ -14988,7 +14989,7 @@ mysqdefault:
 	case 945:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4915
+//line mysql.y:4916
 		{
 			mysqLOCAL = &OrExpr{Left: mysqDollar[1].exprUnion(), Right: mysqDollar[3].exprUnion()}
 		}
@@ -14996,7 +14997,7 @@ mysqdefault:
 	case 946:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4919
+//line mysql.y:4920
 		{
 			mysqLOCAL = &XorExpr{Left: mysqDollar[1].exprUnion(), Right: mysqDollar[3].exprUnion()}
 		}
@@ -15004,7 +15005,7 @@ mysqdefault:
 	case 947:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4923
+//line mysql.y:4924
 		{
 			mysqLOCAL = &AndExpr{Left: mysqDollar[1].exprUnion(), Right: mysqDollar[3].exprUnion()}
 		}
@@ -15012,7 +15013,7 @@ mysqdefault:
 	case 948:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4927
+//line mysql.y:4928
 		{
 			mysqLOCAL = &NotExpr{Expr: mysqDollar[2].exprUnion()}
 		}
@@ -15020,7 +15021,7 @@ mysqdefault:
 	case 949:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4931
+//line mysql.y:4932
 		{
 			mysqLOCAL = &IsExpr{Left: mysqDollar[1].exprUnion(), Right: mysqDollar[3].isExprOperatorUnion()}
 		}
@@ -15028,7 +15029,7 @@ mysqdefault:
 	case 950:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4935
+//line mysql.y:4936
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15036,7 +15037,7 @@ mysqdefault:
 	case 951:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4939
+//line mysql.y:4940
 		{
 			mysqLOCAL = &MemberOfExpr{Value: mysqDollar[1].exprUnion(), JSONArr: mysqDollar[5].exprUnion()}
 		}
@@ -15044,7 +15045,7 @@ mysqdefault:
 	case 952:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4946
+//line mysql.y:4947
 		{
 			mysqLOCAL = &IsExpr{Left: mysqDollar[1].exprUnion(), Right: IsNullOp}
 		}
@@ -15052,7 +15053,7 @@ mysqdefault:
 	case 953:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4950
+//line mysql.y:4951
 		{
 			mysqLOCAL = &IsExpr{Left: mysqDollar[1].exprUnion(), Right: IsNotNullOp}
 		}
@@ -15060,7 +15061,7 @@ mysqdefault:
 	case 954:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4954
+//line mysql.y:4955
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: mysqDollar[2].comparisonExprOperatorUnion(), Right: mysqDollar[3].exprUnion()}
 		}
@@ -15068,7 +15069,7 @@ mysqdefault:
 	case 955:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4958
+//line mysql.y:4959
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15076,7 +15077,7 @@ mysqdefault:
 	case 956:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4964
+//line mysql.y:4965
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: InOp, Right: mysqDollar[3].colTupleUnion()}
 		}
@@ -15084,7 +15085,7 @@ mysqdefault:
 	case 957:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4968
+//line mysql.y:4969
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: NotInOp, Right: mysqDollar[4].colTupleUnion()}
 		}
@@ -15092,7 +15093,7 @@ mysqdefault:
 	case 958:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4972
+//line mysql.y:4973
 		{
 			mysqLOCAL = &BetweenExpr{Left: mysqDollar[1].exprUnion(), IsBetween: true, From: mysqDollar[3].exprUnion(), To: mysqDollar[5].exprUnion()}
 		}
@@ -15100,7 +15101,7 @@ mysqdefault:
 	case 959:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4976
+//line mysql.y:4977
 		{
 			mysqLOCAL = &BetweenExpr{Left: mysqDollar[1].exprUnion(), IsBetween: false, From: mysqDollar[4].exprUnion(), To: mysqDollar[6].exprUnion()}
 		}
@@ -15108,7 +15109,7 @@ mysqdefault:
 	case 960:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4980
+//line mysql.y:4981
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: LikeOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15116,7 +15117,7 @@ mysqdefault:
 	case 961:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4984
+//line mysql.y:4985
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: NotLikeOp, Right: mysqDollar[4].exprUnion()}
 		}
@@ -15124,7 +15125,7 @@ mysqdefault:
 	case 962:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4988
+//line mysql.y:4989
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: LikeOp, Right: mysqDollar[3].exprUnion(), Escape: mysqDollar[5].exprUnion()}
 		}
@@ -15132,7 +15133,7 @@ mysqdefault:
 	case 963:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4992
+//line mysql.y:4993
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: NotLikeOp, Right: mysqDollar[4].exprUnion(), Escape: mysqDollar[6].exprUnion()}
 		}
@@ -15140,7 +15141,7 @@ mysqdefault:
 	case 964:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:4996
+//line mysql.y:4997
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: RegexpOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15148,7 +15149,7 @@ mysqdefault:
 	case 965:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5000
+//line mysql.y:5001
 		{
 			mysqLOCAL = &ComparisonExpr{Left: mysqDollar[1].exprUnion(), Operator: NotRegexpOp, Right: mysqDollar[4].exprUnion()}
 		}
@@ -15156,7 +15157,7 @@ mysqdefault:
 	case 966:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5004
+//line mysql.y:5005
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15164,7 +15165,7 @@ mysqdefault:
 	case 967:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5010
+//line mysql.y:5011
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: BitOrOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15172,7 +15173,7 @@ mysqdefault:
 	case 968:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5014
+//line mysql.y:5015
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: BitAndOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15180,7 +15181,7 @@ mysqdefault:
 	case 969:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5018
+//line mysql.y:5019
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: ShiftLeftOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15188,7 +15189,7 @@ mysqdefault:
 	case 970:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5022
+//line mysql.y:5023
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: ShiftRightOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15196,7 +15197,7 @@ mysqdefault:
 	case 971:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5026
+//line mysql.y:5027
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: PlusOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15204,7 +15205,7 @@ mysqdefault:
 	case 972:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5030
+//line mysql.y:5031
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: MinusOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15212,7 +15213,7 @@ mysqdefault:
 	case 973:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5034
+//line mysql.y:5035
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: MultOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15220,7 +15221,7 @@ mysqdefault:
 	case 974:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5038
+//line mysql.y:5039
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: DivOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15228,7 +15229,7 @@ mysqdefault:
 	case 975:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5042
+//line mysql.y:5043
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: ModOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15236,7 +15237,7 @@ mysqdefault:
 	case 976:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5046
+//line mysql.y:5047
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: IntDivOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15244,7 +15245,7 @@ mysqdefault:
 	case 977:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5050
+//line mysql.y:5051
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: ModOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15252,7 +15253,7 @@ mysqdefault:
 	case 978:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5054
+//line mysql.y:5055
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].exprUnion(), Operator: BitXorOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15260,7 +15261,7 @@ mysqdefault:
 	case 979:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5058
+//line mysql.y:5059
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15268,7 +15269,7 @@ mysqdefault:
 	case 980:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5064
+//line mysql.y:5065
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15276,7 +15277,7 @@ mysqdefault:
 	case 981:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5068
+//line mysql.y:5069
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15284,7 +15285,7 @@ mysqdefault:
 	case 982:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5072
+//line mysql.y:5073
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15292,7 +15293,7 @@ mysqdefault:
 	case 983:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5076
+//line mysql.y:5077
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15300,7 +15301,7 @@ mysqdefault:
 	case 984:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5080
+//line mysql.y:5081
 		{
 			mysqLOCAL = &CollateExpr{Expr: mysqDollar[1].exprUnion(), Collation: mysqDollar[3].str}
 		}
@@ -15308,7 +15309,7 @@ mysqdefault:
 	case 985:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5084
+//line mysql.y:5085
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15316,7 +15317,7 @@ mysqdefault:
 	case 986:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5088
+//line mysql.y:5089
 		{
 			mysqLOCAL = mysqDollar[1].colNameUnion()
 		}
@@ -15324,7 +15325,7 @@ mysqdefault:
 	case 987:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5092
+//line mysql.y:5093
 		{
 			mysqLOCAL = mysqDollar[2].exprUnion() // TODO: do we really want to ignore unary '+' before any kind of literals?
 		}
@@ -15332,7 +15333,7 @@ mysqdefault:
 	case 988:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5096
+//line mysql.y:5097
 		{
 			mysqLOCAL = &UnaryExpr{Operator: UMinusOp, Expr: mysqDollar[2].exprUnion()}
 		}
@@ -15340,7 +15341,7 @@ mysqdefault:
 	case 989:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5100
+//line mysql.y:5101
 		{
 			mysqLOCAL = &UnaryExpr{Operator: TildaOp, Expr: mysqDollar[2].exprUnion()}
 		}
@@ -15348,7 +15349,7 @@ mysqdefault:
 	case 990:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5104
+//line mysql.y:5105
 		{
 			mysqLOCAL = &UnaryExpr{Operator: BangOp, Expr: mysqDollar[2].exprUnion()}
 		}
@@ -15356,7 +15357,7 @@ mysqdefault:
 	case 991:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5108
+//line mysql.y:5109
 		{
 			mysqLOCAL = mysqDollar[1].subqueryUnion()
 		}
@@ -15364,7 +15365,7 @@ mysqdefault:
 	case 992:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5112
+//line mysql.y:5113
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15372,7 +15373,7 @@ mysqdefault:
 	case 993:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5116
+//line mysql.y:5117
 		{
 			mysqLOCAL = &ExistsExpr{Subquery: mysqDollar[2].subqueryUnion()}
 		}
@@ -15380,7 +15381,7 @@ mysqdefault:
 	case 994:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5120
+//line mysql.y:5121
 		{
 			mysqLOCAL = &MatchExpr{Columns: mysqDollar[3].selectExprsUnion(), Expr: mysqDollar[7].exprUnion(), Option: mysqDollar[8].matchExprOptionUnion()}
 		}
@@ -15388,7 +15389,7 @@ mysqdefault:
 	case 995:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5124
+//line mysql.y:5125
 		{
 			mysqLOCAL = &ConvertExpr{Expr: mysqDollar[3].exprUnion(), Type: mysqDollar[5].convertTypeUnion()}
 		}
@@ -15396,7 +15397,7 @@ mysqdefault:
 	case 996:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5128
+//line mysql.y:5129
 		{
 			mysqLOCAL = &ConvertExpr{Expr: mysqDollar[3].exprUnion(), Type: mysqDollar[5].convertTypeUnion()}
 		}
@@ -15404,7 +15405,7 @@ mysqdefault:
 	case 997:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5132
+//line mysql.y:5133
 		{
 			mysqLOCAL = &ConvertUsingExpr{Expr: mysqDollar[3].exprUnion(), Type: mysqDollar[5].str}
 		}
@@ -15412,7 +15413,7 @@ mysqdefault:
 	case 998:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5136
+//line mysql.y:5137
 		{
 			// From: https://dev.mysql.com/doc/refman/8.0/en/cast-functions.html#operator_binary
 			// To convert a string expression to a binary string, these constructs are equivalent:
@@ -15424,7 +15425,7 @@ mysqdefault:
 	case 999:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5144
+//line mysql.y:5145
 		{
 			mysqLOCAL = &Default{ColName: mysqDollar[2].str}
 		}
@@ -15432,7 +15433,7 @@ mysqdefault:
 	case 1000:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5148
+//line mysql.y:5149
 		{
 			// This rule prevents the usage of INTERVAL
 			// as a function. If support is needed for that,
@@ -15444,7 +15445,7 @@ mysqdefault:
 	case 1001:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5156
+//line mysql.y:5157
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].colNameUnion(), Operator: JSONExtractOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15452,7 +15453,7 @@ mysqdefault:
 	case 1002:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5160
+//line mysql.y:5161
 		{
 			mysqLOCAL = &BinaryExpr{Left: mysqDollar[1].colNameUnion(), Operator: JSONUnquoteExtractOp, Right: mysqDollar[3].exprUnion()}
 		}
@@ -15460,7 +15461,7 @@ mysqdefault:
 	case 1003:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TrimType
-//line mysql.y:5166
+//line mysql.y:5167
 		{
 			mysqLOCAL = BothTrimType
 		}
@@ -15468,7 +15469,7 @@ mysqdefault:
 	case 1004:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TrimType
-//line mysql.y:5170
+//line mysql.y:5171
 		{
 			mysqLOCAL = LeadingTrimType
 		}
@@ -15476,27 +15477,27 @@ mysqdefault:
 	case 1005:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.TrimType
-//line mysql.y:5174
+//line mysql.y:5175
 		{
 			mysqLOCAL = TrailingTrimType
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1006:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:5180
+//line mysql.y:5181
 		{
 			mysqVAL.str = ""
 		}
 	case 1007:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:5184
+//line mysql.y:5185
 		{
 			mysqVAL.str = string(mysqDollar[2].colIdent.String())
 		}
 	case 1008:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.BoolVal
-//line mysql.y:5190
+//line mysql.y:5191
 		{
 			mysqLOCAL = BoolVal(true)
 		}
@@ -15504,7 +15505,7 @@ mysqdefault:
 	case 1009:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.BoolVal
-//line mysql.y:5194
+//line mysql.y:5195
 		{
 			mysqLOCAL = BoolVal(false)
 		}
@@ -15512,7 +15513,7 @@ mysqdefault:
 	case 1010:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IsExprOperator
-//line mysql.y:5201
+//line mysql.y:5202
 		{
 			mysqLOCAL = IsTrueOp
 		}
@@ -15520,7 +15521,7 @@ mysqdefault:
 	case 1011:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IsExprOperator
-//line mysql.y:5205
+//line mysql.y:5206
 		{
 			mysqLOCAL = IsNotTrueOp
 		}
@@ -15528,7 +15529,7 @@ mysqdefault:
 	case 1012:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IsExprOperator
-//line mysql.y:5209
+//line mysql.y:5210
 		{
 			mysqLOCAL = IsFalseOp
 		}
@@ -15536,7 +15537,7 @@ mysqdefault:
 	case 1013:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.IsExprOperator
-//line mysql.y:5213
+//line mysql.y:5214
 		{
 			mysqLOCAL = IsNotFalseOp
 		}
@@ -15544,7 +15545,7 @@ mysqdefault:
 	case 1014:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5219
+//line mysql.y:5220
 		{
 			mysqLOCAL = EqualOp
 		}
@@ -15552,7 +15553,7 @@ mysqdefault:
 	case 1015:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5223
+//line mysql.y:5224
 		{
 			mysqLOCAL = LessThanOp
 		}
@@ -15560,7 +15561,7 @@ mysqdefault:
 	case 1016:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5227
+//line mysql.y:5228
 		{
 			mysqLOCAL = GreaterThanOp
 		}
@@ -15568,7 +15569,7 @@ mysqdefault:
 	case 1017:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5231
+//line mysql.y:5232
 		{
 			mysqLOCAL = LessEqualOp
 		}
@@ -15576,7 +15577,7 @@ mysqdefault:
 	case 1018:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5235
+//line mysql.y:5236
 		{
 			mysqLOCAL = GreaterEqualOp
 		}
@@ -15584,7 +15585,7 @@ mysqdefault:
 	case 1019:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5239
+//line mysql.y:5240
 		{
 			mysqLOCAL = NotEqualOp
 		}
@@ -15592,7 +15593,7 @@ mysqdefault:
 	case 1020:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ComparisonExprOperator
-//line mysql.y:5243
+//line mysql.y:5244
 		{
 			mysqLOCAL = NullSafeEqualOp
 		}
@@ -15600,7 +15601,7 @@ mysqdefault:
 	case 1021:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColTuple
-//line mysql.y:5249
+//line mysql.y:5250
 		{
 			mysqLOCAL = mysqDollar[1].valTupleUnion()
 		}
@@ -15608,7 +15609,7 @@ mysqdefault:
 	case 1022:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColTuple
-//line mysql.y:5253
+//line mysql.y:5254
 		{
 			mysqLOCAL = mysqDollar[1].subqueryUnion()
 		}
@@ -15616,7 +15617,7 @@ mysqdefault:
 	case 1023:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ColTuple
-//line mysql.y:5257
+//line mysql.y:5258
 		{
 			mysqLOCAL = ListArg(mysqDollar[1].str[2:])
 			bindVariable(mysqlex, mysqDollar[1].str[2:])
@@ -15625,7 +15626,7 @@ mysqdefault:
 	case 1024:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.Subquery
-//line mysql.y:5264
+//line mysql.y:5265
 		{
 			mysqLOCAL = &Subquery{mysqDollar[1].selStmtUnion()}
 		}
@@ -15633,14 +15634,14 @@ mysqdefault:
 	case 1025:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Exprs
-//line mysql.y:5270
+//line mysql.y:5271
 		{
 			mysqLOCAL = Exprs{mysqDollar[1].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1026:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:5274
+//line mysql.y:5275
 		{
 			mysqSLICE := (*ast.Exprs)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].exprUnion())
@@ -15648,7 +15649,7 @@ mysqdefault:
 	case 1027:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5284
+//line mysql.y:5285
 		{
 			mysqLOCAL = &FuncExpr{Name: mysqDollar[1].colIdent, Exprs: mysqDollar[3].selectExprsUnion()}
 		}
@@ -15656,7 +15657,7 @@ mysqdefault:
 	case 1028:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5288
+//line mysql.y:5289
 		{
 			mysqLOCAL = &FuncExpr{Name: mysqDollar[1].colIdent, Distinct: true, Exprs: mysqDollar[4].selectExprsUnion()}
 		}
@@ -15664,7 +15665,7 @@ mysqdefault:
 	case 1029:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5292
+//line mysql.y:5293
 		{
 			mysqLOCAL = &FuncExpr{Name: mysqDollar[1].colIdent, Distinct: true, Exprs: mysqDollar[4].selectExprsUnion()}
 		}
@@ -15672,7 +15673,7 @@ mysqdefault:
 	case 1030:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5296
+//line mysql.y:5297
 		{
 			mysqLOCAL = &FuncExpr{Qualifier: mysqDollar[1].tableIdent, Name: mysqDollar[3].colIdent, Exprs: mysqDollar[5].selectExprsUnion()}
 		}
@@ -15680,23 +15681,23 @@ mysqdefault:
 	case 1031:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5306
+//line mysql.y:5307
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("left"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("left"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1032:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5310
+//line mysql.y:5311
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("right"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("right"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1033:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5314
+//line mysql.y:5315
 		{
 			mysqLOCAL = &SubstrExpr{Name: mysqDollar[3].exprUnion(), From: mysqDollar[5].exprUnion(), To: mysqDollar[7].exprUnion()}
 		}
@@ -15704,7 +15705,7 @@ mysqdefault:
 	case 1034:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5318
+//line mysql.y:5319
 		{
 			mysqLOCAL = &SubstrExpr{Name: mysqDollar[3].exprUnion(), From: mysqDollar[5].exprUnion()}
 		}
@@ -15712,7 +15713,7 @@ mysqdefault:
 	case 1035:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5322
+//line mysql.y:5323
 		{
 			mysqLOCAL = &SubstrExpr{Name: mysqDollar[3].exprUnion(), From: mysqDollar[5].exprUnion(), To: mysqDollar[7].exprUnion()}
 		}
@@ -15720,7 +15721,7 @@ mysqdefault:
 	case 1036:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5326
+//line mysql.y:5327
 		{
 			mysqLOCAL = &SubstrExpr{Name: mysqDollar[3].exprUnion(), From: mysqDollar[5].exprUnion()}
 		}
@@ -15728,7 +15729,7 @@ mysqdefault:
 	case 1037:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5330
+//line mysql.y:5331
 		{
 			mysqLOCAL = &GroupConcatExpr{Distinct: mysqDollar[3].booleanUnion(), Exprs: mysqDollar[4].selectExprsUnion(), OrderBy: mysqDollar[5].orderByUnion(), Separator: mysqDollar[6].str, Limit: mysqDollar[7].limitUnion()}
 		}
@@ -15736,7 +15737,7 @@ mysqdefault:
 	case 1038:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5334
+//line mysql.y:5335
 		{
 			mysqLOCAL = &CaseExpr{Expr: mysqDollar[2].exprUnion(), Whens: mysqDollar[3].whensUnion(), Else: mysqDollar[4].exprUnion()}
 		}
@@ -15744,7 +15745,7 @@ mysqdefault:
 	case 1039:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5338
+//line mysql.y:5339
 		{
 			mysqLOCAL = &ValuesFuncExpr{Name: mysqDollar[3].colNameUnion()}
 		}
@@ -15752,23 +15753,23 @@ mysqdefault:
 	case 1040:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5342
+//line mysql.y:5343
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent(mysqDollar[1].str)}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent(mysqDollar[1].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1041:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5353
+//line mysql.y:5354
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("utc_date")}
+			mysqLOCAL = &FuncExpr{Name: ast.NewColIdent("utc_date")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1042:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5357
+//line mysql.y:5358
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
@@ -15776,31 +15777,31 @@ mysqdefault:
 	case 1043:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5363
+//line mysql.y:5364
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("current_date")}
+			mysqLOCAL = &FuncExpr{Name: ast.NewColIdent("current_date")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1044:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5367
+//line mysql.y:5368
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("utc_time"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("utc_time"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1045:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5372
+//line mysql.y:5373
 		{
-			mysqLOCAL = &CurTimeFuncExpr{Name: NewColIdent("current_time"), Fsp: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("current_time"), Fsp: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1046:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5376
+//line mysql.y:5377
 		{
 			mysqLOCAL = &TimestampFuncExpr{Name: string("timestampadd"), Unit: mysqDollar[3].colIdent.String(), Expr1: mysqDollar[5].exprUnion(), Expr2: mysqDollar[7].exprUnion()}
 		}
@@ -15808,7 +15809,7 @@ mysqdefault:
 	case 1047:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5380
+//line mysql.y:5381
 		{
 			mysqLOCAL = &TimestampFuncExpr{Name: string("timestampdiff"), Unit: mysqDollar[3].colIdent.String(), Expr1: mysqDollar[5].exprUnion(), Expr2: mysqDollar[7].exprUnion()}
 		}
@@ -15816,7 +15817,7 @@ mysqdefault:
 	case 1048:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5384
+//line mysql.y:5385
 		{
 			mysqLOCAL = &ExtractFuncExpr{IntervalTypes: mysqDollar[3].intervalTypeUnion(), Expr: mysqDollar[5].exprUnion()}
 		}
@@ -15824,7 +15825,7 @@ mysqdefault:
 	case 1049:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5388
+//line mysql.y:5389
 		{
 			mysqLOCAL = &WeightStringFuncExpr{Expr: mysqDollar[3].exprUnion(), As: mysqDollar[4].convertTypeUnion()}
 		}
@@ -15832,7 +15833,7 @@ mysqdefault:
 	case 1050:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5392
+//line mysql.y:5393
 		{
 			mysqLOCAL = &JSONPrettyExpr{JSONVal: mysqDollar[3].exprUnion()}
 		}
@@ -15840,7 +15841,7 @@ mysqdefault:
 	case 1051:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5396
+//line mysql.y:5397
 		{
 			mysqLOCAL = &JSONStorageFreeExpr{JSONVal: mysqDollar[3].exprUnion()}
 		}
@@ -15848,7 +15849,7 @@ mysqdefault:
 	case 1052:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5400
+//line mysql.y:5401
 		{
 			mysqLOCAL = &JSONStorageSizeExpr{JSONVal: mysqDollar[3].exprUnion()}
 		}
@@ -15856,7 +15857,7 @@ mysqdefault:
 	case 1053:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5404
+//line mysql.y:5405
 		{
 			mysqLOCAL = &TrimFuncExpr{TrimFuncType: LTrimType, StringArg: mysqDollar[3].exprUnion()}
 		}
@@ -15864,7 +15865,7 @@ mysqdefault:
 	case 1054:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5408
+//line mysql.y:5409
 		{
 			mysqLOCAL = &TrimFuncExpr{TrimFuncType: RTrimType, StringArg: mysqDollar[3].exprUnion()}
 		}
@@ -15872,7 +15873,7 @@ mysqdefault:
 	case 1055:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5412
+//line mysql.y:5413
 		{
 			mysqLOCAL = &TrimFuncExpr{Type: mysqDollar[3].trimTypeUnion(), TrimArg: mysqDollar[4].exprUnion(), StringArg: mysqDollar[6].exprUnion()}
 		}
@@ -15880,7 +15881,7 @@ mysqdefault:
 	case 1056:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5416
+//line mysql.y:5417
 		{
 			mysqLOCAL = &TrimFuncExpr{StringArg: mysqDollar[3].exprUnion()}
 		}
@@ -15888,7 +15889,7 @@ mysqdefault:
 	case 1057:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5420
+//line mysql.y:5421
 		{
 			mysqLOCAL = &TrimFuncExpr{TrimArg: mysqDollar[3].exprUnion(), StringArg: mysqDollar[5].exprUnion()}
 		}
@@ -15896,7 +15897,7 @@ mysqdefault:
 	case 1058:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5424
+//line mysql.y:5425
 		{
 			mysqLOCAL = &JSONSchemaValidFuncExpr{Schema: mysqDollar[3].exprUnion(), Document: mysqDollar[5].exprUnion()}
 		}
@@ -15904,7 +15905,7 @@ mysqdefault:
 	case 1059:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5428
+//line mysql.y:5429
 		{
 			mysqLOCAL = &JSONSchemaValidationReportFuncExpr{Schema: mysqDollar[3].exprUnion(), Document: mysqDollar[5].exprUnion()}
 		}
@@ -15912,7 +15913,7 @@ mysqdefault:
 	case 1060:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5432
+//line mysql.y:5433
 		{
 			mysqLOCAL = &JSONArrayExpr{Params: mysqDollar[3].exprsUnion()}
 		}
@@ -15920,7 +15921,7 @@ mysqdefault:
 	case 1061:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5436
+//line mysql.y:5437
 		{
 			mysqLOCAL = &JSONObjectExpr{Params: mysqDollar[3].jsonObjectParamsUnion()}
 		}
@@ -15928,7 +15929,7 @@ mysqdefault:
 	case 1062:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5440
+//line mysql.y:5441
 		{
 			mysqLOCAL = &JSONQuoteExpr{StringArg: mysqDollar[3].exprUnion()}
 		}
@@ -15936,7 +15937,7 @@ mysqdefault:
 	case 1063:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5444
+//line mysql.y:5445
 		{
 			mysqLOCAL = &JSONContainsExpr{Target: mysqDollar[3].exprUnion(), Candidate: mysqDollar[5].exprUnion(), PathList: mysqDollar[6].jsonPathParamsUnion()}
 		}
@@ -15944,7 +15945,7 @@ mysqdefault:
 	case 1064:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5448
+//line mysql.y:5449
 		{
 			mysqLOCAL = &JSONContainsPathExpr{JSONDoc: mysqDollar[3].exprUnion(), OneOrAll: mysqDollar[5].exprUnion(), PathList: mysqDollar[7].jsonPathParamsUnion()}
 		}
@@ -15952,7 +15953,7 @@ mysqdefault:
 	case 1065:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5452
+//line mysql.y:5453
 		{
 			mysqLOCAL = &JSONExtractExpr{JSONDoc: mysqDollar[3].exprUnion(), PathList: mysqDollar[5].jsonPathParamsUnion()}
 		}
@@ -15960,7 +15961,7 @@ mysqdefault:
 	case 1066:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5456
+//line mysql.y:5457
 		{
 			mysqLOCAL = &JSONKeysExpr{JSONDoc: mysqDollar[3].exprUnion(), PathList: mysqDollar[4].jsonPathParamsUnion()}
 		}
@@ -15968,7 +15969,7 @@ mysqdefault:
 	case 1067:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5460
+//line mysql.y:5461
 		{
 			mysqLOCAL = &JSONOverlapsExpr{JSONDoc1: mysqDollar[3].exprUnion(), JSONDoc2: mysqDollar[5].exprUnion()}
 		}
@@ -15976,7 +15977,7 @@ mysqdefault:
 	case 1068:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5464
+//line mysql.y:5465
 		{
 			mysqLOCAL = &JSONSearchExpr{JSONDoc: mysqDollar[3].exprUnion(), OneOrAll: mysqDollar[5].exprUnion(), SearchStr: mysqDollar[7].exprUnion()}
 		}
@@ -15984,7 +15985,7 @@ mysqdefault:
 	case 1069:
 		mysqDollar = mysqS[mysqpt-11 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5468
+//line mysql.y:5469
 		{
 			mysqLOCAL = &JSONSearchExpr{JSONDoc: mysqDollar[3].exprUnion(), OneOrAll: mysqDollar[5].exprUnion(), SearchStr: mysqDollar[7].exprUnion(), EscapeChar: mysqDollar[9].exprUnion(), PathList: mysqDollar[10].jsonPathParamsUnion()}
 		}
@@ -15992,7 +15993,7 @@ mysqdefault:
 	case 1070:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5472
+//line mysql.y:5473
 		{
 			mysqLOCAL = &JSONValueExpr{JSONDoc: mysqDollar[3].exprUnion(), Path: mysqDollar[5].jsonPathParam, ReturningType: mysqDollar[6].convertTypeUnion()}
 		}
@@ -16000,7 +16001,7 @@ mysqdefault:
 	case 1071:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5476
+//line mysql.y:5477
 		{
 			mysqLOCAL = &JSONValueExpr{JSONDoc: mysqDollar[3].exprUnion(), Path: mysqDollar[5].jsonPathParam, ReturningType: mysqDollar[6].convertTypeUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion()}
 		}
@@ -16008,7 +16009,7 @@ mysqdefault:
 	case 1072:
 		mysqDollar = mysqS[mysqpt-8 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5480
+//line mysql.y:5481
 		{
 			mysqLOCAL = &JSONValueExpr{JSONDoc: mysqDollar[3].exprUnion(), Path: mysqDollar[5].jsonPathParam, ReturningType: mysqDollar[6].convertTypeUnion(), ErrorOnResponse: mysqDollar[7].jtOnResponseUnion()}
 		}
@@ -16016,7 +16017,7 @@ mysqdefault:
 	case 1073:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5484
+//line mysql.y:5485
 		{
 			mysqLOCAL = &JSONValueExpr{JSONDoc: mysqDollar[3].exprUnion(), Path: mysqDollar[5].jsonPathParam, ReturningType: mysqDollar[6].convertTypeUnion(), EmptyOnResponse: mysqDollar[7].jtOnResponseUnion(), ErrorOnResponse: mysqDollar[8].jtOnResponseUnion()}
 		}
@@ -16024,7 +16025,7 @@ mysqdefault:
 	case 1074:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5488
+//line mysql.y:5489
 		{
 			mysqLOCAL = &JSONAttributesExpr{Type: DepthAttributeType, JSONDoc: mysqDollar[3].exprUnion()}
 		}
@@ -16032,7 +16033,7 @@ mysqdefault:
 	case 1075:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5492
+//line mysql.y:5493
 		{
 			mysqLOCAL = &JSONAttributesExpr{Type: ValidAttributeType, JSONDoc: mysqDollar[3].exprUnion()}
 		}
@@ -16040,7 +16041,7 @@ mysqdefault:
 	case 1076:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5496
+//line mysql.y:5497
 		{
 			mysqLOCAL = &JSONAttributesExpr{Type: TypeAttributeType, JSONDoc: mysqDollar[3].exprUnion()}
 		}
@@ -16048,7 +16049,7 @@ mysqdefault:
 	case 1077:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5500
+//line mysql.y:5501
 		{
 			mysqLOCAL = &JSONAttributesExpr{Type: LengthAttributeType, JSONDoc: mysqDollar[3].exprUnion()}
 		}
@@ -16056,7 +16057,7 @@ mysqdefault:
 	case 1078:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5504
+//line mysql.y:5505
 		{
 			mysqLOCAL = &JSONAttributesExpr{Type: LengthAttributeType, JSONDoc: mysqDollar[3].exprUnion(), Path: mysqDollar[5].jsonPathParam}
 		}
@@ -16064,7 +16065,7 @@ mysqdefault:
 	case 1079:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5508
+//line mysql.y:5509
 		{
 			mysqLOCAL = &JSONValueModifierExpr{Type: JSONArrayAppendType, JSONDoc: mysqDollar[3].exprUnion(), Params: mysqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16072,7 +16073,7 @@ mysqdefault:
 	case 1080:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5512
+//line mysql.y:5513
 		{
 			mysqLOCAL = &JSONValueModifierExpr{Type: JSONArrayInsertType, JSONDoc: mysqDollar[3].exprUnion(), Params: mysqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16080,7 +16081,7 @@ mysqdefault:
 	case 1081:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5516
+//line mysql.y:5517
 		{
 			mysqLOCAL = &JSONValueModifierExpr{Type: JSONInsertType, JSONDoc: mysqDollar[3].exprUnion(), Params: mysqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16088,7 +16089,7 @@ mysqdefault:
 	case 1082:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5520
+//line mysql.y:5521
 		{
 			mysqLOCAL = &JSONValueModifierExpr{Type: JSONReplaceType, JSONDoc: mysqDollar[3].exprUnion(), Params: mysqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16096,7 +16097,7 @@ mysqdefault:
 	case 1083:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5524
+//line mysql.y:5525
 		{
 			mysqLOCAL = &JSONValueModifierExpr{Type: JSONSetType, JSONDoc: mysqDollar[3].exprUnion(), Params: mysqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16104,7 +16105,7 @@ mysqdefault:
 	case 1084:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5528
+//line mysql.y:5529
 		{
 			mysqLOCAL = &JSONValueMergeExpr{Type: JSONMergeType, JSONDoc: mysqDollar[3].exprUnion(), JSONDocList: mysqDollar[5].exprsUnion()}
 		}
@@ -16112,7 +16113,7 @@ mysqdefault:
 	case 1085:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5532
+//line mysql.y:5533
 		{
 			mysqLOCAL = &JSONValueMergeExpr{Type: JSONMergePatchType, JSONDoc: mysqDollar[3].exprUnion(), JSONDocList: mysqDollar[5].exprsUnion()}
 		}
@@ -16120,7 +16121,7 @@ mysqdefault:
 	case 1086:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5536
+//line mysql.y:5537
 		{
 			mysqLOCAL = &JSONValueMergeExpr{Type: JSONMergePreserveType, JSONDoc: mysqDollar[3].exprUnion(), JSONDocList: mysqDollar[5].exprsUnion()}
 		}
@@ -16128,7 +16129,7 @@ mysqdefault:
 	case 1087:
 		mysqDollar = mysqS[mysqpt-6 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5540
+//line mysql.y:5541
 		{
 			mysqLOCAL = &JSONRemoveExpr{JSONDoc: mysqDollar[3].exprUnion(), PathList: mysqDollar[5].exprsUnion()}
 		}
@@ -16136,7 +16137,7 @@ mysqdefault:
 	case 1088:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5544
+//line mysql.y:5545
 		{
 			mysqLOCAL = &JSONUnquoteExpr{JSONValue: mysqDollar[3].exprUnion()}
 		}
@@ -16144,7 +16145,7 @@ mysqdefault:
 	case 1089:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5549
+//line mysql.y:5550
 		{
 			mysqLOCAL = nil
 		}
@@ -16152,7 +16153,7 @@ mysqdefault:
 	case 1090:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5553
+//line mysql.y:5554
 		{
 			mysqLOCAL = mysqDollar[2].convertTypeUnion()
 		}
@@ -16160,7 +16161,7 @@ mysqdefault:
 	case 1091:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []ast.JSONPathParam
-//line mysql.y:5558
+//line mysql.y:5559
 		{
 			mysqLOCAL = nil
 		}
@@ -16168,7 +16169,7 @@ mysqdefault:
 	case 1092:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL []ast.JSONPathParam
-//line mysql.y:5562
+//line mysql.y:5563
 		{
 			mysqLOCAL = mysqDollar[2].jsonPathParamsUnion()
 		}
@@ -16176,39 +16177,39 @@ mysqdefault:
 	case 1093:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.JSONPathParam
-//line mysql.y:5568
+//line mysql.y:5569
 		{
 			mysqLOCAL = []JSONPathParam{mysqDollar[1].jsonPathParam}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1094:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:5572
+//line mysql.y:5573
 		{
 			mysqSLICE := (*[]ast.JSONPathParam)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].jsonPathParam)
 		}
 	case 1095:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5578
+//line mysql.y:5579
 		{
 			mysqVAL.jsonPathParam = JSONPathParam(mysqDollar[1].exprUnion())
 		}
 	case 1096:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5582
+//line mysql.y:5583
 		{
 			mysqVAL.jsonPathParam = JSONPathParam(mysqDollar[1].colNameUnion())
 		}
 	case 1097:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5588
+//line mysql.y:5589
 		{
 		}
 	case 1098:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5590
+//line mysql.y:5591
 		{
 			mysqLOCAL = IntervalDayHour
 		}
@@ -16216,7 +16217,7 @@ mysqdefault:
 	case 1099:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5594
+//line mysql.y:5595
 		{
 			mysqLOCAL = IntervalDayMicrosecond
 		}
@@ -16224,7 +16225,7 @@ mysqdefault:
 	case 1100:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5598
+//line mysql.y:5599
 		{
 			mysqLOCAL = IntervalDayMinute
 		}
@@ -16232,7 +16233,7 @@ mysqdefault:
 	case 1101:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5602
+//line mysql.y:5603
 		{
 			mysqLOCAL = IntervalDaySecond
 		}
@@ -16240,7 +16241,7 @@ mysqdefault:
 	case 1102:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5606
+//line mysql.y:5607
 		{
 			mysqLOCAL = IntervalHourMicrosecond
 		}
@@ -16248,7 +16249,7 @@ mysqdefault:
 	case 1103:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5610
+//line mysql.y:5611
 		{
 			mysqLOCAL = IntervalHourMinute
 		}
@@ -16256,7 +16257,7 @@ mysqdefault:
 	case 1104:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5614
+//line mysql.y:5615
 		{
 			mysqLOCAL = IntervalHourSecond
 		}
@@ -16264,7 +16265,7 @@ mysqdefault:
 	case 1105:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5618
+//line mysql.y:5619
 		{
 			mysqLOCAL = IntervalMinuteMicrosecond
 		}
@@ -16272,7 +16273,7 @@ mysqdefault:
 	case 1106:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5622
+//line mysql.y:5623
 		{
 			mysqLOCAL = IntervalMinuteSecond
 		}
@@ -16280,7 +16281,7 @@ mysqdefault:
 	case 1107:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5626
+//line mysql.y:5627
 		{
 			mysqLOCAL = IntervalSecondMicrosecond
 		}
@@ -16288,7 +16289,7 @@ mysqdefault:
 	case 1108:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5630
+//line mysql.y:5631
 		{
 			mysqLOCAL = IntervalYearMonth
 		}
@@ -16296,7 +16297,7 @@ mysqdefault:
 	case 1109:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5636
+//line mysql.y:5637
 		{
 			mysqLOCAL = IntervalDay
 		}
@@ -16304,7 +16305,7 @@ mysqdefault:
 	case 1110:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5640
+//line mysql.y:5641
 		{
 			mysqLOCAL = IntervalWeek
 		}
@@ -16312,7 +16313,7 @@ mysqdefault:
 	case 1111:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5644
+//line mysql.y:5645
 		{
 			mysqLOCAL = IntervalHour
 		}
@@ -16320,7 +16321,7 @@ mysqdefault:
 	case 1112:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5648
+//line mysql.y:5649
 		{
 			mysqLOCAL = IntervalMinute
 		}
@@ -16328,7 +16329,7 @@ mysqdefault:
 	case 1113:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5652
+//line mysql.y:5653
 		{
 			mysqLOCAL = IntervalMonth
 		}
@@ -16336,7 +16337,7 @@ mysqdefault:
 	case 1114:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5656
+//line mysql.y:5657
 		{
 			mysqLOCAL = IntervalQuarter
 		}
@@ -16344,7 +16345,7 @@ mysqdefault:
 	case 1115:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5660
+//line mysql.y:5661
 		{
 			mysqLOCAL = IntervalSecond
 		}
@@ -16352,7 +16353,7 @@ mysqdefault:
 	case 1116:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5664
+//line mysql.y:5665
 		{
 			mysqLOCAL = IntervalMicrosecond
 		}
@@ -16360,7 +16361,7 @@ mysqdefault:
 	case 1117:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.IntervalTypes
-//line mysql.y:5668
+//line mysql.y:5669
 		{
 			mysqLOCAL = IntervalYear
 		}
@@ -16368,7 +16369,7 @@ mysqdefault:
 	case 1120:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5678
+//line mysql.y:5679
 		{
 			mysqLOCAL = nil
 		}
@@ -16376,7 +16377,7 @@ mysqdefault:
 	case 1121:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5682
+//line mysql.y:5683
 		{
 			mysqLOCAL = nil
 		}
@@ -16384,64 +16385,64 @@ mysqdefault:
 	case 1122:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5686
+//line mysql.y:5687
 		{
-			mysqLOCAL = NewIntLiteral(mysqDollar[2].str)
+			mysqLOCAL = ast.NewIntLiteral(mysqDollar[2].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1123:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5690
+//line mysql.y:5691
 		{
-			mysqLOCAL = NewArgument(mysqDollar[2].str[1:])
+			mysqLOCAL = ast.NewArgument(mysqDollar[2].str[1:])
 			bindVariable(mysqlex, mysqDollar[2].str[1:])
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1124:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5701
+//line mysql.y:5702
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("if"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("if"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1125:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5705
+//line mysql.y:5706
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("database"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("database"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1126:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5709
+//line mysql.y:5710
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("schema"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("schema"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1127:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5713
+//line mysql.y:5714
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("mod"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("mod"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1128:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5717
+//line mysql.y:5718
 		{
-			mysqLOCAL = &FuncExpr{Name: NewColIdent("replace"), Exprs: mysqDollar[3].selectExprsUnion()}
+			mysqLOCAL = &FuncExpr{Name: ast.ast.NewColIdent("replace"), Exprs: mysqDollar[3].selectExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1129:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.MatchExprOption
-//line mysql.y:5723
+//line mysql.y:5724
 		{
 			mysqLOCAL = NoOption
 		}
@@ -16449,7 +16450,7 @@ mysqdefault:
 	case 1130:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.MatchExprOption
-//line mysql.y:5727
+//line mysql.y:5728
 		{
 			mysqLOCAL = BooleanModeOpt
 		}
@@ -16457,7 +16458,7 @@ mysqdefault:
 	case 1131:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.MatchExprOption
-//line mysql.y:5731
+//line mysql.y:5732
 		{
 			mysqLOCAL = NaturalLanguageModeOpt
 		}
@@ -16465,7 +16466,7 @@ mysqdefault:
 	case 1132:
 		mysqDollar = mysqS[mysqpt-7 : mysqpt+1]
 		var mysqLOCAL ast.MatchExprOption
-//line mysql.y:5735
+//line mysql.y:5736
 		{
 			mysqLOCAL = NaturalLanguageModeWithQueryExpansionOpt
 		}
@@ -16473,33 +16474,33 @@ mysqdefault:
 	case 1133:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.MatchExprOption
-//line mysql.y:5739
+//line mysql.y:5740
 		{
 			mysqLOCAL = QueryExpansionOpt
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1134:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5745
+//line mysql.y:5746
 		{
 			mysqVAL.str = string(mysqDollar[1].colIdent.String())
 		}
 	case 1135:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5749
+//line mysql.y:5750
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1136:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:5753
+//line mysql.y:5754
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1137:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5759
+//line mysql.y:5760
 		{
 			mysqLOCAL = nil
 		}
@@ -16507,23 +16508,23 @@ mysqdefault:
 	case 1138:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5763
+//line mysql.y:5764
 		{
-			mysqLOCAL = &ConvertType{Type: string(mysqDollar[2].str), Length: NewIntLiteral(mysqDollar[4].str)}
+			mysqLOCAL = &ConvertType{Type: string(mysqDollar[2].str), Length: ast.NewIntLiteral(mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1139:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5767
+//line mysql.y:5768
 		{
-			mysqLOCAL = &ConvertType{Type: string(mysqDollar[2].str), Length: NewIntLiteral(mysqDollar[4].str)}
+			mysqLOCAL = &ConvertType{Type: string(mysqDollar[2].str), Length: ast.NewIntLiteral(mysqDollar[4].str)}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1140:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5773
+//line mysql.y:5774
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
@@ -16531,7 +16532,7 @@ mysqdefault:
 	case 1141:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5777
+//line mysql.y:5778
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion(), Charset: mysqDollar[3].columnCharset}
 		}
@@ -16539,7 +16540,7 @@ mysqdefault:
 	case 1142:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5781
+//line mysql.y:5782
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16547,7 +16548,7 @@ mysqdefault:
 	case 1143:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5785
+//line mysql.y:5786
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
@@ -16555,7 +16556,7 @@ mysqdefault:
 	case 1144:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5789
+//line mysql.y:5790
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 			mysqLOCAL.Length = mysqDollar[2].LengthScaleOption.Length
@@ -16565,7 +16566,7 @@ mysqdefault:
 	case 1145:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5795
+//line mysql.y:5796
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16573,7 +16574,7 @@ mysqdefault:
 	case 1146:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5799
+//line mysql.y:5800
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
@@ -16581,7 +16582,7 @@ mysqdefault:
 	case 1147:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5803
+//line mysql.y:5804
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16589,7 +16590,7 @@ mysqdefault:
 	case 1148:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5807
+//line mysql.y:5808
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16597,7 +16598,7 @@ mysqdefault:
 	case 1149:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5811
+//line mysql.y:5812
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
@@ -16605,7 +16606,7 @@ mysqdefault:
 	case 1150:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5815
+//line mysql.y:5816
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16613,7 +16614,7 @@ mysqdefault:
 	case 1151:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5819
+//line mysql.y:5820
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16621,7 +16622,7 @@ mysqdefault:
 	case 1152:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5823
+//line mysql.y:5824
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str), Length: mysqDollar[2].literalUnion()}
 		}
@@ -16629,7 +16630,7 @@ mysqdefault:
 	case 1153:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5827
+//line mysql.y:5828
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16637,7 +16638,7 @@ mysqdefault:
 	case 1154:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ConvertType
-//line mysql.y:5831
+//line mysql.y:5832
 		{
 			mysqLOCAL = &ConvertType{Type: string(mysqDollar[1].str)}
 		}
@@ -16645,7 +16646,7 @@ mysqdefault:
 	case 1155:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5837
+//line mysql.y:5838
 		{
 			mysqLOCAL = nil
 		}
@@ -16653,34 +16654,34 @@ mysqdefault:
 	case 1156:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5841
+//line mysql.y:5842
 		{
 			mysqLOCAL = mysqDollar[1].exprUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1157:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:5846
+//line mysql.y:5847
 		{
 			mysqVAL.str = string("")
 		}
 	case 1158:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:5850
+//line mysql.y:5851
 		{
-			mysqVAL.str = " separator " + encodeSQLString(mysqDollar[2].str)
+			mysqVAL.str = " separator " + sql_types.EncodeStringSQL(mysqDollar[2].str)
 		}
 	case 1159:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.When
-//line mysql.y:5856
+//line mysql.y:5857
 		{
 			mysqLOCAL = []*When{mysqDollar[1].whenUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1160:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:5860
+//line mysql.y:5861
 		{
 			mysqSLICE := (*[]*ast.When)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[2].whenUnion())
@@ -16688,7 +16689,7 @@ mysqdefault:
 	case 1161:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.When
-//line mysql.y:5866
+//line mysql.y:5867
 		{
 			mysqLOCAL = &When{Cond: mysqDollar[2].exprUnion(), Val: mysqDollar[4].exprUnion()}
 		}
@@ -16696,7 +16697,7 @@ mysqdefault:
 	case 1162:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5871
+//line mysql.y:5872
 		{
 			mysqLOCAL = nil
 		}
@@ -16704,7 +16705,7 @@ mysqdefault:
 	case 1163:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5875
+//line mysql.y:5876
 		{
 			mysqLOCAL = mysqDollar[2].exprUnion()
 		}
@@ -16712,7 +16713,7 @@ mysqdefault:
 	case 1164:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.ColName
-//line mysql.y:5881
+//line mysql.y:5882
 		{
 			mysqLOCAL = &ColName{Name: mysqDollar[1].colIdent}
 		}
@@ -16720,7 +16721,7 @@ mysqdefault:
 	case 1165:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.ColName
-//line mysql.y:5885
+//line mysql.y:5886
 		{
 			mysqLOCAL = &ColName{Qualifier: TableName{Name: mysqDollar[1].tableIdent}, Name: mysqDollar[3].colIdent}
 		}
@@ -16728,7 +16729,7 @@ mysqdefault:
 	case 1166:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.ColName
-//line mysql.y:5889
+//line mysql.y:5890
 		{
 			mysqLOCAL = &ColName{Qualifier: TableName{Qualifier: mysqDollar[1].tableIdent, Name: mysqDollar[3].tableIdent}, Name: mysqDollar[5].colIdent}
 		}
@@ -16736,37 +16737,37 @@ mysqdefault:
 	case 1167:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5895
+//line mysql.y:5896
 		{
 			// TODO(sougou): Deprecate this construct.
 			if mysqDollar[1].colIdent.Lowered() != "value" {
 				mysqlex.Error("expecting value after next")
 				return 1
 			}
-			mysqLOCAL = NewIntLiteral("1")
+			mysqLOCAL = ast.NewIntLiteral("1")
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1168:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5904
+//line mysql.y:5905
 		{
-			mysqLOCAL = NewIntLiteral(mysqDollar[1].str)
+			mysqLOCAL = ast.NewIntLiteral(mysqDollar[1].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1169:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5908
+//line mysql.y:5909
 		{
-			mysqLOCAL = NewArgument(mysqDollar[1].str[1:])
+			mysqLOCAL = ast.NewArgument(mysqDollar[1].str[1:])
 			bindVariable(mysqlex, mysqDollar[1].str[1:])
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1170:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Exprs
-//line mysql.y:5914
+//line mysql.y:5915
 		{
 			mysqLOCAL = nil
 		}
@@ -16774,7 +16775,7 @@ mysqdefault:
 	case 1171:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Exprs
-//line mysql.y:5918
+//line mysql.y:5919
 		{
 			mysqLOCAL = mysqDollar[3].exprsUnion()
 		}
@@ -16782,7 +16783,7 @@ mysqdefault:
 	case 1172:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5923
+//line mysql.y:5924
 		{
 			mysqLOCAL = nil
 		}
@@ -16790,7 +16791,7 @@ mysqdefault:
 	case 1173:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:5927
+//line mysql.y:5928
 		{
 			mysqLOCAL = mysqDollar[2].exprUnion()
 		}
@@ -16798,7 +16799,7 @@ mysqdefault:
 	case 1174:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.OrderBy
-//line mysql.y:5932
+//line mysql.y:5933
 		{
 			mysqLOCAL = nil
 		}
@@ -16806,7 +16807,7 @@ mysqdefault:
 	case 1175:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.OrderBy
-//line mysql.y:5936
+//line mysql.y:5937
 		{
 			mysqLOCAL = mysqDollar[1].orderByUnion()
 		}
@@ -16814,7 +16815,7 @@ mysqdefault:
 	case 1176:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.OrderBy
-//line mysql.y:5942
+//line mysql.y:5943
 		{
 			mysqLOCAL = mysqDollar[3].orderByUnion()
 		}
@@ -16822,14 +16823,14 @@ mysqdefault:
 	case 1177:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.OrderBy
-//line mysql.y:5948
+//line mysql.y:5949
 		{
 			mysqLOCAL = OrderBy{mysqDollar[1].orderUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1178:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:5952
+//line mysql.y:5953
 		{
 			mysqSLICE := (*ast.OrderBy)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].orderUnion())
@@ -16837,7 +16838,7 @@ mysqdefault:
 	case 1179:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Order
-//line mysql.y:5958
+//line mysql.y:5959
 		{
 			mysqLOCAL = &Order{Expr: mysqDollar[1].exprUnion(), Direction: mysqDollar[2].orderDirectionUnion()}
 		}
@@ -16845,7 +16846,7 @@ mysqdefault:
 	case 1180:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.OrderDirection
-//line mysql.y:5963
+//line mysql.y:5964
 		{
 			mysqLOCAL = AscOrder
 		}
@@ -16853,7 +16854,7 @@ mysqdefault:
 	case 1181:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.OrderDirection
-//line mysql.y:5967
+//line mysql.y:5968
 		{
 			mysqLOCAL = AscOrder
 		}
@@ -16861,7 +16862,7 @@ mysqdefault:
 	case 1182:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.OrderDirection
-//line mysql.y:5971
+//line mysql.y:5972
 		{
 			mysqLOCAL = DescOrder
 		}
@@ -16869,7 +16870,7 @@ mysqdefault:
 	case 1183:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.Limit
-//line mysql.y:5976
+//line mysql.y:5977
 		{
 			mysqLOCAL = nil
 		}
@@ -16877,7 +16878,7 @@ mysqdefault:
 	case 1184:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.Limit
-//line mysql.y:5980
+//line mysql.y:5981
 		{
 			mysqLOCAL = mysqDollar[1].limitUnion()
 		}
@@ -16885,7 +16886,7 @@ mysqdefault:
 	case 1185:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Limit
-//line mysql.y:5986
+//line mysql.y:5987
 		{
 			mysqLOCAL = &Limit{Rowcount: mysqDollar[2].exprUnion()}
 		}
@@ -16893,7 +16894,7 @@ mysqdefault:
 	case 1186:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Limit
-//line mysql.y:5990
+//line mysql.y:5991
 		{
 			mysqLOCAL = &Limit{Offset: mysqDollar[2].exprUnion(), Rowcount: mysqDollar[4].exprUnion()}
 		}
@@ -16901,7 +16902,7 @@ mysqdefault:
 	case 1187:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Limit
-//line mysql.y:5994
+//line mysql.y:5995
 		{
 			mysqLOCAL = &Limit{Offset: mysqDollar[4].exprUnion(), Rowcount: mysqDollar[2].exprUnion()}
 		}
@@ -16909,7 +16910,7 @@ mysqdefault:
 	case 1188:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:5999
+//line mysql.y:6000
 		{
 			mysqLOCAL = nil
 		}
@@ -16917,39 +16918,39 @@ mysqdefault:
 	case 1189:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:6003
+//line mysql.y:6004
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion(), mysqDollar[2].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion(), mysqDollar[2].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1190:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:6007
+//line mysql.y:6008
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion(), mysqDollar[2].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion(), mysqDollar[2].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1191:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:6011
+//line mysql.y:6012
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1192:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []ast.AlterOption
-//line mysql.y:6015
+//line mysql.y:6016
 		{
-			mysqLOCAL = []AlterOption{mysqDollar[1].alterOptionUnion()}
+			mysqLOCAL = []ast.AlterOption{mysqDollar[1].alterOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1193:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6022
+//line mysql.y:6023
 		{
 			mysqLOCAL = &LockOption{Type: DefaultType}
 		}
@@ -16957,7 +16958,7 @@ mysqdefault:
 	case 1194:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6026
+//line mysql.y:6027
 		{
 			mysqLOCAL = &LockOption{Type: NoneType}
 		}
@@ -16965,7 +16966,7 @@ mysqdefault:
 	case 1195:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6030
+//line mysql.y:6031
 		{
 			mysqLOCAL = &LockOption{Type: SharedType}
 		}
@@ -16973,7 +16974,7 @@ mysqdefault:
 	case 1196:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6034
+//line mysql.y:6035
 		{
 			mysqLOCAL = &LockOption{Type: ExclusiveType}
 		}
@@ -16981,7 +16982,7 @@ mysqdefault:
 	case 1197:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6040
+//line mysql.y:6041
 		{
 			mysqLOCAL = AlgorithmValue(mysqDollar[3].str)
 		}
@@ -16989,7 +16990,7 @@ mysqdefault:
 	case 1198:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6044
+//line mysql.y:6045
 		{
 			mysqLOCAL = AlgorithmValue(mysqDollar[3].str)
 		}
@@ -16997,7 +16998,7 @@ mysqdefault:
 	case 1199:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6048
+//line mysql.y:6049
 		{
 			mysqLOCAL = AlgorithmValue(mysqDollar[3].str)
 		}
@@ -17005,93 +17006,93 @@ mysqdefault:
 	case 1200:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.AlterOption
-//line mysql.y:6052
+//line mysql.y:6053
 		{
 			mysqLOCAL = AlgorithmValue(mysqDollar[3].str)
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1201:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6057
+//line mysql.y:6058
 		{
 			mysqVAL.str = ""
 		}
 	case 1202:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6061
+//line mysql.y:6062
 		{
 			mysqVAL.str = string(mysqDollar[3].str)
 		}
 	case 1203:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6065
+//line mysql.y:6066
 		{
 			mysqVAL.str = string(mysqDollar[3].str)
 		}
 	case 1204:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6069
+//line mysql.y:6070
 		{
 			mysqVAL.str = string(mysqDollar[3].str)
 		}
 	case 1205:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6074
+//line mysql.y:6075
 		{
 			mysqVAL.str = ""
 		}
 	case 1206:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6078
+//line mysql.y:6079
 		{
 			mysqVAL.str = mysqDollar[3].str
 		}
 	case 1207:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6084
+//line mysql.y:6085
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1208:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6088
+//line mysql.y:6089
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1209:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6093
+//line mysql.y:6094
 		{
 			mysqVAL.str = ""
 		}
 	case 1210:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:6097
+//line mysql.y:6098
 		{
 			mysqVAL.str = mysqDollar[2].str
 		}
 	case 1211:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6102
+//line mysql.y:6103
 		{
 			mysqVAL.str = "cascaded"
 		}
 	case 1212:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6106
+//line mysql.y:6107
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1213:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6110
+//line mysql.y:6111
 		{
 			mysqVAL.str = string(mysqDollar[1].str)
 		}
 	case 1214:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL *ast.Definer
-//line mysql.y:6115
+//line mysql.y:6116
 		{
 			mysqLOCAL = nil
 		}
@@ -17099,7 +17100,7 @@ mysqdefault:
 	case 1215:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.Definer
-//line mysql.y:6119
+//line mysql.y:6120
 		{
 			mysqLOCAL = mysqDollar[3].definerUnion()
 		}
@@ -17107,7 +17108,7 @@ mysqdefault:
 	case 1216:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.Definer
-//line mysql.y:6125
+//line mysql.y:6126
 		{
 			mysqLOCAL = &Definer{
 				Name: string(mysqDollar[1].str),
@@ -17117,7 +17118,7 @@ mysqdefault:
 	case 1217:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.Definer
-//line mysql.y:6131
+//line mysql.y:6132
 		{
 			mysqLOCAL = &Definer{
 				Name: string(mysqDollar[1].str),
@@ -17127,7 +17128,7 @@ mysqdefault:
 	case 1218:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Definer
-//line mysql.y:6137
+//line mysql.y:6138
 		{
 			mysqLOCAL = &Definer{
 				Name:    mysqDollar[1].str,
@@ -17137,32 +17138,32 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 1219:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6146
+//line mysql.y:6147
 		{
-			mysqVAL.str = encodeSQLString(mysqDollar[1].str)
+			mysqVAL.str = sql_types.EncodeStringSQL(mysqDollar[1].str)
 		}
 	case 1220:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6150
+//line mysql.y:6151
 		{
 			mysqVAL.str = formatIdentifier(mysqDollar[1].str)
 		}
 	case 1221:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6155
+//line mysql.y:6156
 		{
 			mysqVAL.str = ""
 		}
 	case 1222:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6159
+//line mysql.y:6160
 		{
 			mysqVAL.str = formatAddress(mysqDollar[1].str)
 		}
 	case 1223:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.Lock
-//line mysql.y:6165
+//line mysql.y:6166
 		{
 			mysqLOCAL = ForUpdateLock
 		}
@@ -17170,7 +17171,7 @@ mysqdefault:
 	case 1224:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL ast.Lock
-//line mysql.y:6169
+//line mysql.y:6170
 		{
 			mysqLOCAL = ShareModeLock
 		}
@@ -17178,193 +17179,193 @@ mysqdefault:
 	case 1225:
 		mysqDollar = mysqS[mysqpt-9 : mysqpt+1]
 		var mysqLOCAL *ast.SelectInto
-//line mysql.y:6175
+//line mysql.y:6176
 		{
-			mysqLOCAL = &SelectInto{Type: IntoOutfileS3, FileName: encodeSQLString(mysqDollar[4].str), Charset: mysqDollar[5].columnCharset, FormatOption: mysqDollar[6].str, ExportOption: mysqDollar[7].str, Manifest: mysqDollar[8].str, Overwrite: mysqDollar[9].str}
+			mysqLOCAL = &SelectInto{Type: IntoOutfileS3, FileName: sql_types.EncodeStringSQL(mysqDollar[4].str), Charset: mysqDollar[5].columnCharset, FormatOption: mysqDollar[6].str, ExportOption: mysqDollar[7].str, Manifest: mysqDollar[8].str, Overwrite: mysqDollar[9].str}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1226:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SelectInto
-//line mysql.y:6179
+//line mysql.y:6180
 		{
-			mysqLOCAL = &SelectInto{Type: IntoDumpfile, FileName: encodeSQLString(mysqDollar[3].str), Charset: ColumnCharset{}, FormatOption: "", ExportOption: "", Manifest: "", Overwrite: ""}
+			mysqLOCAL = &SelectInto{Type: IntoDumpfile, FileName: sql_types.EncodeStringSQL(mysqDollar[3].str), Charset: ast.ColumnCharset{}, FormatOption: "", ExportOption: "", Manifest: "", Overwrite: ""}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1227:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.SelectInto
-//line mysql.y:6183
+//line mysql.y:6184
 		{
-			mysqLOCAL = &SelectInto{Type: IntoOutfile, FileName: encodeSQLString(mysqDollar[3].str), Charset: mysqDollar[4].columnCharset, FormatOption: "", ExportOption: mysqDollar[5].str, Manifest: "", Overwrite: ""}
+			mysqLOCAL = &SelectInto{Type: IntoOutfile, FileName: sql_types.EncodeStringSQL(mysqDollar[3].str), Charset: mysqDollar[4].columnCharset, FormatOption: "", ExportOption: mysqDollar[5].str, Manifest: "", Overwrite: ""}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1228:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6188
+//line mysql.y:6189
 		{
 			mysqVAL.str = ""
 		}
 	case 1229:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6192
+//line mysql.y:6193
 		{
 			mysqVAL.str = " format csv" + mysqDollar[3].str
 		}
 	case 1230:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6196
+//line mysql.y:6197
 		{
 			mysqVAL.str = " format text" + mysqDollar[3].str
 		}
 	case 1231:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6201
+//line mysql.y:6202
 		{
 			mysqVAL.str = ""
 		}
 	case 1232:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6205
+//line mysql.y:6206
 		{
 			mysqVAL.str = " header"
 		}
 	case 1233:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6210
+//line mysql.y:6211
 		{
 			mysqVAL.str = ""
 		}
 	case 1234:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6214
+//line mysql.y:6215
 		{
 			mysqVAL.str = " manifest on"
 		}
 	case 1235:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6218
+//line mysql.y:6219
 		{
 			mysqVAL.str = " manifest off"
 		}
 	case 1236:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6223
+//line mysql.y:6224
 		{
 			mysqVAL.str = ""
 		}
 	case 1237:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6227
+//line mysql.y:6228
 		{
 			mysqVAL.str = " overwrite on"
 		}
 	case 1238:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6231
+//line mysql.y:6232
 		{
 			mysqVAL.str = " overwrite off"
 		}
 	case 1239:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6237
+//line mysql.y:6238
 		{
 			mysqVAL.str = mysqDollar[1].str + mysqDollar[2].str
 		}
 	case 1240:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6242
+//line mysql.y:6243
 		{
 			mysqVAL.str = ""
 		}
 	case 1241:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6246
+//line mysql.y:6247
 		{
 			mysqVAL.str = " lines" + mysqDollar[2].str
 		}
 	case 1242:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6252
+//line mysql.y:6253
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 1243:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6256
+//line mysql.y:6257
 		{
 			mysqVAL.str = mysqDollar[1].str + mysqDollar[2].str
 		}
 	case 1244:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6262
+//line mysql.y:6263
 		{
-			mysqVAL.str = " starting by " + encodeSQLString(mysqDollar[3].str)
+			mysqVAL.str = " starting by " + sql_types.EncodeStringSQL(mysqDollar[3].str)
 		}
 	case 1245:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6266
+//line mysql.y:6267
 		{
-			mysqVAL.str = " terminated by " + encodeSQLString(mysqDollar[3].str)
+			mysqVAL.str = " terminated by " + sql_types.EncodeStringSQL(mysqDollar[3].str)
 		}
 	case 1246:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6271
+//line mysql.y:6272
 		{
 			mysqVAL.str = ""
 		}
 	case 1247:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6275
+//line mysql.y:6276
 		{
 			mysqVAL.str = " " + mysqDollar[1].str + mysqDollar[2].str
 		}
 	case 1248:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6281
+//line mysql.y:6282
 		{
 			mysqVAL.str = mysqDollar[1].str
 		}
 	case 1249:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6285
+//line mysql.y:6286
 		{
 			mysqVAL.str = mysqDollar[1].str + mysqDollar[2].str
 		}
 	case 1250:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6291
+//line mysql.y:6292
 		{
-			mysqVAL.str = " terminated by " + encodeSQLString(mysqDollar[3].str)
+			mysqVAL.str = " terminated by " + sql_types.EncodeStringSQL(mysqDollar[3].str)
 		}
 	case 1251:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
-//line mysql.y:6295
+//line mysql.y:6296
 		{
-			mysqVAL.str = mysqDollar[1].str + " enclosed by " + encodeSQLString(mysqDollar[4].str)
+			mysqVAL.str = mysqDollar[1].str + " enclosed by " + sql_types.EncodeStringSQL(mysqDollar[4].str)
 		}
 	case 1252:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6299
+//line mysql.y:6300
 		{
-			mysqVAL.str = " escaped by " + encodeSQLString(mysqDollar[3].str)
+			mysqVAL.str = " escaped by " + sql_types.EncodeStringSQL(mysqDollar[3].str)
 		}
 	case 1253:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6304
+//line mysql.y:6305
 		{
 			mysqVAL.str = ""
 		}
 	case 1254:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6308
+//line mysql.y:6309
 		{
 			mysqVAL.str = " optionally"
 		}
 	case 1255:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.Insert
-//line mysql.y:6321
+//line mysql.y:6322
 		{
 			mysqLOCAL = &Insert{Rows: mysqDollar[2].valuesUnion()}
 		}
@@ -17372,7 +17373,7 @@ mysqdefault:
 	case 1256:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL *ast.Insert
-//line mysql.y:6325
+//line mysql.y:6326
 		{
 			mysqLOCAL = &Insert{Rows: mysqDollar[1].selStmtUnion()}
 		}
@@ -17380,7 +17381,7 @@ mysqdefault:
 	case 1257:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL *ast.Insert
-//line mysql.y:6329
+//line mysql.y:6330
 		{
 			mysqLOCAL = &Insert{Columns: mysqDollar[2].columnsUnion(), Rows: mysqDollar[5].valuesUnion()}
 		}
@@ -17388,7 +17389,7 @@ mysqdefault:
 	case 1258:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Insert
-//line mysql.y:6333
+//line mysql.y:6334
 		{
 			mysqLOCAL = &Insert{Rows: mysqDollar[4].valuesUnion()}
 		}
@@ -17396,7 +17397,7 @@ mysqdefault:
 	case 1259:
 		mysqDollar = mysqS[mysqpt-4 : mysqpt+1]
 		var mysqLOCAL *ast.Insert
-//line mysql.y:6337
+//line mysql.y:6338
 		{
 			mysqLOCAL = &Insert{Columns: mysqDollar[2].columnsUnion(), Rows: mysqDollar[4].selStmtUnion()}
 		}
@@ -17404,7 +17405,7 @@ mysqdefault:
 	case 1260:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:6343
+//line mysql.y:6344
 		{
 			mysqLOCAL = Columns{mysqDollar[1].colIdent}
 		}
@@ -17412,21 +17413,21 @@ mysqdefault:
 	case 1261:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.Columns
-//line mysql.y:6347
+//line mysql.y:6348
 		{
 			mysqLOCAL = Columns{mysqDollar[3].colIdent}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1262:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6351
+//line mysql.y:6352
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].colIdent)
 		}
 	case 1263:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
-//line mysql.y:6355
+//line mysql.y:6356
 		{
 			mysqSLICE := (*ast.Columns)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[5].colIdent)
@@ -17434,7 +17435,7 @@ mysqdefault:
 	case 1264:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.UpdateExprs
-//line mysql.y:6360
+//line mysql.y:6361
 		{
 			mysqLOCAL = nil
 		}
@@ -17442,7 +17443,7 @@ mysqdefault:
 	case 1265:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.UpdateExprs
-//line mysql.y:6364
+//line mysql.y:6365
 		{
 			mysqLOCAL = mysqDollar[5].updateExprsUnion()
 		}
@@ -17450,14 +17451,14 @@ mysqdefault:
 	case 1266:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Values
-//line mysql.y:6370
+//line mysql.y:6371
 		{
 			mysqLOCAL = Values{mysqDollar[1].valTupleUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1267:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6374
+//line mysql.y:6375
 		{
 			mysqSLICE := (*ast.Values)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].valTupleUnion())
@@ -17465,7 +17466,7 @@ mysqdefault:
 	case 1268:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.ValTuple
-//line mysql.y:6380
+//line mysql.y:6381
 		{
 			mysqLOCAL = mysqDollar[1].valTupleUnion()
 		}
@@ -17473,7 +17474,7 @@ mysqdefault:
 	case 1269:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL ast.ValTuple
-//line mysql.y:6384
+//line mysql.y:6385
 		{
 			mysqLOCAL = ValTuple{}
 		}
@@ -17481,7 +17482,7 @@ mysqdefault:
 	case 1270:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL ast.ValTuple
-//line mysql.y:6390
+//line mysql.y:6391
 		{
 			mysqLOCAL = ValTuple(mysqDollar[2].exprsUnion())
 		}
@@ -17489,7 +17490,7 @@ mysqdefault:
 	case 1271:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:6395
+//line mysql.y:6396
 		{
 			if len(mysqDollar[1].valTupleUnion()) == 1 {
 				mysqLOCAL = mysqDollar[1].valTupleUnion()[0]
@@ -17501,14 +17502,14 @@ mysqdefault:
 	case 1272:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.UpdateExprs
-//line mysql.y:6405
+//line mysql.y:6406
 		{
 			mysqLOCAL = UpdateExprs{mysqDollar[1].updateExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1273:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6409
+//line mysql.y:6410
 		{
 			mysqSLICE := (*ast.UpdateExprs)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].updateExprUnion())
@@ -17516,7 +17517,7 @@ mysqdefault:
 	case 1274:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.UpdateExpr
-//line mysql.y:6415
+//line mysql.y:6416
 		{
 			mysqLOCAL = &UpdateExpr{Name: mysqDollar[1].colNameUnion(), Expr: mysqDollar[3].exprUnion()}
 		}
@@ -17524,14 +17525,14 @@ mysqdefault:
 	case 1275:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.SetExprs
-//line mysql.y:6421
+//line mysql.y:6422
 		{
 			mysqLOCAL = SetExprs{mysqDollar[1].setExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1276:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-//line mysql.y:6425
+//line mysql.y:6426
 		{
 			mysqSLICE := (*ast.SetExprs)(mysqIaddr(mysqVAL.union))
 			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].setExprUnion())
@@ -17539,23 +17540,23 @@ mysqdefault:
 	case 1277:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SetExpr
-//line mysql.y:6431
+//line mysql.y:6432
 		{
-			mysqLOCAL = &SetExpr{Name: mysqDollar[1].colIdent, Scope: ImplicitScope, Expr: NewStrLiteral("on")}
+			mysqLOCAL = &SetExpr{Name: mysqDollar[1].colIdent, Scope: ImplicitScope, Expr: ast.NewStrLiteral("on")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1278:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SetExpr
-//line mysql.y:6435
+//line mysql.y:6436
 		{
-			mysqLOCAL = &SetExpr{Name: mysqDollar[1].colIdent, Scope: ImplicitScope, Expr: NewStrLiteral("off")}
+			mysqLOCAL = &SetExpr{Name: mysqDollar[1].colIdent, Scope: ImplicitScope, Expr: ast.NewStrLiteral("off")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1279:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SetExpr
-//line mysql.y:6439
+//line mysql.y:6440
 		{
 			mysqLOCAL = &SetExpr{Name: mysqDollar[1].colIdent, Scope: ImplicitScope, Expr: mysqDollar[3].exprUnion()}
 		}
@@ -17563,15 +17564,15 @@ mysqdefault:
 	case 1280:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL *ast.SetExpr
-//line mysql.y:6443
+//line mysql.y:6444
 		{
-			mysqLOCAL = &SetExpr{Name: NewColIdent(string(mysqDollar[1].str)), Scope: ImplicitScope, Expr: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &SetExpr{Name: ast.ast.NewColIdent(string(mysqDollar[1].str)), Scope: ImplicitScope, Expr: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1281:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.SetExpr
-//line mysql.y:6447
+//line mysql.y:6448
 		{
 			mysqDollar[2].setExprUnion().Scope = mysqDollar[1].scopeUnion()
 			mysqLOCAL = mysqDollar[2].setExprUnion()
@@ -17579,14 +17580,14 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 1283:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-//line mysql.y:6455
+//line mysql.y:6456
 		{
 			mysqVAL.str = "charset"
 		}
 	case 1286:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:6465
+//line mysql.y:6466
 		{
 			mysqLOCAL = ast.NewStrLiteral(mysqDollar[1].colIdent.String())
 		}
@@ -17594,7 +17595,7 @@ mysqdefault:
 	case 1287:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:6469
+//line mysql.y:6470
 		{
 			mysqLOCAL = ast.NewStrLiteral(mysqDollar[1].str)
 		}
@@ -17602,7 +17603,7 @@ mysqdefault:
 	case 1288:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Expr
-//line mysql.y:6473
+//line mysql.y:6474
 		{
 			mysqLOCAL = &Default{}
 		}
@@ -17610,7 +17611,7 @@ mysqdefault:
 	case 1291:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6482
+//line mysql.y:6483
 		{
 			mysqLOCAL = false
 		}
@@ -17618,7 +17619,7 @@ mysqdefault:
 	case 1292:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6484
+//line mysql.y:6485
 		{
 			mysqLOCAL = true
 		}
@@ -17626,7 +17627,7 @@ mysqdefault:
 	case 1293:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6487
+//line mysql.y:6488
 		{
 			mysqLOCAL = false
 		}
@@ -17634,7 +17635,7 @@ mysqdefault:
 	case 1294:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6489
+//line mysql.y:6490
 		{
 			mysqLOCAL = true
 		}
@@ -17642,7 +17643,7 @@ mysqdefault:
 	case 1295:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6492
+//line mysql.y:6493
 		{
 			mysqLOCAL = false
 		}
@@ -17650,7 +17651,7 @@ mysqdefault:
 	case 1296:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 		var mysqLOCAL bool
-//line mysql.y:6494
+//line mysql.y:6495
 		{
 			mysqLOCAL = true
 		}
@@ -17658,7 +17659,7 @@ mysqdefault:
 	case 1297:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Ignore
-//line mysql.y:6497
+//line mysql.y:6498
 		{
 			mysqLOCAL = false
 		}
@@ -17666,33 +17667,33 @@ mysqdefault:
 	case 1298:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Ignore
-//line mysql.y:6499
+//line mysql.y:6500
 		{
 			mysqLOCAL = true
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1299:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6502
+//line mysql.y:6503
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 1300:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6504
+//line mysql.y:6505
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 1301:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6506
+//line mysql.y:6507
 		{
 			mysqVAL.empty = struct{}{}
 		}
 	case 1302:
 		mysqDollar = mysqS[mysqpt-5 : mysqpt+1]
 		var mysqLOCAL ast.Statement
-//line mysql.y:6510
+//line mysql.y:6511
 		{
 			mysqLOCAL = &CallProc{Name: mysqDollar[2].tableName, Params: mysqDollar[4].exprsUnion()}
 		}
@@ -17700,7 +17701,7 @@ mysqdefault:
 	case 1303:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL ast.Exprs
-//line mysql.y:6515
+//line mysql.y:6516
 		{
 			mysqLOCAL = nil
 		}
@@ -17708,7 +17709,7 @@ mysqdefault:
 	case 1304:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL ast.Exprs
-//line mysql.y:6519
+//line mysql.y:6520
 		{
 			mysqLOCAL = mysqDollar[1].exprsUnion()
 		}
@@ -17716,7 +17717,7 @@ mysqdefault:
 	case 1305:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexOption
-//line mysql.y:6524
+//line mysql.y:6525
 		{
 			mysqLOCAL = nil
 		}
@@ -17724,70 +17725,70 @@ mysqdefault:
 	case 1306:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
 		var mysqLOCAL []*ast.IndexOption
-//line mysql.y:6526
+//line mysql.y:6527
 		{
-			mysqLOCAL = []*IndexOption{mysqDollar[1].indexOptionUnion()}
+			mysqLOCAL = []*ast.IndexOption{mysqDollar[1].indexOptionUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1307:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
 		var mysqLOCAL *ast.IndexOption
-//line mysql.y:6530
+//line mysql.y:6531
 		{
 			mysqLOCAL = &IndexOption{Name: string(mysqDollar[1].str), String: string(mysqDollar[2].colIdent.String())}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1308:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6536
+//line mysql.y:6537
 		{
 			mysqVAL.colIdent = mysqDollar[1].colIdent
 		}
 	case 1309:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6540
+//line mysql.y:6541
 		{
-			mysqVAL.colIdent = NewColIdent(string(mysqDollar[1].str))
+			mysqVAL.colIdent = ast.ast.NewColIdent(string(mysqDollar[1].str))
 		}
 	case 1311:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6547
+//line mysql.y:6548
 		{
-			mysqVAL.colIdent = NewColIdent(string(mysqDollar[1].str))
+			mysqVAL.colIdent = ast.ast.NewColIdent(string(mysqDollar[1].str))
 		}
 	case 1312:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6553
+//line mysql.y:6554
 		{
-			mysqVAL.tableIdent = NewTableIdent(string(mysqDollar[1].colIdent.String()))
+			mysqVAL.tableIdent = ast.NewTableIdent(string(mysqDollar[1].colIdent.String()))
 		}
 	case 1313:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6557
+//line mysql.y:6558
 		{
-			mysqVAL.tableIdent = NewTableIdent(string(mysqDollar[1].str))
+			mysqVAL.tableIdent = ast.NewTableIdent(string(mysqDollar[1].str))
 		}
 	case 1314:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:6563
+//line mysql.y:6564
 		{
-			mysqVAL.tableIdent = NewTableIdent("")
+			mysqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 1315:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6567
+//line mysql.y:6568
 		{
 			mysqVAL.tableIdent = mysqDollar[1].tableIdent
 		}
 	case 1317:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:6574
+//line mysql.y:6575
 		{
-			mysqVAL.tableIdent = NewTableIdent(string(mysqDollar[1].str))
+			mysqVAL.tableIdent = ast.NewTableIdent(string(mysqDollar[1].str))
 		}
 	case 1817:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:7098
+//line mysql.y:7099
 		{
 			if incNesting(mysqlex) {
 				mysqlex.Error("max nesting level reached")
@@ -17796,31 +17797,31 @@ mysqdefault:
 		}
 	case 1818:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:7107
+//line mysql.y:7108
 		{
 			decNesting(mysqlex)
 		}
 	case 1819:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:7112
+//line mysql.y:7113
 		{
 			skipToEnd(mysqlex)
 		}
 	case 1820:
 		mysqDollar = mysqS[mysqpt-0 : mysqpt+1]
-//line mysql.y:7117
+//line mysql.y:7118
 		{
 			skipToEnd(mysqlex)
 		}
 	case 1821:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:7121
+//line mysql.y:7122
 		{
 			skipToEnd(mysqlex)
 		}
 	case 1822:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-//line mysql.y:7125
+//line mysql.y:7126
 		{
 			skipToEnd(mysqlex)
 		}
