@@ -28,13 +28,6 @@ import (
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
-// MySQLServerVersion is what Vitess will present as it's version during the connection handshake,
-// and as the value to the @@version system variable. If nothing is provided, Vitess will report itself as
-// a specific MySQL version with the vitess version appended to it
-var MySQLServerVersion = flag.String("mysql_server_version", "", "MySQL server version to advertise.")
-
-var versionFlagSync sync.Once
-
 // parserPool is a pool for parser objects.
 var parserPool = sync.Pool{
 	New: func() any {
@@ -47,9 +40,6 @@ type BindVars map[string]struct{}
 
 // zeroParser is a zero-initialized parser to help reinitialize the parser for pooling.
 var zeroParser yyParserImpl
-
-// MySQLVersion is the version of MySQL that the parser would emulate
-var MySQLVersion = "50709" // default version if nothing else is stated
 
 // yyParsePooled is a wrapper around yyParse that pools the parser objects. There isn't a
 // particularly good reason to use yyParse directly, since it immediately discards its parser.
@@ -109,19 +99,6 @@ func Parse2(sql string) (ast.Statement, BindVars, error) {
 	return tokenizer.ParseTree, tokenizer.BindVars, nil
 }
 
-func checkParserVersionFlag() {
-	if flag.Parsed() {
-		versionFlagSync.Do(func() {
-			if *MySQLServerVersion != "" {
-				convVersion, err := ConvertMySQLVersionToCommentVersion(*MySQLServerVersion)
-				if err == nil {
-					MySQLVersion = convVersion
-				}
-			}
-		})
-	}
-}
-
 // TableFromStatement returns the qualified table name for the query.
 // This works only for select statements.
 func TableFromStatement(sql string) (ast.TableName, error) {
@@ -145,44 +122,6 @@ func TableFromStatement(sql string) (ast.TableName, error) {
 		return ast.TableName{}, fmt.Errorf("table expression is complex")
 	}
 	return tableName, nil
-}
-
-// ConvertMySQLVersionToCommentVersion converts the MySQL version into comment version format.
-func ConvertMySQLVersionToCommentVersion(version string) (string, error) {
-	var res = make([]int, 3)
-	idx := 0
-	val := ""
-	for _, c := range version {
-		if c <= '9' && c >= '0' {
-			val += string(c)
-		} else if c == '.' {
-			v, err := strconv.Atoi(val)
-			if err != nil {
-				return "", err
-			}
-			val = ""
-			res[idx] = v
-			idx++
-			if idx == 3 {
-				break
-			}
-		} else {
-			break
-		}
-	}
-	if val != "" {
-		v, err := strconv.Atoi(val)
-		if err != nil {
-			return "", err
-		}
-		res[idx] = v
-		idx++
-	}
-	if idx == 0 {
-		return "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "MySQL version not correctly setup - %s.", version)
-	}
-
-	return fmt.Sprintf("%01d%02d%02d", res[0], res[1], res[2]), nil
 }
 
 // ParseExpr parses an expression and transforms it to an AST

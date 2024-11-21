@@ -742,7 +742,7 @@ func (node TableIdent) IsEmpty() bool {
 }
 
 // String returns the unescaped table name. It must
-// not be used for SQL generation. Use sql_parser.String
+// not be used for SQL generation. Use ast.String
 // instead. The Stringer conformance is for usage
 // in templates.
 func (node TableIdent) String() string {

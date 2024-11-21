@@ -17,11 +17,14 @@ limitations under the License.
 package mysql
 
 import (
+	"flag"
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
 )
 
@@ -29,9 +32,9 @@ const (
 	eofChar = 0x100
 )
 
-// Tokenizer is the struct used to generate SQL
+// MysqlTokenizer is the struct used to generate SQL
 // tokens for the parser.
-type Tokenizer struct {
+type MysqlTokenizer struct {
 	AllowComments       bool
 	SkipSpecialComments bool
 	SkipToEnd           bool
@@ -44,18 +47,79 @@ type Tokenizer struct {
 	partialDDL     ast.Statement
 	nesting        int
 	multi          bool
-	specialComment *Tokenizer
+	specialComment *MysqlTokenizer
 
 	Pos int
 	buf string
 }
 
+// MySQLServerVersion is what Vitess will present as it's version during the connection handshake,
+// and as the value to the @@version system variable. If nothing is provided, Vitess will report itself as
+// a specific MySQL version with the vitess version appended to it
+var MySQLServerVersion = flag.String("mysql_server_version", "", "MySQL server version to advertise.")
+
+var versionFlagSync sync.Once
+
+// ConvertMySQLVersionToCommentVersion converts the MySQL version into comment version format.
+func ConvertMySQLVersionToCommentVersion(version string) (string, error) {
+	var res = make([]int, 3)
+	idx := 0
+	val := ""
+	for _, c := range version {
+		if c <= '9' && c >= '0' {
+			val += string(c)
+		} else if c == '.' {
+			v, err := strconv.Atoi(val)
+			if err != nil {
+				return "", err
+			}
+			val = ""
+			res[idx] = v
+			idx++
+			if idx == 3 {
+				break
+			}
+		} else {
+			break
+		}
+	}
+	if val != "" {
+		v, err := strconv.Atoi(val)
+		if err != nil {
+			return "", err
+		}
+		res[idx] = v
+		idx++
+	}
+	if idx == 0 {
+		return "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "MySQL version not correctly setup - %s.", version)
+	}
+
+	return fmt.Sprintf("%01d%02d%02d", res[0], res[1], res[2]), nil
+}
+
+func checkParserVersionFlag() {
+	if flag.Parsed() {
+		versionFlagSync.Do(func() {
+			if *MySQLServerVersion != "" {
+				convVersion, err := ConvertMySQLVersionToCommentVersion(*MySQLServerVersion)
+				if err == nil {
+					MySQLVersion = convVersion
+				}
+			}
+		})
+	}
+}
+
+// MySQLVersion is the version of MySQL that the parser would emulate
+var MySQLVersion = "50709" // default version if nothing else is stated
+
 // NewStringTokenizer creates a new Tokenizer for the
 // sql string.
-func NewStringTokenizer(sql string) *Tokenizer {
+func NewStringTokenizer(sql string) *MysqlTokenizer {
 	checkParserVersionFlag()
 
-	return &Tokenizer{
+	return &MysqlTokenizer{
 		buf:      sql,
 		BindVars: make(map[string]struct{}),
 	}
@@ -63,7 +127,7 @@ func NewStringTokenizer(sql string) *Tokenizer {
 
 // Lex returns the next token form the Tokenizer.
 // This function is used by go yacc.
-func (tkn *Tokenizer) Lex(lval *mysqSymType) int {
+func (tkn *MysqlTokenizer) Lex(lval *mysqSymType) int {
 	if tkn.SkipToEnd {
 		return tkn.skipStatement()
 	}
@@ -102,7 +166,7 @@ func (p PositionedErr) Error() string {
 }
 
 // Error is called by go yacc if there's a parsing error.
-func (tkn *Tokenizer) Error(err string) {
+func (tkn *MysqlTokenizer) Error(err string) {
 	tkn.LastError = PositionedErr{Err: err, Pos: tkn.Pos + 1, Near: tkn.lastToken}
 
 	// Try and re-sync to the next statement
@@ -111,7 +175,7 @@ func (tkn *Tokenizer) Error(err string) {
 
 // Scan scans the tokenizer for the next token and returns
 // the token type and an optional value.
-func (tkn *Tokenizer) Scan() (int, string) {
+func (tkn *MysqlTokenizer) Scan() (int, string) {
 	if tkn.specialComment != nil {
 		// Enter specialComment scan mode.
 		// for scanning such kind of comment: /*! MySQL-specific code */
@@ -296,7 +360,7 @@ func (tkn *Tokenizer) Scan() (int, string) {
 }
 
 // skipStatement scans until end of statement.
-func (tkn *Tokenizer) skipStatement() int {
+func (tkn *MysqlTokenizer) skipStatement() int {
 	tkn.SkipToEnd = false
 	for {
 		typ, _ := tkn.Scan()
@@ -307,7 +371,7 @@ func (tkn *Tokenizer) skipStatement() int {
 }
 
 // skipBlank skips the cursor while it finds whitespace
-func (tkn *Tokenizer) skipBlank() {
+func (tkn *MysqlTokenizer) skipBlank() {
 	ch := tkn.cur()
 	for ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
 		tkn.skip(1)
@@ -316,7 +380,7 @@ func (tkn *Tokenizer) skipBlank() {
 }
 
 // scanIdentifier scans a language keyword or @-encased variable
-func (tkn *Tokenizer) scanIdentifier(isVariable bool) (int, string) {
+func (tkn *MysqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 	start := tkn.Pos
 	tkn.skip(1)
 
@@ -339,7 +403,7 @@ func (tkn *Tokenizer) scanIdentifier(isVariable bool) (int, string) {
 }
 
 // scanHex scans a hex numeral; assumes x' or X' has already been scanned
-func (tkn *Tokenizer) scanHex() (int, string) {
+func (tkn *MysqlTokenizer) scanHex() (int, string) {
 	start := tkn.Pos
 	tkn.scanMantissa(16)
 	hex := tkn.buf[start:tkn.Pos]
@@ -354,7 +418,7 @@ func (tkn *Tokenizer) scanHex() (int, string) {
 }
 
 // scanBitLiteral scans a binary numeric literal; assumes b' or B' has already been scanned
-func (tkn *Tokenizer) scanBitLiteral() (int, string) {
+func (tkn *MysqlTokenizer) scanBitLiteral() (int, string) {
 	start := tkn.Pos
 	tkn.scanMantissa(2)
 	bit := tkn.buf[start:tkn.Pos]
@@ -370,7 +434,7 @@ func (tkn *Tokenizer) scanBitLiteral() (int, string) {
 // scanLiteralIdentifier once the first escape sequence is found in the identifier.
 // The provided `buf` contains the contents of the identifier that have been scanned
 // so far.
-func (tkn *Tokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, string) {
+func (tkn *MysqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, string) {
 	backTickSeen := true
 	for {
 		if backTickSeen {
@@ -401,7 +465,7 @@ func (tkn *Tokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, stri
 // scanLiteralIdentifier scans an identifier enclosed by backticks. If the identifier
 // is a simple literal, it'll be returned as a slice of the input buffer. If the identifier
 // contains escape sequences, this function will fall back to scanLiteralIdentifierSlow
-func (tkn *Tokenizer) scanLiteralIdentifier() (int, string) {
+func (tkn *MysqlTokenizer) scanLiteralIdentifier() (int, string) {
 	start := tkn.Pos
 	for {
 		switch tkn.cur() {
@@ -428,7 +492,7 @@ func (tkn *Tokenizer) scanLiteralIdentifier() (int, string) {
 }
 
 // scanBindVar scans a bind variable; assumes a ':' has been scanned right before
-func (tkn *Tokenizer) scanBindVar() (int, string) {
+func (tkn *MysqlTokenizer) scanBindVar() (int, string) {
 	start := tkn.Pos
 	token := VALUE_ARG
 
@@ -452,14 +516,14 @@ func (tkn *Tokenizer) scanBindVar() (int, string) {
 
 // scanMantissa scans a sequence of numeric characters with the same base.
 // This is a helper function only called from the numeric scanners
-func (tkn *Tokenizer) scanMantissa(base int) {
+func (tkn *MysqlTokenizer) scanMantissa(base int) {
 	for digitVal(tkn.cur()) < base {
 		tkn.skip(1)
 	}
 }
 
 // scanNumber scans any SQL numeric literal, either floating point or integer
-func (tkn *Tokenizer) scanNumber() (int, string) {
+func (tkn *MysqlTokenizer) scanNumber() (int, string) {
 	start := tkn.Pos
 	token := INTEGRAL
 
@@ -524,7 +588,7 @@ exit:
 // either single or double quotes. Assumes that the given delimiter has just
 // been scanned. If the skin contains any escape sequences, this function
 // will fall back to scanStringSlow
-func (tkn *Tokenizer) scanString(delim uint16, typ int) (int, string) {
+func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 	start := tkn.Pos
 
 	for {
@@ -552,7 +616,7 @@ func (tkn *Tokenizer) scanString(delim uint16, typ int) (int, string) {
 // scanString scans a string surrounded by the given `delim` and containing escape
 // sequencse. The given `buffer` contains the contents of the string that have
 // been scanned so far.
-func (tkn *Tokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
+func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
 	for {
 		ch := tkn.cur()
 		if ch == eofChar {
@@ -605,7 +669,7 @@ func (tkn *Tokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ 
 // scanCommentType1 scans a SQL line-comment, which is applied until the end
 // of the line. The given prefix length varies based on whether the comment
 // is started with '//', '--' or '#'.
-func (tkn *Tokenizer) scanCommentType1(prefixLen int) (int, string) {
+func (tkn *MysqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
 	start := tkn.Pos - prefixLen
 	for tkn.cur() != eofChar {
 		if tkn.cur() == '\n' {
@@ -619,7 +683,7 @@ func (tkn *Tokenizer) scanCommentType1(prefixLen int) (int, string) {
 
 // scanCommentType2 scans a '/*' delimited comment; assumes the opening
 // prefix has already been scanned
-func (tkn *Tokenizer) scanCommentType2() (int, string) {
+func (tkn *MysqlTokenizer) scanCommentType2() (int, string) {
 	start := tkn.Pos - 2
 	for {
 		if tkn.cur() == '*' {
@@ -639,7 +703,7 @@ func (tkn *Tokenizer) scanCommentType2() (int, string) {
 }
 
 // scanMySQLSpecificComment scans a MySQL comment pragma, which always starts with '//*`
-func (tkn *Tokenizer) scanMySQLSpecificComment() (int, string) {
+func (tkn *MysqlTokenizer) scanMySQLSpecificComment() (int, string) {
 	start := tkn.Pos - 3
 	for {
 		if tkn.cur() == '*' {
@@ -666,15 +730,15 @@ func (tkn *Tokenizer) scanMySQLSpecificComment() (int, string) {
 	return tkn.Scan()
 }
 
-func (tkn *Tokenizer) cur() uint16 {
+func (tkn *MysqlTokenizer) cur() uint16 {
 	return tkn.peek(0)
 }
 
-func (tkn *Tokenizer) skip(dist int) {
+func (tkn *MysqlTokenizer) skip(dist int) {
 	tkn.Pos += dist
 }
 
-func (tkn *Tokenizer) peek(dist int) uint16 {
+func (tkn *MysqlTokenizer) peek(dist int) uint16 {
 	if tkn.Pos+dist >= len(tkn.buf) {
 		return eofChar
 	}
@@ -682,7 +746,7 @@ func (tkn *Tokenizer) peek(dist int) uint16 {
 }
 
 // reset clears any internal state.
-func (tkn *Tokenizer) reset() {
+func (tkn *MysqlTokenizer) reset() {
 	tkn.ParseTree = nil
 	tkn.partialDDL = nil
 	tkn.specialComment = nil
