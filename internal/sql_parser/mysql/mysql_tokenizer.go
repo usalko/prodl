@@ -22,14 +22,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
-)
-
-const (
-	eofChar = 0x100
 )
 
 // MysqlTokenizer is the struct used to generate SQL
@@ -51,6 +49,122 @@ type MysqlTokenizer struct {
 
 	Pos int
 	buf string
+}
+
+// SetSkipSpecialComments implements dialect.Tokenizer.
+func (tkn *MysqlTokenizer) SetSkipSpecialComments(skip bool) {
+	tkn.SkipSpecialComments = skip
+}
+
+// GetBindVars implements dialect.Tokenizer.
+func (tkn *MysqlTokenizer) GetBindVars() dialect.BindVars {
+	return tkn.BindVars
+}
+
+// GetLastError implements dialect.Tokenizer.
+func (tkn *MysqlTokenizer) GetLastError() error {
+	return tkn.LastError
+}
+
+// GetPos implements dialect.Tokenizer.
+func (tkn *MysqlTokenizer) GetPos() int {
+	return tkn.Pos
+}
+
+// SetMulti implements dialect.Tokenizer.
+func (tkn *MysqlTokenizer) SetMulti(multi bool) {
+	tkn.multi = multi
+}
+
+// GetIdToken implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) GetIdToken() int {
+	return ID
+}
+
+// GetKeywordString implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) GetKeywordString(token int) string {
+	return KeywordString(token)
+}
+
+// GetParseTree implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) GetParseTree() ast.Statement {
+	return tkn.ParseTree
+}
+
+// GetPartialDDL implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) GetPartialDDL() ast.Statement {
+	return tkn.partialDDL
+}
+
+// BindVar implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) BindVar(bvar string, value struct{}) {
+	tkn.BindVars[bvar] = value
+}
+
+// DecNesting implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) DecNesting() {
+	tkn.nesting--
+}
+
+// GetNesting implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) GetNesting() int {
+	return tkn.nesting
+}
+
+// IncNesting implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) IncNesting() {
+	tkn.nesting++
+}
+
+// SetAllowComments implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) SetAllowComments(allow bool) {
+	tkn.AllowComments = allow
+}
+
+// SetParseTree implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) SetParseTree(stmt ast.Statement) {
+	tkn.ParseTree = stmt
+}
+
+// SetPartialDDL implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) SetPartialDDL(node ast.Statement) {
+	tkn.partialDDL = node
+}
+
+// SetSkipToEnd implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) SetSkipToEnd(skip bool) {
+	tkn.SkipToEnd = skip
+}
+
+// parserPool is a pool for parser objects.
+var parserPool = sync.Pool{
+	New: func() any {
+		return &mysqParserImpl{}
+	},
+}
+
+// zeroParser is a zero-initialized parser to help reinitialize the parser for pooling.
+var zeroParser mysqParserImpl
+
+// mysqParsePooled is a wrapper around mysqParse that pools the parser objects. There isn't a
+// particularly good reason to use yyParse directly, since it immediately discards its parser.
+//
+// N.B: Parser pooling means that you CANNOT take references directly to parse stack variables (e.g.
+// $$ = &$4) in sql.y rules. You must instead add an intermediate reference like so:
+//
+//	showCollationFilterOpt := $4
+//	$$ = &Show{Type: string($2), ShowCollationFilterOpt: &showCollationFilterOpt}
+func ParsePooled(lexer dialect.Tokenizer) int {
+	parser := parserPool.Get().(*mysqParserImpl)
+	defer func() {
+		*parser = zeroParser
+		parserPool.Put(parser)
+	}()
+	return parser.Parse(lexer.(mysqLexer))
+}
+
+func Parse(lexer dialect.Tokenizer) int {
+	return mysqParse(lexer.(mysqLexer))
 }
 
 // MySQLServerVersion is what Vitess will present as it's version during the connection handshake,
@@ -114,15 +228,19 @@ func checkParserVersionFlag() {
 // MySQLVersion is the version of MySQL that the parser would emulate
 var MySQLVersion = "50709" // default version if nothing else is stated
 
-// NewStringTokenizer creates a new Tokenizer for the
+// NewMysqlStringTokenizer creates a new Tokenizer for the
 // sql string.
-func NewStringTokenizer(sql string) *MysqlTokenizer {
+func NewMysqlStringTokenizer(sql string) *MysqlTokenizer {
 	checkParserVersionFlag()
 
 	return &MysqlTokenizer{
 		buf:      sql,
 		BindVars: make(map[string]struct{}),
 	}
+}
+
+func IsMySQL80AndAbove() bool {
+	return MySQLVersion >= "80000"
 }
 
 // Lex returns the next token form the Tokenizer.
@@ -189,21 +307,21 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 		tkn.specialComment = nil
 	}
 
-	tkn.skipBlank()
-	switch ch := tkn.cur(); {
+	tkn.SkipBlank()
+	switch ch := tkn.Cur(); {
 	case ch == '@':
 		tokenID := AT_ID
-		tkn.skip(1)
-		if tkn.cur() == '@' {
+		tkn.Skip(1)
+		if tkn.Cur() == '@' {
 			tokenID = AT_AT_ID
-			tkn.skip(1)
+			tkn.Skip(1)
 		}
 		var tID int
 		var tBytes string
-		if tkn.cur() == '`' {
-			tkn.skip(1)
+		if tkn.Cur() == '`' {
+			tkn.Skip(1)
 			tID, tBytes = tkn.scanLiteralIdentifier()
-		} else if tkn.cur() == eofChar {
+		} else if tkn.Cur() == dialect.EofChar {
 			return LEX_ERROR, ""
 		} else {
 			tID, tBytes = tkn.scanIdentifier(true)
@@ -214,22 +332,22 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 		return tokenID, tBytes
 	case isLetter(ch):
 		if ch == 'X' || ch == 'x' {
-			if tkn.peek(1) == '\'' {
-				tkn.skip(2)
+			if tkn.Peek(1) == '\'' {
+				tkn.Skip(2)
 				return tkn.scanHex()
 			}
 		}
 		if ch == 'B' || ch == 'b' {
-			if tkn.peek(1) == '\'' {
-				tkn.skip(2)
+			if tkn.Peek(1) == '\'' {
+				tkn.Skip(2)
 				return tkn.scanBitLiteral()
 			}
 		}
 		// N\'literal' is used to create a string in the national character set
 		if ch == 'N' || ch == 'n' {
-			nxt := tkn.peek(1)
+			nxt := tkn.Peek(1)
 			if nxt == '\'' || nxt == '"' {
-				tkn.skip(2)
+				tkn.Skip(2)
 				return tkn.scanString(nxt, NCHAR_STRING)
 			}
 		}
@@ -245,28 +363,28 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 			// forces the advance.
 			return 0, ""
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 		return ';', ""
-	case ch == eofChar:
+	case ch == dialect.EofChar:
 		return 0, ""
 	default:
-		if ch == '.' && isDigit(tkn.peek(1)) {
+		if ch == '.' && isDigit(tkn.Peek(1)) {
 			return tkn.scanNumber()
 		}
 
-		tkn.skip(1)
+		tkn.Skip(1)
 		switch ch {
 		case '=', ',', '(', ')', '+', '*', '%', '^', '~':
 			return int(ch), ""
 		case '&':
-			if tkn.cur() == '&' {
-				tkn.skip(1)
+			if tkn.Cur() == '&' {
+				tkn.Skip(1)
 				return AND, ""
 			}
 			return int(ch), ""
 		case '|':
-			if tkn.cur() == '|' {
-				tkn.skip(1)
+			if tkn.Cur() == '|' {
+				tkn.Skip(1)
 				return OR, ""
 			}
 			return int(ch), ""
@@ -279,14 +397,14 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 		case '.':
 			return int(ch), ""
 		case '/':
-			switch tkn.cur() {
+			switch tkn.Cur() {
 			case '/':
-				tkn.skip(1)
+				tkn.Skip(1)
 				return tkn.scanCommentType1(2)
 			case '*':
-				tkn.skip(1)
-				if tkn.cur() == '!' && !tkn.SkipSpecialComments {
-					tkn.skip(1)
+				tkn.Skip(1)
+				if tkn.Cur() == '!' && !tkn.SkipSpecialComments {
+					tkn.Skip(1)
 					return tkn.scanMySQLSpecificComment()
 				}
 				return tkn.scanCommentType2()
@@ -296,35 +414,35 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 		case '#':
 			return tkn.scanCommentType1(1)
 		case '-':
-			switch tkn.cur() {
+			switch tkn.Cur() {
 			case '-':
-				nextChar := tkn.peek(1)
-				if nextChar == ' ' || nextChar == '\n' || nextChar == '\t' || nextChar == '\r' || nextChar == eofChar {
-					tkn.skip(1)
+				nextChar := tkn.Peek(1)
+				if nextChar == ' ' || nextChar == '\n' || nextChar == '\t' || nextChar == '\r' || nextChar == dialect.EofChar {
+					tkn.Skip(1)
 					return tkn.scanCommentType1(2)
 				}
 			case '>':
-				tkn.skip(1)
-				if tkn.cur() == '>' {
-					tkn.skip(1)
+				tkn.Skip(1)
+				if tkn.Cur() == '>' {
+					tkn.Skip(1)
 					return JSON_UNQUOTE_EXTRACT_OP, ""
 				}
 				return JSON_EXTRACT_OP, ""
 			}
 			return int(ch), ""
 		case '<':
-			switch tkn.cur() {
+			switch tkn.Cur() {
 			case '>':
-				tkn.skip(1)
+				tkn.Skip(1)
 				return NE, ""
 			case '<':
-				tkn.skip(1)
+				tkn.Skip(1)
 				return SHIFT_LEFT, ""
 			case '=':
-				tkn.skip(1)
-				switch tkn.cur() {
+				tkn.Skip(1)
+				switch tkn.Cur() {
 				case '>':
-					tkn.skip(1)
+					tkn.Skip(1)
 					return NULL_SAFE_EQUAL, ""
 				default:
 					return LE, ""
@@ -333,19 +451,19 @@ func (tkn *MysqlTokenizer) Scan() (int, string) {
 				return int(ch), ""
 			}
 		case '>':
-			switch tkn.cur() {
+			switch tkn.Cur() {
 			case '=':
-				tkn.skip(1)
+				tkn.Skip(1)
 				return GE, ""
 			case '>':
-				tkn.skip(1)
+				tkn.Skip(1)
 				return SHIFT_RIGHT, ""
 			default:
 				return int(ch), ""
 			}
 		case '!':
-			if tkn.cur() == '=' {
-				tkn.skip(1)
+			if tkn.Cur() == '=' {
+				tkn.Skip(1)
 				return NE, ""
 			}
 			return int(ch), ""
@@ -370,26 +488,26 @@ func (tkn *MysqlTokenizer) skipStatement() int {
 	}
 }
 
-// skipBlank skips the cursor while it finds whitespace
-func (tkn *MysqlTokenizer) skipBlank() {
-	ch := tkn.cur()
+// SkipBlank skips the cursor while it finds whitespace
+func (tkn *MysqlTokenizer) SkipBlank() {
+	ch := tkn.Cur()
 	for ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
-		tkn.skip(1)
-		ch = tkn.cur()
+		tkn.Skip(1)
+		ch = tkn.Cur()
 	}
 }
 
 // scanIdentifier scans a language keyword or @-encased variable
 func (tkn *MysqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 	start := tkn.Pos
-	tkn.skip(1)
+	tkn.Skip(1)
 
 	for {
-		ch := tkn.cur()
+		ch := tkn.Cur()
 		if !isLetter(ch) && !isDigit(ch) && !(isVariable && isCarat(ch)) {
 			break
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 	keywordName := tkn.buf[start:tkn.Pos]
 	if keywordID, found := keywordLookupTable.LookupString(keywordName); found {
@@ -407,10 +525,10 @@ func (tkn *MysqlTokenizer) scanHex() (int, string) {
 	start := tkn.Pos
 	tkn.scanMantissa(16)
 	hex := tkn.buf[start:tkn.Pos]
-	if tkn.cur() != '\'' {
+	if tkn.Cur() != '\'' {
 		return LEX_ERROR, hex
 	}
-	tkn.skip(1)
+	tkn.Skip(1)
 	if len(hex)%2 != 0 {
 		return LEX_ERROR, hex
 	}
@@ -422,10 +540,10 @@ func (tkn *MysqlTokenizer) scanBitLiteral() (int, string) {
 	start := tkn.Pos
 	tkn.scanMantissa(2)
 	bit := tkn.buf[start:tkn.Pos]
-	if tkn.cur() != '\'' {
+	if tkn.Cur() != '\'' {
 		return LEX_ERROR, bit
 	}
-	tkn.skip(1)
+	tkn.Skip(1)
 	return BIT_LITERAL, bit
 }
 
@@ -438,26 +556,26 @@ func (tkn *MysqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int,
 	backTickSeen := true
 	for {
 		if backTickSeen {
-			if tkn.cur() != '`' {
+			if tkn.Cur() != '`' {
 				break
 			}
 			backTickSeen = false
 			buf.WriteByte('`')
-			tkn.skip(1)
+			tkn.Skip(1)
 			continue
 		}
 		// The previous char was not a backtick.
-		switch tkn.cur() {
+		switch tkn.Cur() {
 		case '`':
 			backTickSeen = true
-		case eofChar:
+		case dialect.EofChar:
 			// Premature EOF.
 			return LEX_ERROR, buf.String()
 		default:
-			buf.WriteByte(byte(tkn.cur()))
+			buf.WriteByte(byte(tkn.Cur()))
 			// keep scanning
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 	return ID, buf.String()
 }
@@ -468,25 +586,25 @@ func (tkn *MysqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int,
 func (tkn *MysqlTokenizer) scanLiteralIdentifier() (int, string) {
 	start := tkn.Pos
 	for {
-		switch tkn.cur() {
+		switch tkn.Cur() {
 		case '`':
-			if tkn.peek(1) != '`' {
+			if tkn.Peek(1) != '`' {
 				if tkn.Pos == start {
 					return LEX_ERROR, ""
 				}
-				tkn.skip(1)
+				tkn.Skip(1)
 				return ID, tkn.buf[start : tkn.Pos-1]
 			}
 
 			var buf strings.Builder
 			buf.WriteString(tkn.buf[start:tkn.Pos])
-			tkn.skip(1)
+			tkn.Skip(1)
 			return tkn.scanLiteralIdentifierSlow(&buf)
-		case eofChar:
+		case dialect.EofChar:
 			// Premature EOF.
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		default:
-			tkn.skip(1)
+			tkn.Skip(1)
 		}
 	}
 }
@@ -496,20 +614,20 @@ func (tkn *MysqlTokenizer) scanBindVar() (int, string) {
 	start := tkn.Pos
 	token := VALUE_ARG
 
-	tkn.skip(1)
-	if tkn.cur() == ':' {
+	tkn.Skip(1)
+	if tkn.Cur() == ':' {
 		token = LIST_ARG
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
-	if !isLetter(tkn.cur()) {
+	if !isLetter(tkn.Cur()) {
 		return LEX_ERROR, tkn.buf[start:tkn.Pos]
 	}
 	for {
-		ch := tkn.cur()
+		ch := tkn.Cur()
 		if !isLetter(ch) && !isDigit(ch) && ch != '.' {
 			break
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 	return token, tkn.buf[start:tkn.Pos]
 }
@@ -517,8 +635,8 @@ func (tkn *MysqlTokenizer) scanBindVar() (int, string) {
 // scanMantissa scans a sequence of numeric characters with the same base.
 // This is a helper function only called from the numeric scanners
 func (tkn *MysqlTokenizer) scanMantissa(base int) {
-	for digitVal(tkn.cur()) < base {
-		tkn.skip(1)
+	for digitVal(tkn.Cur()) < base {
+		tkn.Skip(1)
 	}
 }
 
@@ -527,19 +645,19 @@ func (tkn *MysqlTokenizer) scanNumber() (int, string) {
 	start := tkn.Pos
 	token := INTEGRAL
 
-	if tkn.cur() == '.' {
+	if tkn.Cur() == '.' {
 		token = DECIMAL
-		tkn.skip(1)
+		tkn.Skip(1)
 		tkn.scanMantissa(10)
 		goto exponent
 	}
 
 	// 0x construct.
-	if tkn.cur() == '0' {
-		tkn.skip(1)
-		if tkn.cur() == 'x' || tkn.cur() == 'X' {
+	if tkn.Cur() == '0' {
+		tkn.Skip(1)
+		if tkn.Cur() == 'x' || tkn.Cur() == 'X' {
 			token = HEXNUM
-			tkn.skip(1)
+			tkn.Skip(1)
 			tkn.scanMantissa(16)
 			goto exit
 		}
@@ -547,24 +665,24 @@ func (tkn *MysqlTokenizer) scanNumber() (int, string) {
 
 	tkn.scanMantissa(10)
 
-	if tkn.cur() == '.' {
+	if tkn.Cur() == '.' {
 		token = DECIMAL
-		tkn.skip(1)
+		tkn.Skip(1)
 		tkn.scanMantissa(10)
 	}
 
 exponent:
-	if tkn.cur() == 'e' || tkn.cur() == 'E' {
+	if tkn.Cur() == 'e' || tkn.Cur() == 'E' {
 		token = FLOAT
-		tkn.skip(1)
-		if tkn.cur() == '+' || tkn.cur() == '-' {
-			tkn.skip(1)
+		tkn.Skip(1)
+		if tkn.Cur() == '+' || tkn.Cur() == '-' {
+			tkn.Skip(1)
 		}
 		tkn.scanMantissa(10)
 	}
 
 exit:
-	if isLetter(tkn.cur()) {
+	if isLetter(tkn.Cur()) {
 		// A letter cannot immediately follow a float number.
 		if token == FLOAT || token == DECIMAL {
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
@@ -572,11 +690,11 @@ exit:
 		// A letter seen after a few numbers means that we should parse this
 		// as an identifier and not a number.
 		for {
-			ch := tkn.cur()
+			ch := tkn.Cur()
 			if !isLetter(ch) && !isDigit(ch) {
 				break
 			}
-			tkn.skip(1)
+			tkn.Skip(1)
 		}
 		return ID, tkn.buf[start:tkn.Pos]
 	}
@@ -592,10 +710,10 @@ func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 	start := tkn.Pos
 
 	for {
-		switch tkn.cur() {
+		switch tkn.Cur() {
 		case delim:
-			if tkn.peek(1) != delim {
-				tkn.skip(1)
+			if tkn.Peek(1) != delim {
+				tkn.Skip(1)
 				return typ, tkn.buf[start : tkn.Pos-1]
 			}
 			fallthrough
@@ -605,11 +723,11 @@ func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 			buffer.WriteString(tkn.buf[start:tkn.Pos])
 			return tkn.scanStringSlow(&buffer, delim, typ)
 
-		case eofChar:
+		case dialect.EofChar:
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
 
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 }
 
@@ -618,8 +736,8 @@ func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 // been scanned so far.
 func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
 	for {
-		ch := tkn.cur()
-		if ch == eofChar {
+		ch := tkn.Cur()
+		if ch == dialect.EofChar {
 			// Unterminated string.
 			return LEX_ERROR, buffer.String()
 		}
@@ -638,29 +756,29 @@ func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16,
 			if tkn.Pos >= len(tkn.buf) {
 				// Reached the end of the buffer without finding a delim or
 				// escape character.
-				tkn.skip(1)
+				tkn.Skip(1)
 				continue
 			}
 		}
-		tkn.skip(1) // Read one past the delim or escape character.
+		tkn.Skip(1) // Read one past the delim or escape character.
 
 		if ch == '\\' {
-			if tkn.cur() == eofChar {
+			if tkn.Cur() == dialect.EofChar {
 				// String terminates mid escape character.
 				return LEX_ERROR, buffer.String()
 			}
-			if decodedChar := sql_types.SQLDecodeMap[byte(tkn.cur())]; decodedChar == sql_types.DontEscape {
-				ch = tkn.cur()
+			if decodedChar := sql_types.SQLDecodeMap[byte(tkn.Cur())]; decodedChar == sql_types.DontEscape {
+				ch = tkn.Cur()
 			} else {
 				ch = uint16(decodedChar)
 			}
-		} else if ch == delim && tkn.cur() != delim {
+		} else if ch == delim && tkn.Cur() != delim {
 			// Correctly terminated string, which is not a double delim.
 			break
 		}
 
 		buffer.WriteByte(byte(ch))
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 
 	return typ, buffer.String()
@@ -671,12 +789,12 @@ func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16,
 // is started with '//', '--' or '#'.
 func (tkn *MysqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
 	start := tkn.Pos - prefixLen
-	for tkn.cur() != eofChar {
-		if tkn.cur() == '\n' {
-			tkn.skip(1)
+	for tkn.Cur() != dialect.EofChar {
+		if tkn.Cur() == '\n' {
+			tkn.Skip(1)
 			break
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 	return COMMENT, tkn.buf[start:tkn.Pos]
 }
@@ -686,18 +804,18 @@ func (tkn *MysqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
 func (tkn *MysqlTokenizer) scanCommentType2() (int, string) {
 	start := tkn.Pos - 2
 	for {
-		if tkn.cur() == '*' {
-			tkn.skip(1)
-			if tkn.cur() == '/' {
-				tkn.skip(1)
+		if tkn.Cur() == '*' {
+			tkn.Skip(1)
+			if tkn.Cur() == '/' {
+				tkn.Skip(1)
 				break
 			}
 			continue
 		}
-		if tkn.cur() == eofChar {
+		if tkn.Cur() == dialect.EofChar {
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 	return COMMENT, tkn.buf[start:tkn.Pos]
 }
@@ -706,47 +824,47 @@ func (tkn *MysqlTokenizer) scanCommentType2() (int, string) {
 func (tkn *MysqlTokenizer) scanMySQLSpecificComment() (int, string) {
 	start := tkn.Pos - 3
 	for {
-		if tkn.cur() == '*' {
-			tkn.skip(1)
-			if tkn.cur() == '/' {
-				tkn.skip(1)
+		if tkn.Cur() == '*' {
+			tkn.Skip(1)
+			if tkn.Cur() == '/' {
+				tkn.Skip(1)
 				break
 			}
 			continue
 		}
-		if tkn.cur() == eofChar {
+		if tkn.Cur() == dialect.EofChar {
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
-		tkn.skip(1)
+		tkn.Skip(1)
 	}
 
 	commentVersion, sql := ExtractMysqlComment(tkn.buf[start:tkn.Pos])
 
 	if MySQLVersion >= commentVersion {
 		// Only add the special comment to the tokenizer if the version of MySQL is higher or equal to the comment version
-		tkn.specialComment = NewStringTokenizer(sql)
+		tkn.specialComment = NewMysqlStringTokenizer(sql)
 	}
 
 	return tkn.Scan()
 }
 
-func (tkn *MysqlTokenizer) cur() uint16 {
-	return tkn.peek(0)
+func (tkn *MysqlTokenizer) Cur() uint16 {
+	return tkn.Peek(0)
 }
 
-func (tkn *MysqlTokenizer) skip(dist int) {
+func (tkn *MysqlTokenizer) Skip(dist int) {
 	tkn.Pos += dist
 }
 
-func (tkn *MysqlTokenizer) peek(dist int) uint16 {
+func (tkn *MysqlTokenizer) Peek(dist int) uint16 {
 	if tkn.Pos+dist >= len(tkn.buf) {
-		return eofChar
+		return dialect.EofChar
 	}
 	return uint16(tkn.buf[tkn.Pos+dist])
 }
 
-// reset clears any internal state.
-func (tkn *MysqlTokenizer) reset() {
+// Reset clears any internal state.
+func (tkn *MysqlTokenizer) Reset() {
 	tkn.ParseTree = nil
 	tkn.partialDDL = nil
 	tkn.specialComment = nil
@@ -777,4 +895,26 @@ func digitVal(ch uint16) int {
 
 func isDigit(ch uint16) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+// ExtractMysqlComment extracts the version and SQL from a comment-only query
+// such as /*!50708 sql here */
+func ExtractMysqlComment(sql string) (string, string) {
+	sql = sql[3 : len(sql)-2]
+
+	digitCount := 0
+	endOfVersionIndex := strings.IndexFunc(sql, func(c rune) bool {
+		digitCount++
+		return !unicode.IsDigit(c) || digitCount == 6
+	})
+	if endOfVersionIndex < 0 {
+		return "", ""
+	}
+	if endOfVersionIndex < 5 {
+		endOfVersionIndex = 0
+	}
+	version := sql[0:endOfVersionIndex]
+	innerSQL := strings.TrimFunc(sql[endOfVersionIndex:], unicode.IsSpace)
+
+	return version, innerSQL
 }

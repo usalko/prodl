@@ -17,21 +17,22 @@ limitations under the License.
 package sql_parser
 
 import (
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
 // ParseTable parses the input as a qualified table name.
 // It handles all valid literal escaping.
 func ParseTable(input string) (keyspace, table string, err error) {
-	tokenizer := NewStringTokenizer(input)
+	tokenizer, err := NewStringTokenizer(input, dialect.MYSQL)
 
 	// Start, want ID
 	token, value := tokenizer.Scan()
 	switch token {
-	case ID:
+	case tokenizer.GetIdToken():
 		table = string(value)
 	default:
-		table = KeywordString(token)
+		table = tokenizer.GetKeywordString(token)
 		if table == "" {
 			return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 		}
@@ -51,10 +52,10 @@ func ParseTable(input string) (keyspace, table string, err error) {
 	// Seen '.', want ID
 	token, value = tokenizer.Scan()
 	switch token {
-	case ID:
+	case tokenizer.GetIdToken():
 		table = string(value)
 	default:
-		table = KeywordString(token)
+		table = tokenizer.GetKeywordString(token)
 		if table == "" {
 			return "", "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "invalid table name: %s", input)
 		}

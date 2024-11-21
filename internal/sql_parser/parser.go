@@ -17,46 +17,15 @@ limitations under the License.
 package sql_parser
 
 import (
-	"flag"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/sent/internal/sql_parser/mysql"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
-
-// parserPool is a pool for parser objects.
-var parserPool = sync.Pool{
-	New: func() any {
-		return &yyParserImpl{}
-	},
-}
-
-// BindVars is a set of reserved bind variables from a SQL statement
-type BindVars map[string]struct{}
-
-// zeroParser is a zero-initialized parser to help reinitialize the parser for pooling.
-var zeroParser yyParserImpl
-
-// yyParsePooled is a wrapper around yyParse that pools the parser objects. There isn't a
-// particularly good reason to use yyParse directly, since it immediately discards its parser.
-//
-// N.B: Parser pooling means that you CANNOT take references directly to parse stack variables (e.g.
-// $$ = &$4) in sql.y rules. You must instead add an intermediate reference like so:
-//
-//	showCollationFilterOpt := $4
-//	$$ = &Show{Type: string($2), ShowCollationFilterOpt: &showCollationFilterOpt}
-func yyParsePooled(yylex yyLexer) int {
-	parser := parserPool.Get().(*yyParserImpl)
-	defer func() {
-		*parser = zeroParser
-		parserPool.Put(parser)
-	}()
-	return parser.Parse(yylex)
-}
 
 // Instructions for creating new types: If a type
 // needs to satisfy an interface, declare that function
@@ -75,28 +44,32 @@ func yyParsePooled(yylex yyLexer) int {
 // bind variables that were found in the original SQL query. If a DDL statement
 // is partially parsed but still contains a syntax error, the
 // error is ignored and the DDL is returned anyway.
-func Parse2(sql string) (ast.Statement, BindVars, error) {
-	tokenizer := NewStringTokenizer(sql)
-	if yyParsePooled(tokenizer) != 0 {
-		if tokenizer.partialDDL != nil {
+func Parse2(sql string) (ast.Statement, dialect.BindVars, error) {
+	tokenizer, err := NewStringTokenizer(sql, dialect.MYSQL)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
+		if tokenizer.GetPartialDDL() != nil {
 			if typ, val := tokenizer.Scan(); typ != 0 {
 				return nil, nil, fmt.Errorf("extra characters encountered after end of DDL: '%s'", string(val))
 			}
-			switch x := tokenizer.partialDDL.(type) {
+			switch x := tokenizer.GetPartialDDL().(type) {
 			case ast.DBDDLStatement:
 				x.SetFullyParsed(false)
 			case ast.DDLStatement:
 				x.SetFullyParsed(false)
 			}
-			tokenizer.ParseTree = tokenizer.partialDDL
-			return tokenizer.ParseTree, tokenizer.BindVars, nil
+			tokenizer.SetParseTree(tokenizer.GetPartialDDL())
+			return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
 		}
-		return nil, nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.LastError.Error())
+		return nil, nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.GetLastError().Error())
 	}
-	if tokenizer.ParseTree == nil {
+	if tokenizer.GetParseTree() == nil {
 		return nil, nil, ErrEmpty
 	}
-	return tokenizer.ParseTree, tokenizer.BindVars, nil
+	return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
 }
 
 // TableFromStatement returns the qualified table name for the query.
@@ -143,20 +116,23 @@ func Parse(sql string) (ast.Statement, error) {
 // ParseStrictDDL is the same as Parse except it errors on
 // partially parsed DDL statements.
 func ParseStrictDDL(sql string) (ast.Statement, error) {
-	tokenizer := NewStringTokenizer(sql)
-	if yyParsePooled(tokenizer) != 0 {
-		return nil, tokenizer.LastError
+	tokenizer, err := NewStringTokenizer(sql, dialect.MYSQL)
+	if err != nil {
+		return nil, err
 	}
-	if tokenizer.ParseTree == nil {
+	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
+		return nil, tokenizer.GetLastError()
+	}
+	if tokenizer.GetParseTree() == nil {
 		return nil, ErrEmpty
 	}
-	return tokenizer.ParseTree, nil
+	return tokenizer.GetParseTree(), nil
 }
 
 // ParseTokenizer is a raw interface to parse from the given tokenizer.
 // This does not used pooled parsers, and should not be used in general.
-func ParseTokenizer(tokenizer ast.Tokenizer) int {
-	return yyParse(tokenizer)
+func ParseTokenizer(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+	return parse(tokenizer, sql_dialect)
 }
 
 // ParseNext parses a single SQL statement from the tokenizer
@@ -164,38 +140,38 @@ func ParseTokenizer(tokenizer ast.Tokenizer) int {
 // The tokenizer will always read up to the end of the statement, allowing for
 // the next call to ParseNext to parse any subsequent SQL statements. When
 // there are no more statements to parse, a error of io.EOF is returned.
-func ParseNext(tokenizer ast.Tokenizer) (ast.Statement, error) {
+func ParseNext(tokenizer dialect.Tokenizer) (ast.Statement, error) {
 	return parseNext(tokenizer, false)
 }
 
 // ParseNextStrictDDL is the same as ParseNext except it errors on
 // partially parsed DDL statements.
-func ParseNextStrictDDL(tokenizer *Tokenizer) (Statement, error) {
+func ParseNextStrictDDL(tokenizer dialect.Tokenizer) (ast.Statement, error) {
 	return parseNext(tokenizer, true)
 }
 
-func parseNext(tokenizer *Tokenizer, strict bool) (Statement, error) {
-	if tokenizer.cur() == ';' {
-		tokenizer.skip(1)
-		tokenizer.skipBlank()
+func parseNext(tokenizer dialect.Tokenizer, strict bool) (ast.Statement, error) {
+	if tokenizer.Cur() == ';' {
+		tokenizer.Skip(1)
+		tokenizer.SkipBlank()
 	}
-	if tokenizer.cur() == eofChar {
+	if tokenizer.Cur() == dialect.EofChar {
 		return nil, io.EOF
 	}
 
-	tokenizer.reset()
-	tokenizer.multi = true
-	if yyParsePooled(tokenizer) != 0 {
-		if tokenizer.partialDDL != nil && !strict {
-			tokenizer.ParseTree = tokenizer.partialDDL
-			return tokenizer.ParseTree, nil
+	tokenizer.Reset()
+	tokenizer.SetMulti(true)
+	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
+		if tokenizer.GetPartialDDL() != nil && !strict {
+			tokenizer.SetParseTree(tokenizer.GetPartialDDL())
+			return tokenizer.GetParseTree(), nil
 		}
-		return nil, tokenizer.LastError
+		return nil, tokenizer.GetLastError()
 	}
-	if tokenizer.ParseTree == nil {
+	if tokenizer.GetParseTree() == nil {
 		return ParseNext(tokenizer)
 	}
-	return tokenizer.ParseTree, nil
+	return tokenizer.GetParseTree(), nil
 }
 
 // ErrEmpty is a sentinel error returned when parsing empty statements.
@@ -204,19 +180,23 @@ var ErrEmpty = sql_parser_errors.NewErrorf(sql_parser_errors.Code_INVALID_ARGUME
 // SplitStatement returns the first sql statement up to either a ; or EOF
 // and the remainder from the given buffer
 func SplitStatement(blob string) (string, string, error) {
-	tokenizer := NewStringTokenizer(blob)
+	tokenizer, err := NewStringTokenizer(blob, dialect.MYSQL)
+	if err != nil {
+		return "", "", err
+	}
+
 	tkn := 0
 	for {
 		tkn, _ = tokenizer.Scan()
-		if tkn == 0 || tkn == ';' || tkn == eofChar {
+		if tkn == 0 || tkn == ';' || tkn == dialect.EofChar {
 			break
 		}
 	}
-	if tokenizer.LastError != nil {
-		return "", "", tokenizer.LastError
+	if tokenizer.GetLastError() != nil {
+		return "", "", tokenizer.GetLastError()
 	}
 	if tkn == ';' {
-		return blob[:tokenizer.Pos-1], blob[tokenizer.Pos:], nil
+		return blob[:tokenizer.GetPos()-1], blob[tokenizer.GetPos():], nil
 	}
 	return blob, "", nil
 }
@@ -236,7 +216,10 @@ func SplitStatementToPieces(blob string) (pieces []string, err error) {
 	}
 
 	pieces = make([]string, 0, 16)
-	tokenizer := NewStringTokenizer(blob)
+	tokenizer, err := NewStringTokenizer(blob, dialect.MYSQL)
+	if err != nil {
+		return nil, err
+	}
 
 	tkn := 0
 	var stmt string
@@ -247,14 +230,14 @@ loop:
 		tkn, _ = tokenizer.Scan()
 		switch tkn {
 		case ';':
-			stmt = blob[stmtBegin : tokenizer.Pos-1]
+			stmt = blob[stmtBegin : tokenizer.GetPos()-1]
 			if !emptyStatement {
 				pieces = append(pieces, stmt)
 				emptyStatement = true
 			}
-			stmtBegin = tokenizer.Pos
-		case 0, eofChar:
-			blobTail := tokenizer.Pos - 1
+			stmtBegin = tokenizer.GetPos()
+		case 0, dialect.EofChar:
+			blobTail := tokenizer.GetPos() - 1
 			if stmtBegin < blobTail {
 				stmt = blob[stmtBegin : blobTail+1]
 				if !emptyStatement {
@@ -267,10 +250,32 @@ loop:
 		}
 	}
 
-	err = tokenizer.LastError
+	err = tokenizer.GetLastError()
 	return
 }
 
-func IsMySQL80AndAbove() bool {
-	return MySQLVersion >= "80000"
+// NewStringTokenizer creates a new Tokenizer for the
+// sql string.
+func NewStringTokenizer(sql string, sql_dialect dialect.SqlDialect) (dialect.Tokenizer, error) {
+	switch sql_dialect {
+	case dialect.MYSQL:
+		return mysql.NewMysqlStringTokenizer(sql), nil
+	}
+	return nil, fmt.Errorf("Sorry string tokenizer not found for dialect %s", sql_dialect)
+}
+
+func parsePooled(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+	switch sql_dialect {
+	case dialect.MYSQL:
+		return mysql.ParsePooled(tokenizer), nil
+	}
+	return 0, fmt.Errorf("Not implemented for dialect %s", sql_dialect)
+}
+
+func parse(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+	switch sql_dialect {
+	case dialect.MYSQL:
+		return mysql.Parse(tokenizer), nil
+	}
+	return 0, fmt.Errorf("Not implemented for dialect %s", sql_dialect)
 }

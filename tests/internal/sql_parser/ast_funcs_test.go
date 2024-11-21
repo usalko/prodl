@@ -22,56 +22,56 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 func TestAddQueryHint(t *testing.T) {
 	tcs := []struct {
-		comments  sql_parser.Comments
+		comments  ast.Comments
 		queryHint string
-		expected  sql_parser.Comments
+		expected  ast.Comments
 		err       string
 	}{
 		{
-			comments:  sql_parser.Comments{},
+			comments:  ast.Comments{},
 			queryHint: "",
 			expected:  nil,
 		},
 		{
-			comments:  sql_parser.Comments{},
+			comments:  ast.Comments{},
 			queryHint: "SET_VAR(aa)",
-			expected:  sql_parser.Comments{"/*+ SET_VAR(aa) */"},
+			expected:  ast.Comments{"/*+ SET_VAR(aa) */"},
 		},
 		{
-			comments:  sql_parser.Comments{"/* toto */"},
+			comments:  ast.Comments{"/* toto */"},
 			queryHint: "SET_VAR(aa)",
-			expected:  sql_parser.Comments{"/*+ SET_VAR(aa) */", "/* toto */"},
+			expected:  ast.Comments{"/*+ SET_VAR(aa) */", "/* toto */"},
 		},
 		{
-			comments:  sql_parser.Comments{"/* toto */", "/*+ SET_VAR(bb) */"},
+			comments:  ast.Comments{"/* toto */", "/*+ SET_VAR(bb) */"},
 			queryHint: "SET_VAR(aa)",
-			expected:  sql_parser.Comments{"/*+ SET_VAR(bb) SET_VAR(aa) */", "/* toto */"},
+			expected:  ast.Comments{"/*+ SET_VAR(bb) SET_VAR(aa) */", "/* toto */"},
 		},
 		{
-			comments:  sql_parser.Comments{"/* toto */", "/*+ SET_VAR(bb) "},
+			comments:  ast.Comments{"/* toto */", "/*+ SET_VAR(bb) "},
 			queryHint: "SET_VAR(aa)",
 			err:       "Query hint comment is malformed",
 		},
 		{
-			comments:  sql_parser.Comments{"/* toto */", "/*+ SET_VAR(bb) */", "/*+ SET_VAR(cc) */"},
+			comments:  ast.Comments{"/* toto */", "/*+ SET_VAR(bb) */", "/*+ SET_VAR(cc) */"},
 			queryHint: "SET_VAR(aa)",
 			err:       "Must have only one query hint",
 		},
 		{
-			comments:  sql_parser.Comments{"/*+ SET_VAR(bb) */"},
+			comments:  ast.Comments{"/*+ SET_VAR(bb) */"},
 			queryHint: "SET_VAR(bb)",
-			expected:  sql_parser.Comments{"/*+ SET_VAR(bb) */"},
+			expected:  ast.Comments{"/*+ SET_VAR(bb) */"},
 		},
 	}
 
 	for i, tc := range tcs {
 		comments := tc.comments.Parsed()
-		t.Run(fmt.Sprintf("%d %s", i, sql_parser.String(comments)), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%d %s", i, ast.String(comments)), func(t *testing.T) {
 			got, err := comments.AddQueryHint(tc.queryHint)
 			if tc.err != "" {
 				require.EqualError(t, err, tc.err)

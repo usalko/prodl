@@ -24,22 +24,23 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
-func readable(node sql_parser.Expr) string {
+func readable(node ast.Expr) string {
 	switch node := node.(type) {
-	case *sql_parser.OrExpr:
+	case *ast.OrExpr:
 		return fmt.Sprintf("(%s or %s)", readable(node.Left), readable(node.Right))
-	case *sql_parser.AndExpr:
+	case *ast.AndExpr:
 		return fmt.Sprintf("(%s and %s)", readable(node.Left), readable(node.Right))
-	case *sql_parser.XorExpr:
+	case *ast.XorExpr:
 		return fmt.Sprintf("(%s xor %s)", readable(node.Left), readable(node.Right))
-	case *sql_parser.BinaryExpr:
+	case *ast.BinaryExpr:
 		return fmt.Sprintf("(%s %s %s)", readable(node.Left), node.Operator.ToString(), readable(node.Right))
-	case *sql_parser.IsExpr:
+	case *ast.IsExpr:
 		return fmt.Sprintf("(%s %s)", readable(node.Left), node.Right.ToString())
 	default:
-		return sql_parser.String(node)
+		return ast.String(node)
 	}
 }
 
@@ -60,7 +61,7 @@ func TestAndOrPrecedence(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sql_parser.Select).Where.Expr)
+		expr := readable(tree.(*ast.Select).Where.Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -70,11 +71,11 @@ func TestAndOrPrecedence(t *testing.T) {
 func TestNotInSubqueryPrecedence(t *testing.T) {
 	tree, err := sql_parser.Parse("select * from a where not id in (select 42)")
 	require.NoError(t, err)
-	not := tree.(*sql_parser.Select).Where.Expr.(*sql_parser.NotExpr)
-	cmp := not.Expr.(*sql_parser.ComparisonExpr)
-	subq := cmp.Right.(*sql_parser.Subquery)
+	not := tree.(*ast.Select).Where.Expr.(*ast.NotExpr)
+	cmp := not.Expr.(*ast.ComparisonExpr)
+	subq := cmp.Right.(*ast.Subquery)
 
-	extracted := &sql_parser.ExtractedSubquery{
+	extracted := &ast.ExtractedSubquery{
 		Original:  cmp,
 		OpCode:    1,
 		Subquery:  subq,
@@ -91,12 +92,12 @@ func TestNotInSubqueryPrecedence(t *testing.T) {
 func TestSubqueryPrecedence(t *testing.T) {
 	tree, err := sql_parser.Parse("select * from a where id in (select 42) and false")
 	require.NoError(t, err)
-	where := tree.(*sql_parser.Select).Where
-	andExpr := where.Expr.(*sql_parser.AndExpr)
-	cmp := andExpr.Left.(*sql_parser.ComparisonExpr)
-	subq := cmp.Right.(*sql_parser.Subquery)
+	where := tree.(*ast.Select).Where
+	andExpr := where.Expr.(*ast.AndExpr)
+	cmp := andExpr.Left.(*ast.ComparisonExpr)
+	subq := cmp.Right.(*ast.Subquery)
 
-	extracted := &sql_parser.ExtractedSubquery{
+	extracted := &ast.ExtractedSubquery{
 		Original:  andExpr.Left,
 		OpCode:    1,
 		Subquery:  subq,
@@ -127,7 +128,7 @@ func TestPlusStarPrecedence(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sql_parser.Select).SelectExprs[0].(*sql_parser.AliasedExpr).Expr)
+		expr := readable(tree.(*ast.Select).SelectExprs[0].(*ast.AliasedExpr).Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -154,7 +155,7 @@ func TestIsPrecedence(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		expr := readable(tree.(*sql_parser.Select).Where.Expr)
+		expr := readable(tree.(*ast.Select).Where.Expr)
 		if expr != tcase.output {
 			t.Errorf("Parse: \n%s, want: \n%s", expr, tcase.output)
 		}
@@ -205,7 +206,7 @@ func TestParens(t *testing.T) {
 		t.Run(tc.in, func(t *testing.T) {
 			stmt, err := sql_parser.Parse("select " + tc.in)
 			require.NoError(t, err)
-			out := sql_parser.String(stmt)
+			out := ast.String(stmt)
 			require.Equal(t, "select "+tc.expected+" from dual", out)
 		})
 	}
@@ -225,14 +226,14 @@ func TestRandom(t *testing.T) {
 		}
 		// Given a random expression
 		randomExpr := g.expression()
-		inputQ := "select " + sql_parser.String(randomExpr) + " from t"
+		inputQ := "select " + ast.String(randomExpr) + " from t"
 
 		// When it's parsed and unparsed
 		parsedInput, err := sql_parser.Parse(inputQ)
 		require.NoError(t, err, inputQ)
 
 		// Then the unparsing should be the same as the input query
-		outputOfParseResult := sql_parser.String(parsedInput)
+		outputOfParseResult := ast.String(parsedInput)
 		require.Equal(t, outputOfParseResult, inputQ)
 	}
 }

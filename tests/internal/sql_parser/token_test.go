@@ -22,6 +22,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
 func TestLiteralID(t *testing.T) {
@@ -31,53 +33,56 @@ func TestLiteralID(t *testing.T) {
 		out string
 	}{{
 		in:  "`aa`",
-		id:  sql_parser.ID,
+		id:  mysql.ID,
 		out: "aa",
 	}, {
 		in:  "```a```",
-		id:  sql_parser.ID,
+		id:  mysql.ID,
 		out: "`a`",
 	}, {
 		in:  "`a``b`",
-		id:  sql_parser.ID,
+		id:  mysql.ID,
 		out: "a`b",
 	}, {
 		in:  "`a``b`c",
-		id:  sql_parser.ID,
+		id:  mysql.ID,
 		out: "a`b",
 	}, {
 		in:  "`a``b",
-		id:  sql_parser.LEX_ERROR,
+		id:  mysql.LEX_ERROR,
 		out: "a`b",
 	}, {
 		in:  "`a``b``",
-		id:  sql_parser.LEX_ERROR,
+		id:  mysql.LEX_ERROR,
 		out: "a`b`",
 	}, {
 		in:  "``",
-		id:  sql_parser.LEX_ERROR,
+		id:  mysql.LEX_ERROR,
 		out: "",
 	}, {
 		in:  "@x",
-		id:  sql_parser.AT_ID,
+		id:  mysql.AT_ID,
 		out: "x",
 	}, {
 		in:  "@@x",
-		id:  sql_parser.AT_AT_ID,
+		id:  mysql.AT_AT_ID,
 		out: "x",
 	}, {
 		in:  "@@`x y`",
-		id:  sql_parser.AT_AT_ID,
+		id:  mysql.AT_AT_ID,
 		out: "x y",
 	}, {
 		in:  "@@`@x @y`",
-		id:  sql_parser.AT_AT_ID,
+		id:  mysql.AT_AT_ID,
 		out: "@x @y",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			tkn := sql_parser.NewStringTokenizer(tcase.in)
+			tkn, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
+			if err != nil {
+				t.Fatalf("%q", err)
+			}
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
 			require.Equal(t, tcase.out, string(out))
@@ -86,9 +91,9 @@ func TestLiteralID(t *testing.T) {
 }
 
 func tokenName(id int) string {
-	if id == sql_parser.STRING {
+	if id == mysql.STRING {
 		return "STRING"
-	} else if id == sql_parser.LEX_ERROR {
+	} else if id == mysql.LEX_ERROR {
 		return "LEX_ERROR"
 	}
 	return fmt.Sprintf("%d", id)
@@ -101,57 +106,61 @@ func TestString(t *testing.T) {
 		want string
 	}{{
 		in:   "''",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "",
 	}, {
 		in:   "''''",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "'",
 	}, {
 		in:   "'hello'",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "hello",
 	}, {
 		in:   "'\\n'",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "\n",
 	}, {
 		in:   "'\\nhello\\n'",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "\nhello\n",
 	}, {
 		in:   "'a''b'",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "a'b",
 	}, {
 		in:   "'a\\'b'",
-		id:   sql_parser.STRING,
+		id:   mysql.STRING,
 		want: "a'b",
 	}, {
 		in:   "'\\'",
-		id:   sql_parser.LEX_ERROR,
+		id:   mysql.LEX_ERROR,
 		want: "'",
 	}, {
 		in:   "'",
-		id:   sql_parser.LEX_ERROR,
+		id:   mysql.LEX_ERROR,
 		want: "",
 	}, {
 		in:   "'hello\\'",
-		id:   sql_parser.LEX_ERROR,
+		id:   mysql.LEX_ERROR,
 		want: "hello'",
 	}, {
 		in:   "'hello",
-		id:   sql_parser.LEX_ERROR,
+		id:   mysql.LEX_ERROR,
 		want: "hello",
 	}, {
 		in:   "'hello\\",
-		id:   sql_parser.LEX_ERROR,
+		id:   mysql.LEX_ERROR,
 		want: "hello",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			id, got := sql_parser.NewStringTokenizer(tcase.in).Scan()
+			tokenizer, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
+			if err != nil {
+				t.Fatalf("%q", err)
+			}
+			id, got := tokenizer.Scan()
 			require.Equal(t, tcase.id, id, "Scan(%q) = (%s), want (%s)", tcase.in, tokenName(id), tokenName(tcase.id))
 			require.Equal(t, tcase.want, string(got))
 		})
@@ -221,25 +230,28 @@ func TestVersion(t *testing.T) {
 	}{{
 		version: "50709",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
+		id:      []int{mysql.FROM, mysql.IN, mysql.EXISTS, 0},
 	}, {
 		version: "80101",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
+		id:      []int{mysql.FROM, mysql.IN, mysql.EXISTS, 0},
 	}, {
 		version: "80201",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sql_parser.SELECT, sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
+		id:      []int{mysql.SELECT, mysql.FROM, mysql.IN, mysql.EXISTS, 0},
 	}, {
 		version: "80102",
 		in:      "/*!80102 SELECT*/ FROM IN EXISTS",
-		id:      []int{sql_parser.SELECT, sql_parser.FROM, sql_parser.IN, sql_parser.EXISTS, 0},
+		id:      []int{mysql.SELECT, mysql.FROM, mysql.IN, mysql.EXISTS, 0},
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version+"_"+tcase.in, func(t *testing.T) {
-			sql_parser.MySQLVersion = tcase.version
-			tok := sql_parser.NewStringTokenizer(tcase.in)
+			mysql.MySQLVersion = tcase.version
+			tok, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
+			if err != nil {
+				t.Fatalf("%q", err)
+			}
 			for _, expectedID := range tcase.id {
 				id, _ := tok.Scan()
 				require.Equal(t, expectedID, id)
@@ -265,7 +277,7 @@ func TestExtractMySQLComment(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version, func(t *testing.T) {
-			output, _ := sql_parser.ExtractMysqlComment(tcase.comment)
+			output, _ := mysql.ExtractMysqlComment(tcase.comment)
 			require.Equal(t, tcase.version, output)
 		})
 	}
@@ -278,38 +290,41 @@ func TestIntegerAndID(t *testing.T) {
 		out string
 	}{{
 		in: "334",
-		id: sql_parser.INTEGRAL,
+		id: mysql.INTEGRAL,
 	}, {
 		in: "33.4",
-		id: sql_parser.DECIMAL,
+		id: mysql.DECIMAL,
 	}, {
 		in: "0x33",
-		id: sql_parser.HEXNUM,
+		id: mysql.HEXNUM,
 	}, {
 		in: "33e4",
-		id: sql_parser.FLOAT,
+		id: mysql.FLOAT,
 	}, {
 		in: "33.4e-3",
-		id: sql_parser.FLOAT,
+		id: mysql.FLOAT,
 	}, {
 		in: "33t4",
-		id: sql_parser.ID,
+		id: mysql.ID,
 	}, {
 		in: "0x2et3",
-		id: sql_parser.ID,
+		id: mysql.ID,
 	}, {
 		in:  "3e2t3",
-		id:  sql_parser.LEX_ERROR,
+		id:  mysql.LEX_ERROR,
 		out: "3e2",
 	}, {
 		in:  "3.2t",
-		id:  sql_parser.LEX_ERROR,
+		id:  mysql.LEX_ERROR,
 		out: "3.2",
 	}}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			tkn := sql_parser.NewStringTokenizer(tcase.in)
+			tkn, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
+			if err != nil {
+				t.Fatalf("%q")
+			}
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
 			expectedOut := tcase.out

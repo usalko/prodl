@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 func TestEmptyLike(t *testing.T) {
@@ -37,7 +38,7 @@ func TestLikePrefixRegexp(t *testing.T) {
 	}
 
 	want := "^key.*$"
-	got := sql_parser.LikeToRegexp(show.(*sql_parser.Show).Internal.(*sql_parser.ShowBasic).Filter.Like).String()
+	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }
@@ -49,7 +50,7 @@ func TestLikeAnyCharsRegexp(t *testing.T) {
 	}
 
 	want := "^.*val1.*val2.*$"
-	got := sql_parser.LikeToRegexp(show.(*sql_parser.Show).Internal.(*sql_parser.ShowBasic).Filter.Like).String()
+	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }
@@ -61,7 +62,7 @@ func TestSingleAndMultipleCharsRegexp(t *testing.T) {
 	}
 
 	want := "^.val1.val2.*$"
-	got := sql_parser.LikeToRegexp(show.(*sql_parser.Show).Internal.(*sql_parser.ShowBasic).Filter.Like).String()
+	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }
@@ -73,7 +74,7 @@ func TestSpecialCharactersRegexp(t *testing.T) {
 	}
 
 	want := "^\\?\\.\\*\\?$"
-	got := sql_parser.LikeToRegexp(show.(*sql_parser.Show).Internal.(*sql_parser.ShowBasic).Filter.Like).String()
+	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }
@@ -85,7 +86,7 @@ func TestQuoteLikeSpecialCharacters(t *testing.T) {
 	}
 
 	want := "^part1.part2%part3.part4_part5.*$"
-	got := sql_parser.LikeToRegexp(show.(*sql_parser.Show).Internal.(*sql_parser.ShowBasic).Filter.Like).String()
+	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }

@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_types"
 )
 
@@ -40,7 +41,7 @@ func TestEncodable(t *testing.T) {
 	}, {
 		// Single column.
 		in: &sql_parser.TupleEqualityList{
-			Columns: []sql_parser.ColIdent{sql_parser.NewColIdent("pk")},
+			Columns: []ast.ColIdent{ast.NewColIdent("pk")},
 			Rows: [][]sql_types.Value{
 				{sql_types.NewInt64(1)},
 				{sql_types.NewVarBinary("aa")},
@@ -50,7 +51,7 @@ func TestEncodable(t *testing.T) {
 	}, {
 		// Multiple columns.
 		in: &sql_parser.TupleEqualityList{
-			Columns: []sql_parser.ColIdent{sql_parser.NewColIdent("pk1"), sql_parser.NewColIdent("pk2")},
+			Columns: []ast.ColIdent{ast.NewColIdent("pk1"), ast.NewColIdent("pk2")},
 			Rows: [][]sql_types.Value{
 				{
 					sql_types.NewInt64(1),

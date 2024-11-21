@@ -1,4 +1,4 @@
-package sql_parser
+package sql_parser_test
 
 import (
 	"bufio"
@@ -10,11 +10,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
 func TestKeywordTable(t *testing.T) {
-	for _, kw := range sql_parser.GetKeywords() {
-		lookup, ok := sql_parser.KeywordLookup(kw.Name)
+	for _, kw := range mysql.GetKeywords() {
+		lookup, ok := mysql.KeywordLookup(kw.Name)
 		require.Truef(t, ok, "keyword %q failed to match", kw.Name)
 		require.Equalf(t, lookup, kw.Id, "keyword %q matched to %d (expected %d)", kw.Name, lookup, kw.Id)
 	}

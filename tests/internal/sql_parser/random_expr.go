@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 
-	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 // This file is used to generate random expressions to be used for testing
@@ -69,105 +69,105 @@ func (g *generator) atMaxDepth() bool {
 Note: It's important to update this method so that it produces all expressions that need precedence checking.
 It's currently missing function calls and string operators
 */
-func (g *generator) expression() sql_parser.Expr {
+func (g *generator) expression() ast.Expr {
 	if g.randomBool() {
 		return g.booleanExpr()
 	}
 	options := []exprF{
-		func() sql_parser.Expr { return g.intExpr() },
-		func() sql_parser.Expr { return g.stringExpr() },
-		func() sql_parser.Expr { return g.booleanExpr() },
+		func() ast.Expr { return g.intExpr() },
+		func() ast.Expr { return g.stringExpr() },
+		func() ast.Expr { return g.booleanExpr() },
 	}
 
 	return g.randomOf(options)
 }
 
-func (g *generator) booleanExpr() sql_parser.Expr {
+func (g *generator) booleanExpr() ast.Expr {
 	if g.atMaxDepth() {
 		return g.booleanLiteral()
 	}
 
 	options := []exprF{
-		func() sql_parser.Expr { return g.andExpr() },
-		func() sql_parser.Expr { return g.xorExpr() },
-		func() sql_parser.Expr { return g.orExpr() },
-		func() sql_parser.Expr { return g.comparison(g.intExpr) },
-		func() sql_parser.Expr { return g.comparison(g.stringExpr) },
-		//func() sql_parser.Expr { return g.comparison(g.booleanExpr) }, // this is not accepted by the parser
-		func() sql_parser.Expr { return g.inExpr() },
-		func() sql_parser.Expr { return g.between() },
-		func() sql_parser.Expr { return g.isExpr() },
-		func() sql_parser.Expr { return g.notExpr() },
-		func() sql_parser.Expr { return g.likeExpr() },
+		func() ast.Expr { return g.andExpr() },
+		func() ast.Expr { return g.xorExpr() },
+		func() ast.Expr { return g.orExpr() },
+		func() ast.Expr { return g.comparison(g.intExpr) },
+		func() ast.Expr { return g.comparison(g.stringExpr) },
+		//func() ast.Expr { return g.comparison(g.booleanExpr) }, // this is not accepted by the parser
+		func() ast.Expr { return g.inExpr() },
+		func() ast.Expr { return g.between() },
+		func() ast.Expr { return g.isExpr() },
+		func() ast.Expr { return g.notExpr() },
+		func() ast.Expr { return g.likeExpr() },
 	}
 
 	return g.randomOf(options)
 }
 
-func (g *generator) intExpr() sql_parser.Expr {
+func (g *generator) intExpr() ast.Expr {
 	if g.atMaxDepth() {
 		return g.intLiteral()
 	}
 
 	options := []exprF{
-		func() sql_parser.Expr { return g.arithmetic() },
-		func() sql_parser.Expr { return g.intLiteral() },
-		func() sql_parser.Expr { return g.caseExpr(g.intExpr) },
+		func() ast.Expr { return g.arithmetic() },
+		func() ast.Expr { return g.intLiteral() },
+		func() ast.Expr { return g.caseExpr(g.intExpr) },
 	}
 
 	return g.randomOf(options)
 }
 
-func (g *generator) booleanLiteral() sql_parser.Expr {
-	return sql_parser.BoolVal(g.randomBool())
+func (g *generator) booleanLiteral() ast.Expr {
+	return ast.BoolVal(g.randomBool())
 }
 
 func (g *generator) randomBool() bool {
 	return g.r.Float32() < 0.5
 }
 
-func (g *generator) intLiteral() sql_parser.Expr {
+func (g *generator) intLiteral() ast.Expr {
 	t := fmt.Sprintf("%d", g.r.Intn(1000)-g.r.Intn((1000)))
 
-	return sql_parser.NewIntLiteral(t)
+	return ast.NewIntLiteral(t)
 }
 
 var words = []string{"ox", "ant", "ape", "asp", "bat", "bee", "boa", "bug", "cat", "cod", "cow", "cub", "doe", "dog", "eel", "eft", "elf", "elk", "emu", "ewe", "fly", "fox", "gar", "gnu", "hen", "hog", "imp", "jay", "kid", "kit", "koi", "lab", "man", "owl", "pig", "pug", "pup", "ram", "rat", "ray", "yak", "bass", "bear", "bird", "boar", "buck", "bull", "calf", "chow", "clam", "colt", "crab", "crow", "dane", "deer", "dodo", "dory", "dove", "drum", "duck", "fawn", "fish", "flea", "foal", "fowl", "frog", "gnat", "goat", "grub", "gull", "hare", "hawk", "ibex", "joey", "kite", "kiwi", "lamb", "lark", "lion", "loon", "lynx", "mako", "mink", "mite", "mole", "moth", "mule", "mutt", "newt", "orca", "oryx", "pika", "pony", "puma", "seal", "shad", "slug", "sole", "stag", "stud", "swan", "tahr", "teal", "tick", "toad", "tuna", "wasp", "wolf", "worm", "wren", "yeti", "adder", "akita", "alien", "aphid", "bison", "boxer", "bream", "bunny", "burro", "camel", "chimp", "civet", "cobra", "coral", "corgi", "crane", "dingo", "drake", "eagle", "egret", "filly", "finch", "gator", "gecko", "ghost", "ghoul", "goose", "guppy", "heron", "hippo", "horse", "hound", "husky", "hyena", "koala", "krill", "leech", "lemur", "liger", "llama", "louse", "macaw", "midge", "molly", "moose", "moray", "mouse", "panda", "perch", "prawn", "quail", "racer", "raven", "rhino", "robin", "satyr", "shark", "sheep", "shrew", "skink", "skunk", "sloth", "snail", "snake", "snipe", "squid", "stork", "swift", "swine", "tapir", "tetra", "tiger", "troll", "trout", "viper", "wahoo", "whale", "zebra", "alpaca", "amoeba", "baboon", "badger", "beagle", "bedbug", "beetle", "bengal", "bobcat", "caiman", "cattle", "cicada", "collie", "condor", "cougar", "coyote", "dassie", "donkey", "dragon", "earwig", "falcon", "feline", "ferret", "gannet", "gibbon", "glider", "goblin", "gopher", "grouse", "guinea", "hermit", "hornet", "iguana", "impala", "insect", "jackal", "jaguar", "jennet", "kitten", "kodiak", "lizard", "locust", "maggot", "magpie", "mammal", "mantis", "marlin", "marmot", "marten", "martin", "mayfly", "minnow", "monkey", "mullet", "muskox", "ocelot", "oriole", "osprey", "oyster", "parrot", "pigeon", "piglet", "poodle", "possum", "python", "quagga", "rabbit", "raptor", "rodent", "roughy", "salmon", "sawfly", "serval", "shiner", "shrimp", "spider", "sponge", "tarpon", "thrush", "tomcat", "toucan", "turkey", "turtle", "urchin", "vervet", "walrus", "weasel", "weevil", "wombat", "anchovy", "anemone", "bluejay", "buffalo", "bulldog", "buzzard", "caribou", "catfish", "chamois", "cheetah", "chicken", "chigger", "cowbird", "crappie", "crawdad", "cricket", "dogfish", "dolphin", "firefly", "garfish", "gazelle", "gelding", "giraffe", "gobbler", "gorilla", "goshawk", "grackle", "griffon", "grizzly", "grouper", "haddock", "hagfish", "halibut", "hamster", "herring", "jackass", "javelin", "jawfish", "jaybird", "katydid", "ladybug", "lamprey", "lemming", "leopard", "lioness", "lobster", "macaque", "mallard", "mammoth", "manatee", "mastiff", "meerkat", "mollusk", "monarch", "mongrel", "monitor", "monster", "mudfish", "muskrat", "mustang", "narwhal", "oarfish", "octopus", "opossum", "ostrich", "panther", "peacock", "pegasus", "pelican", "penguin", "phoenix", "piranha", "polecat", "primate", "quetzal", "raccoon", "rattler", "redbird", "redfish", "reptile", "rooster", "sawfish", "sculpin", "seagull", "skylark", "snapper", "spaniel", "sparrow", "sunbeam", "sunbird", "sunfish", "tadpole", "termite", "terrier", "unicorn", "vulture", "wallaby", "walleye", "warthog", "whippet", "wildcat", "aardvark", "airedale", "albacore", "anteater", "antelope", "arachnid", "barnacle", "basilisk", "blowfish", "bluebird", "bluegill", "bonefish", "bullfrog", "cardinal", "chipmunk", "cockatoo", "crayfish", "dinosaur", "doberman", "duckling", "elephant", "escargot", "flamingo", "flounder", "foxhound", "glowworm", "goldfish", "grubworm", "hedgehog", "honeybee", "hookworm", "humpback", "kangaroo", "killdeer", "kingfish", "labrador", "lacewing", "ladybird", "lionfish", "longhorn", "mackerel", "malamute", "marmoset", "mastodon", "moccasin", "mongoose", "monkfish", "mosquito", "pangolin", "parakeet", "pheasant", "pipefish", "platypus", "polliwog", "porpoise", "reindeer", "ringtail", "sailfish", "scorpion", "seahorse", "seasnail", "sheepdog", "shepherd", "silkworm", "squirrel", "stallion", "starfish", "starling", "stingray", "stinkbug", "sturgeon", "terrapin", "titmouse", "tortoise", "treefrog", "werewolf", "woodcock"}
 
-func (g *generator) stringLiteral() sql_parser.Expr {
-	return sql_parser.NewStrLiteral(g.randomOfS(words))
+func (g *generator) stringLiteral() ast.Expr {
+	return ast.NewStrLiteral(g.randomOfS(words))
 }
 
-func (g *generator) stringExpr() sql_parser.Expr {
+func (g *generator) stringExpr() ast.Expr {
 	if g.atMaxDepth() {
 		return g.stringLiteral()
 	}
 
 	options := []exprF{
-		func() sql_parser.Expr { return g.stringLiteral() },
-		func() sql_parser.Expr { return g.caseExpr(g.stringExpr) },
+		func() ast.Expr { return g.stringLiteral() },
+		func() ast.Expr { return g.caseExpr(g.stringExpr) },
 	}
 
 	return g.randomOf(options)
 }
 
-func (g *generator) likeExpr() sql_parser.Expr {
+func (g *generator) likeExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
-	return &sql_parser.ComparisonExpr{
-		Operator: sql_parser.LikeOp,
+	return &ast.ComparisonExpr{
+		Operator: ast.LikeOp,
 		Left:     g.stringExpr(),
 		Right:    g.stringExpr(),
 	}
 }
 
-var comparisonOps = []sql_parser.ComparisonExprOperator{sql_parser.EqualOp, sql_parser.LessThanOp, sql_parser.GreaterThanOp, sql_parser.LessEqualOp, sql_parser.GreaterEqualOp, sql_parser.NotEqualOp, sql_parser.NullSafeEqualOp}
+var comparisonOps = []ast.ComparisonExprOperator{ast.EqualOp, ast.LessThanOp, ast.GreaterThanOp, ast.LessEqualOp, ast.GreaterEqualOp, ast.NotEqualOp, ast.NullSafeEqualOp}
 
-func (g *generator) comparison(f func() sql_parser.Expr) sql_parser.Expr {
+func (g *generator) comparison(f func() ast.Expr) ast.Expr {
 	g.enter()
 	defer g.exit()
 
-	cmp := &sql_parser.ComparisonExpr{
+	cmp := &ast.ComparisonExpr{
 		Operator: comparisonOps[g.r.Intn(len(comparisonOps))],
 		Left:     f(),
 		Right:    f(),
@@ -175,12 +175,12 @@ func (g *generator) comparison(f func() sql_parser.Expr) sql_parser.Expr {
 	return cmp
 }
 
-func (g *generator) caseExpr(valueF func() sql_parser.Expr) sql_parser.Expr {
+func (g *generator) caseExpr(valueF func() ast.Expr) ast.Expr {
 	g.enter()
 	defer g.exit()
 
-	var exp sql_parser.Expr
-	var elseExpr sql_parser.Expr
+	var exp ast.Expr
+	var elseExpr ast.Expr
 	if g.randomBool() {
 		exp = valueF()
 	}
@@ -189,46 +189,46 @@ func (g *generator) caseExpr(valueF func() sql_parser.Expr) sql_parser.Expr {
 	}
 
 	size := g.r.Intn(5) + 2
-	var whens []*sql_parser.When
+	var whens []*ast.When
 	for i := 0; i < size; i++ {
-		var cond sql_parser.Expr
+		var cond ast.Expr
 		if exp == nil {
 			cond = g.booleanExpr()
 		} else {
 			cond = g.expression()
 		}
 
-		whens = append(whens, &sql_parser.When{
+		whens = append(whens, &ast.When{
 			Cond: cond,
 			Val:  g.expression(),
 		})
 	}
 
-	return &sql_parser.CaseExpr{
+	return &ast.CaseExpr{
 		Expr:  exp,
 		Whens: whens,
 		Else:  elseExpr,
 	}
 }
 
-var arithmeticOps = []sql_parser.BinaryExprOperator{sql_parser.BitAndOp, sql_parser.BitOrOp, sql_parser.BitXorOp, sql_parser.PlusOp, sql_parser.MinusOp, sql_parser.MultOp, sql_parser.DivOp, sql_parser.IntDivOp, sql_parser.ModOp, sql_parser.ShiftRightOp, sql_parser.ShiftLeftOp}
+var arithmeticOps = []ast.BinaryExprOperator{ast.BitAndOp, ast.BitOrOp, ast.BitXorOp, ast.PlusOp, ast.MinusOp, ast.MultOp, ast.DivOp, ast.IntDivOp, ast.ModOp, ast.ShiftRightOp, ast.ShiftLeftOp}
 
-func (g *generator) arithmetic() sql_parser.Expr {
+func (g *generator) arithmetic() ast.Expr {
 	g.enter()
 	defer g.exit()
 
 	op := arithmeticOps[g.r.Intn(len(arithmeticOps))]
 
-	return &sql_parser.BinaryExpr{
+	return &ast.BinaryExpr{
 		Operator: op,
 		Left:     g.intExpr(),
 		Right:    g.intExpr(),
 	}
 }
 
-type exprF func() sql_parser.Expr
+type exprF func() ast.Expr
 
-func (g *generator) randomOf(options []exprF) sql_parser.Expr {
+func (g *generator) randomOf(options []exprF) ast.Expr {
 	return options[g.r.Intn(len(options))]()
 }
 
@@ -236,62 +236,62 @@ func (g *generator) randomOfS(options []string) string {
 	return options[g.r.Intn(len(options))]
 }
 
-func (g *generator) andExpr() sql_parser.Expr {
+func (g *generator) andExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
-	return &sql_parser.AndExpr{
+	return &ast.AndExpr{
 		Left:  g.booleanExpr(),
 		Right: g.booleanExpr(),
 	}
 }
 
-func (g *generator) orExpr() sql_parser.Expr {
+func (g *generator) orExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
-	return &sql_parser.OrExpr{
+	return &ast.OrExpr{
 		Left:  g.booleanExpr(),
 		Right: g.booleanExpr(),
 	}
 }
 
-func (g *generator) xorExpr() sql_parser.Expr {
+func (g *generator) xorExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
-	return &sql_parser.XorExpr{
+	return &ast.XorExpr{
 		Left:  g.booleanExpr(),
 		Right: g.booleanExpr(),
 	}
 }
 
-func (g *generator) notExpr() sql_parser.Expr {
+func (g *generator) notExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
-	return &sql_parser.NotExpr{g.booleanExpr()}
+	return &ast.NotExpr{g.booleanExpr()}
 }
 
-func (g *generator) inExpr() sql_parser.Expr {
+func (g *generator) inExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
 
 	expr := g.intExpr()
 	size := g.r.Intn(5) + 2
-	tuples := sql_parser.ValTuple{}
+	tuples := ast.ValTuple{}
 	for i := 0; i < size; i++ {
 		tuples = append(tuples, g.intExpr())
 	}
-	op := sql_parser.InOp
+	op := ast.InOp
 	if g.randomBool() {
-		op = sql_parser.NotInOp
+		op = ast.NotInOp
 	}
 
-	return &sql_parser.ComparisonExpr{
+	return &ast.ComparisonExpr{
 		Operator: op,
 		Left:     expr,
 		Right:    tuples,
 	}
 }
 
-func (g *generator) between() sql_parser.Expr {
+func (g *generator) between() ast.Expr {
 	g.enter()
 	defer g.exit()
 
@@ -302,7 +302,7 @@ func (g *generator) between() sql_parser.Expr {
 		IsBetween = false
 	}
 
-	return &sql_parser.BetweenExpr{
+	return &ast.BetweenExpr{
 		IsBetween: IsBetween,
 		Left:      g.intExpr(),
 		From:      g.intExpr(),
@@ -310,13 +310,13 @@ func (g *generator) between() sql_parser.Expr {
 	}
 }
 
-func (g *generator) isExpr() sql_parser.Expr {
+func (g *generator) isExpr() ast.Expr {
 	g.enter()
 	defer g.exit()
 
-	ops := []sql_parser.IsExprOperator{sql_parser.IsNullOp, sql_parser.IsNotNullOp, sql_parser.IsTrueOp, sql_parser.IsNotTrueOp, sql_parser.IsFalseOp, sql_parser.IsNotFalseOp}
+	ops := []ast.IsExprOperator{ast.IsNullOp, ast.IsNotNullOp, ast.IsTrueOp, ast.IsNotTrueOp, ast.IsFalseOp, ast.IsNotFalseOp}
 
-	return &sql_parser.IsExpr{
+	return &ast.IsExpr{
 		Right: ops[g.r.Intn(len(ops))],
 		Left:  g.booleanExpr(),
 	}

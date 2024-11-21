@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
 func TestConvertMySQLVersion(t *testing.T) {
@@ -50,7 +50,7 @@ func TestConvertMySQLVersion(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.version, func(t *testing.T) {
-			output, err := sql_parser.ConvertMySQLVersionToCommentVersion(tcase.version)
+			output, err := mysql.ConvertMySQLVersionToCommentVersion(tcase.version)
 			if tcase.error != "" {
 				require.EqualError(t, err, tcase.error)
 			} else {

@@ -19,42 +19,43 @@ package mysql
 
 import (
     "github.com/usalko/sent/internal/sql_parser/ast"
+	  "github.com/usalko/sent/internal/sql_parser/dialect"
     "github.com/usalko/sent/internal/sql_types"
 )
 
 func setParseTree(mysqlex mysqLexer, stmt ast.Statement) {
-  mysqlex.(ast.Tokenizer).SetParseTree(stmt)
+  mysqlex.(dialect.Tokenizer).SetParseTree(stmt)
 }
 
 func setAllowComments(mysqlex mysqLexer, allow bool) {
-  mysqlex.(ast.Tokenizer).SetAllowComments(allow)
+  mysqlex.(dialect.Tokenizer).SetAllowComments(allow)
 }
 
 func setDDL(mysqlex mysqLexer, node ast.Statement) {
-  mysqlex.(ast.Tokenizer).SetPartialDDL(node)
+  mysqlex.(dialect.Tokenizer).SetPartialDDL(node)
 }
 
 func incNesting(mysqlex mysqLexer) bool {
-  mysqlex.(ast.Tokenizer).IncNesting()
-  if mysqlex.(ast.Tokenizer).GetNesting() == 200 {
+  mysqlex.(dialect.Tokenizer).IncNesting()
+  if mysqlex.(dialect.Tokenizer).GetNesting() == 200 {
     return true
   }
   return false
 }
 
 func decNesting(mysqlex mysqLexer) {
-  mysqlex.(ast.Tokenizer).DecNesting()
+  mysqlex.(dialect.Tokenizer).DecNesting()
 }
 
 // skipToEnd forces the lexer to end prematurely. Not all SQL statements
 // are supported by the Parser, thus calling skipToEnd will make the lexer
 // return EOF early.
 func skipToEnd(mysqlex mysqLexer) {
-  mysqlex.(ast.Tokenizer).SetSkipToEnd(true)
+  mysqlex.(dialect.Tokenizer).SetSkipToEnd(true)
 }
 
 func bindVariable(mysqlex mysqLexer, bvar string) {
-  mysqlex.(ast.Tokenizer).BindVar(bvar, struct{}{})
+  mysqlex.(dialect.Tokenizer).BindVar(bvar, struct{}{})
 }
 
 %}

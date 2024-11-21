@@ -23,6 +23,8 @@ import (
 	"testing"
 
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 // TestParseNextValid concatenates all the valid SQL test cases and check it can read
@@ -34,7 +36,11 @@ func TestParseNextValid(t *testing.T) {
 		sql.WriteRune(';')
 	}
 
-	tokens := sql_parser.NewStringTokenizer(sql.String())
+	tokens, err := sql_parser.NewStringTokenizer(sql.String(), dialect.MYSQL)
+	if err != nil {
+		t.Fatalf("%q", err)
+	}
+
 	for i, tcase := range validSQL {
 		input := tcase.input + ";"
 		want := tcase.output
@@ -48,22 +54,22 @@ func TestParseNextValid(t *testing.T) {
 			continue
 		}
 
-		if got := sql_parser.String(tree); got != want {
+		if got := ast.String(tree); got != want {
 			t.Fatalf("[%d] ParseNext(%q) = %q, want %q", i, input, got, want)
 		}
 	}
 
 	// Read once more and it should be EOF.
 	if tree, err := sql_parser.ParseNext(tokens); err != io.EOF {
-		t.Errorf("ParseNext(tokens) = (%q, %v) want io.EOF", sql_parser.String(tree), err)
+		t.Errorf("ParseNext(tokens) = (%q, %v) want io.EOF", ast.String(tree), err)
 	}
 }
 
 func TestIgnoreSpecialComments(t *testing.T) {
 	input := `SELECT 1;/*! ALTER TABLE foo DISABLE KEYS */;SELECT 2;`
 
-	tokenizer := sql_parser.NewStringTokenizer(input)
-	tokenizer.SkipSpecialComments = true
+	tokenizer, err := sql_parser.NewStringTokenizer(input, dialect.MYSQL)
+	tokenizer.SetSkipSpecialComments(true)
 	one, err := sql_parser.ParseNextStrictDDL(tokenizer)
 	if err != nil {
 		t.Fatal(err)
@@ -72,10 +78,10 @@ func TestIgnoreSpecialComments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got, want := sql_parser.String(one), "select 1 from dual"; got != want {
+	if got, want := ast.String(one), "select 1 from dual"; got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
-	if got, want := sql_parser.String(two), "select 2 from dual"; got != want {
+	if got, want := ast.String(two), "select 2 from dual"; got != want {
 		t.Fatalf("got %s want %s", got, want)
 	}
 }
@@ -90,10 +96,13 @@ func TestParseNextErrors(t *testing.T) {
 		}
 
 		sql := tcase.input + "; select 1 from t"
-		tokens := sql_parser.NewStringTokenizer(sql)
+		tokens, err := sql_parser.NewStringTokenizer(sql, dialect.MYSQL)
+		if err != nil {
+			t.Fatalf("%q", err)
+		}
 
 		// The first statement should be an error
-		_, err := sql_parser.ParseNext(tokens)
+		_, err = sql_parser.ParseNext(tokens)
 		if err == nil || err.Error() != tcase.output {
 			t.Fatalf("[0] ParseNext(%q) err: %q, want %q", sql, err, tcase.output)
 			continue
@@ -107,13 +116,13 @@ func TestParseNextErrors(t *testing.T) {
 		}
 
 		want := "select 1 from t"
-		if got := sql_parser.String(tree); got != want {
+		if got := ast.String(tree); got != want {
 			t.Fatalf("[1] ParseNext(%q) = %q, want %q", sql, got, want)
 		}
 
 		// Read once more and it should be EOF.
 		if tree, err := sql_parser.ParseNext(tokens); err != io.EOF {
-			t.Errorf("ParseNext(tokens) = (%q, %v) want io.EOF", sql_parser.String(tree), err)
+			t.Errorf("ParseNext(tokens) = (%q, %v) want io.EOF", ast.String(tree), err)
 		}
 	}
 }
@@ -159,7 +168,10 @@ func TestParseNextEdgeCases(t *testing.T) {
 	}}
 
 	for _, test := range tests {
-		tokens := sql_parser.NewStringTokenizer(test.input)
+		tokens, err := sql_parser.NewStringTokenizer(test.input, dialect.MYSQL)
+		if err != nil {
+			t.Fatalf("%q", err)
+		}
 
 		for i, want := range test.want {
 			tree, err := sql_parser.ParseNext(tokens)
@@ -168,19 +180,19 @@ func TestParseNextEdgeCases(t *testing.T) {
 				continue
 			}
 
-			if got := sql_parser.String(tree); got != want {
+			if got := ast.String(tree); got != want {
 				t.Fatalf("[%d] ParseNext(%q) = %q, want %q", i, test.input, got, want)
 			}
 		}
 
 		// Read once more and it should be EOF.
 		if tree, err := sql_parser.ParseNext(tokens); err != io.EOF {
-			t.Errorf("ParseNext(%q) = (%q, %v) want io.EOF", test.input, sql_parser.String(tree), err)
+			t.Errorf("ParseNext(%q) = (%q, %v) want io.EOF", test.input, ast.String(tree), err)
 		}
 
 		// And again, once more should be EOF.
 		if tree, err := sql_parser.ParseNext(tokens); err != io.EOF {
-			t.Errorf("ParseNext(%q) = (%q, %v) want io.EOF", test.input, sql_parser.String(tree), err)
+			t.Errorf("ParseNext(%q) = (%q, %v) want io.EOF", test.input, ast.String(tree), err)
 		}
 	}
 }
@@ -192,20 +204,26 @@ func TestParseNextStrictNonStrict(t *testing.T) {
 	want := []string{"create table a", "select 1 from a"}
 
 	// First go through as expected with non-strict DDL parsing.
-	tokens := sql_parser.NewStringTokenizer(input)
+	tokens, err := sql_parser.NewStringTokenizer(input, dialect.MYSQL)
+	if err != nil {
+		t.Fatalf("%q", err)
+	}
 	for i, want := range want {
 		tree, err := sql_parser.ParseNext(tokens)
 		if err != nil {
 			t.Fatalf("[%d] ParseNext(%q) err = %q, want nil", i, input, err)
 		}
-		if got := sql_parser.String(tree); got != want {
+		if got := ast.String(tree); got != want {
 			t.Fatalf("[%d] ParseNext(%q) = %q, want %q", i, input, got, want)
 		}
 	}
 
 	// Now try again with strict parsing and observe the expected error.
-	tokens = sql_parser.NewStringTokenizer(input)
-	_, err := sql_parser.ParseNextStrictDDL(tokens)
+	tokens, err = sql_parser.NewStringTokenizer(input, dialect.MYSQL)
+	if err != nil {
+		t.Fatalf("%q", err)
+	}
+	_, err = sql_parser.ParseNextStrictDDL(tokens)
 	if err == nil || !strings.Contains(err.Error(), "ignore") {
 		t.Fatalf("ParseNext(%q) err = %q, want ignore", input, err)
 	}
@@ -213,7 +231,7 @@ func TestParseNextStrictNonStrict(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ParseNext(%q) err = %q, want nil", input, err)
 	}
-	if got := sql_parser.String(tree); got != want[1] {
+	if got := ast.String(tree); got != want[1] {
 		t.Fatalf("ParseNext(%q) = %q, want %q", input, got, want)
 	}
 }

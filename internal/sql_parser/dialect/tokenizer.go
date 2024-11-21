@@ -14,21 +14,50 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package ast
+package dialect
+
+import (
+	"github.com/usalko/sent/internal/sql_parser/ast"
+)
 
 const (
-	eofChar = 0x100
+	EofChar = 0x100
 )
 
 // Tokenizer is the interface used to generate SQL
 // tokens for the parser.
 type Tokenizer interface {
-	SetParseTree(stmt Statement)
+	SetParseTree(stmt ast.Statement)
+	GetParseTree() ast.Statement
+
 	SetAllowComments(allow bool)
-	SetPartialDDL(node Statement)
+
+	SetPartialDDL(node ast.Statement)
+	GetPartialDDL() ast.Statement
+
 	IncNesting()
 	GetNesting() int
 	DecNesting()
+
 	SetSkipToEnd(skip bool)
+
 	BindVar(bvar string, value struct{})
+	GetBindVars() BindVars
+
+	Scan() (int, string)
+
+	GetIdToken() int
+	GetKeywordString(token int) string
+
+	GetLastError() error
+
+	Cur() uint16
+	Skip(count int)
+	SkipBlank()
+	Reset()
+	SetMulti(multi bool)
+
+	GetPos() int
+
+	SetSkipSpecialComments(skip bool)
 }

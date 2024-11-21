@@ -34,6 +34,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
 var (
@@ -2955,23 +2958,23 @@ func TestValid(t *testing.T) {
 			}
 			tree, err := sql_parser.Parse(tcase.input)
 			require.NoError(t, err, tcase.input)
-			out := sql_parser.String(tree)
+			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
 
 			// Some statements currently only have 5.7 specifications.
 			// For mysql 8.0 syntax, the query is not entirely parsed.
 			// Add more structs as we go on adding full parsing support for DDL constructs for 5.7 syntax.
 			switch x := tree.(type) {
-			case sql_parser.DBDDLStatement:
+			case ast.DBDDLStatement:
 				assert.Equal(t, !tcase.partialDDL, x.IsFullyParsed())
-			case sql_parser.DDLStatement:
+			case ast.DDLStatement:
 				assert.Equal(t, !tcase.partialDDL, x.IsFullyParsed())
 			}
 			// This test just exercises the tree walking functionality.
 			// There's no way automated way to verify that a node calls
 			// all its children. But we can examine code coverage and
 			// ensure that all walkSubtree functions were called.
-			_ = sql_parser.Walk(func(node sql_parser.SQLNode) (bool, error) {
+			_ = ast.Walk(func(node ast.SQLNode) (bool, error) {
 				return true, nil
 			}, tree)
 		})
@@ -2998,7 +3001,7 @@ func TestParallelValid(t *testing.T) {
 					t.Errorf("Parse(%q) err: %v, want nil", tcase.input, err)
 					continue
 				}
-				out := sql_parser.String(tree)
+				out := ast.String(tree)
 				if out != tcase.output {
 					t.Errorf("Parse(%q) = %q, want: %q", tcase.input, out, tcase.output)
 				}
@@ -3280,7 +3283,7 @@ func TestIntroducers(t *testing.T) {
 			}
 			tree, err := sql_parser.Parse(tcase.input)
 			assert.NoError(t, err)
-			out := sql_parser.String(tree)
+			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
 		})
 	}
@@ -3383,7 +3386,7 @@ func TestCaseSensitivity(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		out := sql_parser.String(tree)
+		out := ast.String(tree)
 		if out != tcase.output {
 			t.Errorf("out: %s, want %s", out, tcase.output)
 		}
@@ -3485,7 +3488,7 @@ func TestKeywords(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		out := sql_parser.String(tree)
+		out := ast.String(tree)
 		if out != tcase.output {
 			t.Errorf("out: %s, want %s", out, tcase.output)
 		}
@@ -3561,7 +3564,7 @@ func TestConvert(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		out := sql_parser.String(tree)
+		out := ast.String(tree)
 		if out != tcase.output {
 			t.Errorf("out: %s, want %s", out, tcase.output)
 		}
@@ -3645,7 +3648,7 @@ func TestSelectInto(t *testing.T) {
 			}
 			tree, err := sql_parser.Parse(tcase.input)
 			require.NoError(t, err)
-			out := sql_parser.String(tree)
+			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
 		})
 	}
@@ -3672,38 +3675,41 @@ func TestSelectInto(t *testing.T) {
 func TestPositionedErr(t *testing.T) {
 	invalidSQL := []struct {
 		input  string
-		output sql_parser.PositionedErr
+		output mysql.PositionedErr
 	}{{
 		input:  "select convert('abc' as date) from t",
-		output: sql_parser.PositionedErr{"syntax error", 24, "as"},
+		output: mysql.PositionedErr{"syntax error", 24, "as"},
 	}, {
 		input:  "select convert from t",
-		output: sql_parser.PositionedErr{"syntax error", 20, "from"},
+		output: mysql.PositionedErr{"syntax error", 20, "from"},
 	}, {
 		input:  "select cast('foo', decimal) from t",
-		output: sql_parser.PositionedErr{"syntax error", 19, ""},
+		output: mysql.PositionedErr{"syntax error", 19, ""},
 	}, {
 		input:  "select convert('abc', datetime(4+9)) from t",
-		output: sql_parser.PositionedErr{"syntax error", 34, ""},
+		output: mysql.PositionedErr{"syntax error", 34, ""},
 	}, {
 		input:  "select convert('abc', decimal(4+9)) from t",
-		output: sql_parser.PositionedErr{"syntax error", 33, ""},
+		output: mysql.PositionedErr{"syntax error", 33, ""},
 	}, {
 		input:  "set transaction isolation level 12345",
-		output: sql_parser.PositionedErr{"syntax error", 38, "12345"},
+		output: mysql.PositionedErr{"syntax error", 38, "12345"},
 	}, {
 		input:  "select * from a left join b",
-		output: sql_parser.PositionedErr{"syntax error", 28, ""},
+		output: mysql.PositionedErr{"syntax error", 28, ""},
 	}, {
 		input:  "select a from (select * from tbl)",
-		output: sql_parser.PositionedErr{"syntax error", 34, ""},
+		output: mysql.PositionedErr{"syntax error", 34, ""},
 	}}
 
 	for _, tcase := range invalidSQL {
-		tkn := sql_parser.NewStringTokenizer(tcase.input)
-		_, err := sql_parser.ParseNext(tkn)
+		tkn, err := sql_parser.NewStringTokenizer(tcase.input, dialect.MYSQL)
+		if err != nil {
+			t.Fatalf("%q", err)
+		}
+		_, err = sql_parser.ParseNext(tkn)
 
-		if posErr, ok := err.(sql_parser.PositionedErr); !ok {
+		if posErr, ok := err.(mysql.PositionedErr); !ok {
 			t.Errorf("%s: %v expected PositionedErr, got (%T) %v", tcase.input, err, err, tcase.output)
 		} else if posErr.Pos != tcase.output.Pos || posErr.Near != tcase.output.Near || err.Error() != tcase.output.Error() {
 			t.Errorf("%s: %v, want: %v", tcase.input, err, tcase.output)
@@ -3758,7 +3764,7 @@ func TestSubStr(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		out := sql_parser.String(tree)
+		out := ast.String(tree)
 		if out != tcase.output {
 			t.Errorf("out: %s, want %s", out, tcase.output)
 		}
@@ -4887,7 +4893,7 @@ partition by range (YEAR(purchased)) subpartition by hash (TO_DAYS(purchased))
 		t.Run(sql, func(t *testing.T) {
 			tree, err := sql_parser.ParseStrictDDL(sql)
 			require.NoError(t, err)
-			got := sql_parser.String(tree)
+			got := ast.String(tree)
 			expected := test.output
 			if expected == "" {
 				expected = sql
@@ -4910,7 +4916,7 @@ func TestOne(t *testing.T) {
 	sql := strings.TrimSpace(testOne.input)
 	tree, err := sql_parser.Parse(sql)
 	require.NoError(t, err)
-	got := sql_parser.String(tree)
+	got := ast.String(tree)
 	expected := testOne.output
 	if expected == "" {
 		expected = sql
@@ -4943,8 +4949,8 @@ func TestCreateTableLike(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		assert.True(t, tree.(*sql_parser.CreateTable).FullyParsed)
-		if got, want := sql_parser.String(tree.(*sql_parser.CreateTable)), tcase.output; got != want {
+		assert.True(t, tree.(*ast.CreateTable).FullyParsed)
+		if got, want := ast.String(tree.(*ast.CreateTable)), tcase.output; got != want {
 			t.Errorf("Parse(%s):\n%s, want\n%s", tcase.input, got, want)
 		}
 	}
@@ -4973,7 +4979,7 @@ func TestCreateTableEscaped(t *testing.T) {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
 		}
-		if got, want := sql_parser.String(tree.(*sql_parser.CreateTable)), tcase.output; got != want {
+		if got, want := ast.String(tree.(*ast.CreateTable)), tcase.output; got != want {
 			t.Errorf("Parse(%s):\n%s, want\n%s", tcase.input, got, want)
 		}
 	}
@@ -5221,12 +5227,12 @@ partition by range (id)
 
 	for _, testcase := range testcases {
 		t.Run(testcase.input+":"+testcase.mysqlVersion, func(t *testing.T) {
-			oldMySQLVersion := sql_parser.MySQLVersion
-			defer func() { sql_parser.MySQLVersion = oldMySQLVersion }()
-			sql_parser.MySQLVersion = testcase.mysqlVersion
+			oldMySQLVersion := mysql.MySQLVersion
+			defer func() { mysql.MySQLVersion = oldMySQLVersion }()
+			mysql.MySQLVersion = testcase.mysqlVersion
 			tree, err := sql_parser.Parse(testcase.input)
 			require.NoError(t, err, testcase.input)
-			out := sql_parser.String(tree)
+			out := ast.String(tree)
 			require.Equal(t, testcase.output, out)
 		})
 	}
@@ -5389,7 +5395,7 @@ func testFile(t *testing.T, filename, tempDir string) {
 						fail = true
 						t.Errorf("File: %s, Line: %d\nDiff:\n%s\n[%s] \n[%s]", filename, tcase.lineno, cmp.Diff(tcase.errStr, err.Error()), tcase.errStr, err.Error())
 					} else {
-						out := sql_parser.String(tree)
+						out := ast.String(tree)
 						expected.WriteString(fmt.Sprintf("OUTPUT\n%s\nEND\n", escapeNewLines(out)))
 						if tcase.output != out {
 							fail = true

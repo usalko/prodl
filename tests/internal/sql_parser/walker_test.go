@@ -21,7 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 func BenchmarkWalkLargeExpression(b *testing.B) {
@@ -30,7 +30,7 @@ func BenchmarkWalkLargeExpression(b *testing.B) {
 			exp := newGenerator(int64(i*100), 5).expression()
 			count := 0
 			for i := 0; i < b.N; i++ {
-				err := sql_parser.Walk(func(node sql_parser.SQLNode) (kontinue bool, err error) {
+				err := ast.Walk(func(node ast.SQLNode) (kontinue bool, err error) {
 					count++
 					return true, nil
 				}, exp)
@@ -46,10 +46,10 @@ func BenchmarkRewriteLargeExpression(b *testing.B) {
 			exp := newGenerator(int64(i*100), i).expression()
 			count := 0
 			for i := 0; i < b.N; i++ {
-				_ = sql_parser.Rewrite(exp, func(_ *sql_parser.Cursor) bool {
+				_ = ast.Rewrite(exp, func(_ *ast.Cursor) bool {
 					count++
 					return true
-				}, func(_ *sql_parser.Cursor) bool {
+				}, func(_ *ast.Cursor) bool {
 					count--
 					return true
 				})
