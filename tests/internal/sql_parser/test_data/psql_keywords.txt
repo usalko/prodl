@@ -1,5 +1,5 @@
 // https://www.postgresql.org/docs/current/sql-keywords-appendix.html
-// Key Word	PostgreSQL	SQL:2023	SQL:2016	SQL-92
+Key Word	PostgreSQL	SQL:2023	SQL:2016	SQL-92
 A	 	non-reserved	non-reserved	 
 ABORT	non-reserved	 	 	 
 ABS	 	reserved	reserved	 

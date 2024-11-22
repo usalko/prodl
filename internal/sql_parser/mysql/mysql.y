@@ -240,7 +240,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 
 // Precedence dictated by mysql. But the vitess grammar is simplified.
 // Some of these operators don\'t conflict in our situation. Nevertheless,
-// it's better to have these listed in the correct order. Also, we don\'t
+// it\'s better to have these listed in the correct order. Also, we don\'t
 // support all operators yet.
 // * NOTE: ast.If you change anything here, update precedence.go as well *
 %nonassoc <str> LOWER_THAN_CHARSET
@@ -6581,7 +6581,7 @@ reserved_table_id:
 
   These are more importantly reserved because they may conflict with our grammar.
   If you want to move one that is not reserved in MySQL (i.e. ESCAPE) to the
-  non_reserved_keywords, you'll need to deal with any conflicts.
+  non_reserved_keywords, you\'ll need to deal with any conflicts.
 
   Sorted alphabetically
 */
