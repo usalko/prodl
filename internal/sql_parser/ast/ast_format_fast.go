@@ -986,7 +986,7 @@ func (ct *ColumnType) formatFast(buf *TrackedBuffer) {
 		}
 		if ct.Options.Comment != nil {
 			buf.WriteByte(' ')
-			buf.WriteString("comment_keyword")
+			buf.WriteString("comment")
 			buf.WriteByte(' ')
 			ct.Options.Comment.formatFast(buf)
 		}

@@ -5158,7 +5158,7 @@ func TestSkipToEnd(t *testing.T) {
 }
 
 func loadQueries(t testing.TB, filename string) (queries []string) {
-	file, err := os.Open(path.Join("testdata", filename))
+	file, err := os.Open(path.Join("test_data", filename))
 	require.NoError(t, err)
 	defer file.Close()
 
@@ -5409,7 +5409,7 @@ func testFile(t *testing.T, filename, tempDir string) {
 		if fail && tempDir != "" {
 			gotFile := fmt.Sprintf("%s/%s", tempDir, filename)
 			_ = os.WriteFile(gotFile, []byte(strings.TrimSpace(expected.String())+"\n"), 0644)
-			fmt.Println(fmt.Sprintf("Errors found in parse tests. If the output is correct, run `cp %s/* testdata/` to update test expectations", tempDir)) // nolint
+			fmt.Println(fmt.Sprintf("Errors found in parse tests. If the output is correct, run `cp %s/* test_data/` to update test expectations", tempDir)) // nolint
 		}
 	})
 }
@@ -5504,5 +5504,5 @@ func parsePartial(r *bufio.Reader, readType []string, lineno int, fileName strin
 }
 
 func locateFile(name string) string {
-	return "testdata/" + name
+	return "test_data/" + name
 }

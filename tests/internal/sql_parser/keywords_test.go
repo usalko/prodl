@@ -33,7 +33,7 @@ var vitessReserved = map[string]bool{
 }
 
 func TestCompatibility(t *testing.T) {
-	file, err := os.Open(path.Join("testdata", "mysql_keywords.txt"))
+	file, err := os.Open(path.Join("test_data", "mysql_keywords.txt"))
 	require.NoError(t, err)
 	defer file.Close()
 

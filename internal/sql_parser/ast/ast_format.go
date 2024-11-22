@@ -728,7 +728,7 @@ func (ct *ColumnType) Format(buf *TrackedBuffer) {
 			buf.astPrintf(ct, " %s", "auto_increment")
 		}
 		if ct.Options.Comment != nil {
-			buf.astPrintf(ct, " %s %v", "comment_keyword", ct.Options.Comment)
+			buf.astPrintf(ct, " %s %v", "comment", ct.Options.Comment)
 		}
 		if ct.Options.Invisible != nil {
 			if *ct.Options.Invisible {
