@@ -19,42 +19,43 @@ package psql
 
 import (
     "github.com/usalko/sent/internal/sql_parser/ast"
+	  "github.com/usalko/sent/internal/sql_parser/dialect"
     "github.com/usalko/sent/internal/sql_types"
 )
 
 func setParseTree(psqlex psqLexer, stmt ast.Statement) {
-  psqlex.(ast.Tokenizer).SetParseTree(stmt)
+  psqlex.(dialect.Tokenizer).SetParseTree(stmt)
 }
 
 func setAllowComments(psqlex psqLexer, allow bool) {
-  psqlex.(ast.Tokenizer).SetAllowComments(allow)
+  psqlex.(dialect.Tokenizer).SetAllowComments(allow)
 }
 
 func setDDL(psqlex psqLexer, node ast.Statement) {
-  psqlex.(ast.Tokenizer).SetPartialDDL(node)
+  psqlex.(dialect.Tokenizer).SetPartialDDL(node)
 }
 
 func incNesting(psqlex psqLexer) bool {
-  psqlex.(ast.Tokenizer).IncNesting()
-  if psqlex.(ast.Tokenizer).GetNesting() == 200 {
+  psqlex.(dialect.Tokenizer).IncNesting()
+  if psqlex.(dialect.Tokenizer).GetNesting() == 200 {
     return true
   }
   return false
 }
 
 func decNesting(psqlex psqLexer) {
-  psqlex.(ast.Tokenizer).DecNesting()
+  psqlex.(dialect.Tokenizer).DecNesting()
 }
 
 // skipToEnd forces the lexer to end prematurely. Not all SQL statements
 // are supported by the Parser, thus calling skipToEnd will make the lexer
 // return EOF early.
 func skipToEnd(psqlex psqLexer) {
-  psqlex.(ast.Tokenizer).SetSkipToEnd(true)
+  psqlex.(dialect.Tokenizer).SetSkipToEnd(true)
 }
 
 func bindVariable(psqlex psqLexer, bvar string) {
-  psqlex.(ast.Tokenizer).BindVar(bvar, struct{}{})
+  psqlex.(dialect.Tokenizer).BindVar(bvar, struct{}{})
 }
 
 %}

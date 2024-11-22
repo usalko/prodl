@@ -1,4 +1,4 @@
-package sql_parser_test
+package sql_parser
 
 import (
 	"bufio"

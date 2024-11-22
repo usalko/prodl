@@ -323,7 +323,7 @@ func TestIntegerAndID(t *testing.T) {
 		t.Run(tcase.in, func(t *testing.T) {
 			tkn, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
 			if err != nil {
-				t.Fatalf("%q")
+				t.Fatalf("%q", err)
 			}
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
