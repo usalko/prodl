@@ -14,7 +14,7 @@ import (
 	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
-func TestKeywordTable(t *testing.T) {
+func TestMysqlKeywordTable(t *testing.T) {
 	for _, kw := range mysql.GetKeywords() {
 		lookup, ok := cache.KeywordLookup(kw.Name)
 		require.Truef(t, ok, "keyword %q failed to match", kw.Name)
@@ -32,7 +32,7 @@ var vitessReserved = map[string]bool{
 	"TIMESTAMPDIFF": true,
 }
 
-func TestCompatibility(t *testing.T) {
+func TestMysqlCompatibility(t *testing.T) {
 	file, err := os.Open(path.Join("test_data", "mysql_keywords.txt"))
 	require.NoError(t, err)
 	defer file.Close()
