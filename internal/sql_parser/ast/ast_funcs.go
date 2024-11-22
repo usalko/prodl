@@ -25,6 +25,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/usalko/sent/internal/sql_parser/cache"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
 )
@@ -189,10 +190,10 @@ func (ct *ColumnType) DescribeType() string {
 
 	opts := make([]string, 0, 16)
 	if ct.Unsigned {
-		opts = append(opts, keywordStrings[UNSIGNED])
+		opts = append(opts, "unsigned")
 	}
 	if ct.Zerofill {
-		opts = append(opts, keywordStrings[ZEROFILL])
+		opts = append(opts, "zerofill")
 	}
 	if len(opts) != 0 {
 		buf.Myprintf(" %s", strings.Join(opts, " "))
@@ -203,96 +204,96 @@ func (ct *ColumnType) DescribeType() string {
 // SQLType returns the sql_types type code for the given column
 func (ct *ColumnType) SQLType() sql_types.Type {
 	switch strings.ToLower(ct.Type) {
-	case keywordStrings[TINYINT]:
+	case "tinyint":
 		if ct.Unsigned {
 			return sql_types.Uint8
 		}
 		return sql_types.Int8
-	case keywordStrings[SMALLINT]:
+	case "smallint":
 		if ct.Unsigned {
 			return sql_types.Uint16
 		}
 		return sql_types.Int16
-	case keywordStrings[MEDIUMINT]:
+	case "mediumint":
 		if ct.Unsigned {
 			return sql_types.Uint24
 		}
 		return sql_types.Int24
-	case keywordStrings[INT], keywordStrings[INTEGER]:
+	case "int", "integer":
 		if ct.Unsigned {
 			return sql_types.Uint32
 		}
 		return sql_types.Int32
-	case keywordStrings[BIGINT]:
+	case "bigint":
 		if ct.Unsigned {
 			return sql_types.Uint64
 		}
 		return sql_types.Int64
-	case keywordStrings[BOOL], keywordStrings[BOOLEAN]:
+	case "bool", "boolean":
 		return sql_types.Uint8
-	case keywordStrings[TEXT]:
+	case "text":
 		return sql_types.Text
-	case keywordStrings[TINYTEXT]:
+	case "tinytext":
 		return sql_types.Text
-	case keywordStrings[MEDIUMTEXT]:
+	case "mediumtext":
 		return sql_types.Text
-	case keywordStrings[LONGTEXT]:
+	case "longtext":
 		return sql_types.Text
-	case keywordStrings[BLOB]:
+	case "blob":
 		return sql_types.Blob
-	case keywordStrings[TINYBLOB]:
+	case "tinyblob":
 		return sql_types.Blob
-	case keywordStrings[MEDIUMBLOB]:
+	case "mediumblob":
 		return sql_types.Blob
-	case keywordStrings[LONGBLOB]:
+	case "longblob":
 		return sql_types.Blob
-	case keywordStrings[CHAR]:
+	case "char":
 		return sql_types.Char
-	case keywordStrings[VARCHAR]:
+	case "varchar":
 		return sql_types.VarChar
-	case keywordStrings[BINARY]:
+	case "binary":
 		return sql_types.Binary
-	case keywordStrings[VARBINARY]:
+	case "varbinary":
 		return sql_types.VarBinary
-	case keywordStrings[DATE]:
+	case "date":
 		return sql_types.Date
-	case keywordStrings[TIME]:
+	case "time":
 		return sql_types.Time
-	case keywordStrings[DATETIME]:
+	case "datetime":
 		return sql_types.Datetime
-	case keywordStrings[TIMESTAMP]:
+	case "timestamp":
 		return sql_types.Timestamp
-	case keywordStrings[YEAR]:
+	case "year":
 		return sql_types.Year
-	case keywordStrings[FLOAT_TYPE]:
+	case "float_type":
 		return sql_types.Float32
-	case keywordStrings[DOUBLE]:
+	case "double":
 		return sql_types.Float64
-	case keywordStrings[DECIMAL]:
+	case "decimal":
 		return sql_types.Decimal
-	case keywordStrings[BIT]:
+	case "bit":
 		return sql_types.Bit
-	case keywordStrings[ENUM]:
+	case "enum":
 		return sql_types.Enum
-	case keywordStrings[SET]:
+	case "set":
 		return sql_types.Set
-	case keywordStrings[JSON]:
+	case "json":
 		return sql_types.TypeJSON
-	case keywordStrings[GEOMETRY]:
+	case "geometry":
 		return sql_types.Geometry
-	case keywordStrings[POINT]:
+	case "point":
 		return sql_types.Geometry
-	case keywordStrings[LINESTRING]:
+	case "linestring":
 		return sql_types.Geometry
-	case keywordStrings[POLYGON]:
+	case "polygon":
 		return sql_types.Geometry
-	case keywordStrings[GEOMETRYCOLLECTION]:
+	case "geometrycollection":
 		return sql_types.Geometry
-	case keywordStrings[MULTIPOINT]:
+	case "multipoint":
 		return sql_types.Geometry
-	case keywordStrings[MULTILINESTRING]:
+	case "multilinestring":
 		return sql_types.Geometry
-	case keywordStrings[MULTIPOLYGON]:
+	case "multipolygon":
 		return sql_types.Geometry
 	}
 	return sql_types.Null
@@ -789,7 +790,7 @@ func containEscapableChars(s string, at AtCount) bool {
 }
 
 func formatID(buf *TrackedBuffer, original string, at AtCount) {
-	_, isKeyword := keywordLookupTable.LookupString(original)
+	_, isKeyword := cache.KeywordLookupTable.LookupString(original)
 	if buf.escape || isKeyword || containEscapableChars(original, at) {
 		writeEscapedString(buf, original)
 	} else {
@@ -1633,11 +1634,11 @@ func (lock LockOptionType) ToString() string {
 func (columnFormat ColumnFormat) ToString() string {
 	switch columnFormat {
 	case FixedFormat:
-		return keywordStrings[FIXED]
+		return "fixed"
 	case DynamicFormat:
-		return keywordStrings[DYNAMIC]
+		return "dynamic"
 	case DefaultFormat:
-		return keywordStrings[DEFAULT]
+		return "default"
 	default:
 		return "Unknown column format type"
 	}

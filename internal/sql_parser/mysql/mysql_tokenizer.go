@@ -25,6 +25,7 @@ import (
 	"unicode"
 
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/cache"
 	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
@@ -510,11 +511,11 @@ func (tkn *MysqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 		tkn.Skip(1)
 	}
 	keywordName := tkn.buf[start:tkn.Pos]
-	if keywordID, found := keywordLookupTable.LookupString(keywordName); found {
+	if keywordID, found := cache.KeywordLookupTable.LookupString(keywordName); found {
 		return keywordID, keywordName
 	}
 	// dual must always be case-insensitive
-	if keywordASCIIMatch(keywordName, "dual") {
+	if cache.KeywordASCIIMatch(keywordName, "dual") {
 		return ID, "dual"
 	}
 	return ID, keywordName

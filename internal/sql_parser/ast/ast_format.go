@@ -675,30 +675,30 @@ func (ct *ColumnType) Format(buf *TrackedBuffer) {
 	}
 
 	if ct.Unsigned {
-		buf.astPrintf(ct, " %#s", keywordStrings[UNSIGNED])
+		buf.astPrintf(ct, " %#s", "unsigned")
 	}
 	if ct.Zerofill {
-		buf.astPrintf(ct, " %#s", keywordStrings[ZEROFILL])
+		buf.astPrintf(ct, " %#s", "zerofill")
 	}
 	if ct.Charset.Name != "" {
-		buf.astPrintf(ct, " %s %s %#s", keywordStrings[CHARACTER], keywordStrings[SET], ct.Charset.Name)
+		buf.astPrintf(ct, " %s %s %#s", "character", "set", ct.Charset.Name)
 	}
 	if ct.Charset.Binary {
-		buf.astPrintf(ct, " %#s", keywordStrings[BINARY])
+		buf.astPrintf(ct, " %#s", "binary")
 	}
 	if ct.Options != nil {
 		if ct.Options.Collate != "" {
-			buf.astPrintf(ct, " %s %#s", keywordStrings[COLLATE], ct.Options.Collate)
+			buf.astPrintf(ct, " %s %#s", "collate", ct.Options.Collate)
 		}
 		if ct.Options.Null != nil && ct.Options.As == nil {
 			if *ct.Options.Null {
-				buf.astPrintf(ct, " %s", keywordStrings[NULL])
+				buf.astPrintf(ct, " %s", "null")
 			} else {
-				buf.astPrintf(ct, " %s %s", keywordStrings[NOT], keywordStrings[NULL])
+				buf.astPrintf(ct, " %s %s", "not", "null")
 			}
 		}
 		if ct.Options.Default != nil {
-			buf.astPrintf(ct, " %s", keywordStrings[DEFAULT])
+			buf.astPrintf(ct, " %s", "default")
 			if defaultRequiresParens(ct) {
 				buf.astPrintf(ct, " (%v)", ct.Options.Default)
 			} else {
@@ -706,69 +706,69 @@ func (ct *ColumnType) Format(buf *TrackedBuffer) {
 			}
 		}
 		if ct.Options.OnUpdate != nil {
-			buf.astPrintf(ct, " %s %s %v", keywordStrings[ON], keywordStrings[UPDATE], ct.Options.OnUpdate)
+			buf.astPrintf(ct, " %s %s %v", "on", "update", ct.Options.OnUpdate)
 		}
 		if ct.Options.As != nil {
-			buf.astPrintf(ct, " %s (%v)", keywordStrings[AS], ct.Options.As)
+			buf.astPrintf(ct, " %s (%v)", "as", ct.Options.As)
 
 			if ct.Options.Storage == VirtualStorage {
-				buf.astPrintf(ct, " %s", keywordStrings[VIRTUAL])
+				buf.astPrintf(ct, " %s", "virtual")
 			} else if ct.Options.Storage == StoredStorage {
-				buf.astPrintf(ct, " %s", keywordStrings[STORED])
+				buf.astPrintf(ct, " %s", "stored")
 			}
 			if ct.Options.Null != nil {
 				if *ct.Options.Null {
-					buf.astPrintf(ct, " %s", keywordStrings[NULL])
+					buf.astPrintf(ct, " %s", "null")
 				} else {
-					buf.astPrintf(ct, " %s %s", keywordStrings[NOT], keywordStrings[NULL])
+					buf.astPrintf(ct, " %s %s", "not", "null")
 				}
 			}
 		}
 		if ct.Options.Autoincrement {
-			buf.astPrintf(ct, " %s", keywordStrings[AUTO_INCREMENT])
+			buf.astPrintf(ct, " %s", "auto_increment")
 		}
 		if ct.Options.Comment != nil {
-			buf.astPrintf(ct, " %s %v", keywordStrings[COMMENT_KEYWORD], ct.Options.Comment)
+			buf.astPrintf(ct, " %s %v", "comment_keyword", ct.Options.Comment)
 		}
 		if ct.Options.Invisible != nil {
 			if *ct.Options.Invisible {
-				buf.astPrintf(ct, " %s", keywordStrings[INVISIBLE])
+				buf.astPrintf(ct, " %s", "invisible")
 			} else {
-				buf.astPrintf(ct, " %s", keywordStrings[VISIBLE])
+				buf.astPrintf(ct, " %s", "visible")
 			}
 		}
 		if ct.Options.Format != UnspecifiedFormat {
-			buf.astPrintf(ct, " %s %s", keywordStrings[COLUMN_FORMAT], ct.Options.Format.ToString())
+			buf.astPrintf(ct, " %s %s", "column_format", ct.Options.Format.ToString())
 		}
 		if ct.Options.EngineAttribute != nil {
-			buf.astPrintf(ct, " %s %v", keywordStrings[ENGINE_ATTRIBUTE], ct.Options.EngineAttribute)
+			buf.astPrintf(ct, " %s %v", "engine_attribute", ct.Options.EngineAttribute)
 		}
 		if ct.Options.SecondaryEngineAttribute != nil {
-			buf.astPrintf(ct, " %s %v", keywordStrings[SECONDARY_ENGINE_ATTRIBUTE], ct.Options.SecondaryEngineAttribute)
+			buf.astPrintf(ct, " %s %v", "secondary_engine_attribute", ct.Options.SecondaryEngineAttribute)
 		}
 		if ct.Options.KeyOpt == ColKeyPrimary {
-			buf.astPrintf(ct, " %s %s", keywordStrings[PRIMARY], keywordStrings[KEY])
+			buf.astPrintf(ct, " %s %s", "primary", "key")
 		}
 		if ct.Options.KeyOpt == ColKeyUnique {
-			buf.astPrintf(ct, " %s", keywordStrings[UNIQUE])
+			buf.astPrintf(ct, " %s", "unique")
 		}
 		if ct.Options.KeyOpt == ColKeyUniqueKey {
-			buf.astPrintf(ct, " %s %s", keywordStrings[UNIQUE], keywordStrings[KEY])
+			buf.astPrintf(ct, " %s %s", "unique", "key")
 		}
 		if ct.Options.KeyOpt == ColKeySpatialKey {
-			buf.astPrintf(ct, " %s %s", keywordStrings[SPATIAL], keywordStrings[KEY])
+			buf.astPrintf(ct, " %s %s", "spatial", "key")
 		}
 		if ct.Options.KeyOpt == ColKeyFulltextKey {
-			buf.astPrintf(ct, " %s %s", keywordStrings[FULLTEXT], keywordStrings[KEY])
+			buf.astPrintf(ct, " %s %s", "fulltext", "key")
 		}
 		if ct.Options.KeyOpt == ColKey {
-			buf.astPrintf(ct, " %s", keywordStrings[KEY])
+			buf.astPrintf(ct, " %s", "key")
 		}
 		if ct.Options.Reference != nil {
 			buf.astPrintf(ct, " %v", ct.Options.Reference)
 		}
 		if ct.Options.SRID != nil {
-			buf.astPrintf(ct, " %s %v", keywordStrings[SRID], ct.Options.SRID)
+			buf.astPrintf(ct, " %s %v", "srid", ct.Options.SRID)
 		}
 	}
 }
@@ -1479,7 +1479,7 @@ func (node *ConvertType) Format(buf *TrackedBuffer) {
 		buf.astPrintf(node, " character set %#s", node.Charset.Name)
 	}
 	if node.Charset.Binary {
-		buf.astPrintf(node, " %#s", keywordStrings[BINARY])
+		buf.astPrintf(node, " %#s", "binary")
 	}
 }
 
@@ -1881,9 +1881,9 @@ func (node *AddConstraintDefinition) Format(buf *TrackedBuffer) {
 func (node *AlterCheck) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "alter check %v", node.Name)
 	if node.Enforced {
-		buf.astPrintf(node, " %s", keywordStrings[ENFORCED])
+		buf.astPrintf(node, " %s", "enforced")
 	} else {
-		buf.astPrintf(node, " %s %s", keywordStrings[NOT], keywordStrings[ENFORCED])
+		buf.astPrintf(node, " %s %s", "not", "enforced")
 	}
 }
 

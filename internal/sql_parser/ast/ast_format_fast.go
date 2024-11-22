@@ -898,45 +898,45 @@ func (ct *ColumnType) formatFast(buf *TrackedBuffer) {
 
 	if ct.Unsigned {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[UNSIGNED])
+		buf.WriteString("unsigned")
 	}
 	if ct.Zerofill {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[ZEROFILL])
+		buf.WriteString("zerofill")
 	}
 	if ct.Charset.Name != "" {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[CHARACTER])
+		buf.WriteString("character")
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[SET])
+		buf.WriteString("set")
 		buf.WriteByte(' ')
 		buf.WriteString(ct.Charset.Name)
 	}
 	if ct.Charset.Binary {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[BINARY])
+		buf.WriteString("binary")
 	}
 	if ct.Options != nil {
 		if ct.Options.Collate != "" {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[COLLATE])
+			buf.WriteString("collate")
 			buf.WriteByte(' ')
 			buf.WriteString(ct.Options.Collate)
 		}
 		if ct.Options.Null != nil && ct.Options.As == nil {
 			if *ct.Options.Null {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[NULL])
+				buf.WriteString("null")
 			} else {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[NOT])
+				buf.WriteString("not")
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[NULL])
+				buf.WriteString("null")
 			}
 		}
 		if ct.Options.Default != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[DEFAULT])
+			buf.WriteString("default")
 			if defaultRequiresParens(ct) {
 				buf.WriteString(" (")
 				ct.Options.Default.formatFast(buf)
@@ -948,106 +948,106 @@ func (ct *ColumnType) formatFast(buf *TrackedBuffer) {
 		}
 		if ct.Options.OnUpdate != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[ON])
+			buf.WriteString("on")
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[UPDATE])
+			buf.WriteString("update")
 			buf.WriteByte(' ')
 			ct.Options.OnUpdate.formatFast(buf)
 		}
 		if ct.Options.As != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[AS])
+			buf.WriteString("as")
 			buf.WriteString(" (")
 			ct.Options.As.formatFast(buf)
 			buf.WriteByte(')')
 
 			if ct.Options.Storage == VirtualStorage {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[VIRTUAL])
+				buf.WriteString("virtual")
 			} else if ct.Options.Storage == StoredStorage {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[STORED])
+				buf.WriteString("stored")
 			}
 			if ct.Options.Null != nil {
 				if *ct.Options.Null {
 					buf.WriteByte(' ')
-					buf.WriteString(keywordStrings[NULL])
+					buf.WriteString("null")
 				} else {
 					buf.WriteByte(' ')
-					buf.WriteString(keywordStrings[NOT])
+					buf.WriteString("not")
 					buf.WriteByte(' ')
-					buf.WriteString(keywordStrings[NULL])
+					buf.WriteString("null")
 				}
 			}
 		}
 		if ct.Options.Autoincrement {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[AUTO_INCREMENT])
+			buf.WriteString("auto_increment")
 		}
 		if ct.Options.Comment != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[COMMENT_KEYWORD])
+			buf.WriteString("comment_keyword")
 			buf.WriteByte(' ')
 			ct.Options.Comment.formatFast(buf)
 		}
 		if ct.Options.Invisible != nil {
 			if *ct.Options.Invisible {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[INVISIBLE])
+				buf.WriteString("invisible")
 			} else {
 				buf.WriteByte(' ')
-				buf.WriteString(keywordStrings[VISIBLE])
+				buf.WriteString("visible")
 			}
 		}
 		if ct.Options.Format != UnspecifiedFormat {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[COLUMN_FORMAT])
+			buf.WriteString("column_format")
 			buf.WriteByte(' ')
 			buf.WriteString(ct.Options.Format.ToString())
 		}
 		if ct.Options.EngineAttribute != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[ENGINE_ATTRIBUTE])
+			buf.WriteString("engine_attribute")
 			buf.WriteByte(' ')
 			ct.Options.EngineAttribute.formatFast(buf)
 		}
 		if ct.Options.SecondaryEngineAttribute != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[SECONDARY_ENGINE_ATTRIBUTE])
+			buf.WriteString("secondary_engine_attribute")
 			buf.WriteByte(' ')
 			ct.Options.SecondaryEngineAttribute.formatFast(buf)
 		}
 		if ct.Options.KeyOpt == ColKeyPrimary {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[PRIMARY])
+			buf.WriteString("primary")
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[KEY])
+			buf.WriteString("key")
 		}
 		if ct.Options.KeyOpt == ColKeyUnique {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[UNIQUE])
+			buf.WriteString("unique")
 		}
 		if ct.Options.KeyOpt == ColKeyUniqueKey {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[UNIQUE])
+			buf.WriteString("unique")
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[KEY])
+			buf.WriteString("key")
 		}
 		if ct.Options.KeyOpt == ColKeySpatialKey {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[SPATIAL])
+			buf.WriteString("spatial")
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[KEY])
+			buf.WriteString("key")
 		}
 		if ct.Options.KeyOpt == ColKeyFulltextKey {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[FULLTEXT])
+			buf.WriteString("fulltext")
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[KEY])
+			buf.WriteString("key")
 		}
 		if ct.Options.KeyOpt == ColKey {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[KEY])
+			buf.WriteString("key")
 		}
 		if ct.Options.Reference != nil {
 			buf.WriteByte(' ')
@@ -1055,7 +1055,7 @@ func (ct *ColumnType) formatFast(buf *TrackedBuffer) {
 		}
 		if ct.Options.SRID != nil {
 			buf.WriteByte(' ')
-			buf.WriteString(keywordStrings[SRID])
+			buf.WriteString("srid")
 			buf.WriteByte(' ')
 			ct.Options.SRID.formatFast(buf)
 		}
@@ -1969,7 +1969,7 @@ func (node *ConvertType) formatFast(buf *TrackedBuffer) {
 	}
 	if node.Charset.Binary {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[BINARY])
+		buf.WriteString("binary")
 	}
 }
 
@@ -2468,12 +2468,12 @@ func (node *AlterCheck) formatFast(buf *TrackedBuffer) {
 	node.Name.formatFast(buf)
 	if node.Enforced {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[ENFORCED])
+		buf.WriteString("enforced")
 	} else {
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[NOT])
+		buf.WriteString("not")
 		buf.WriteByte(' ')
-		buf.WriteString(keywordStrings[ENFORCED])
+		buf.WriteString("enforced")
 	}
 }
 
