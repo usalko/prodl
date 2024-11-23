@@ -113,8 +113,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
   indexInfo     *ast.IndexInfo
   indexOption   *ast.IndexOption
   indexColumn   *ast.IndexColumn
-  partDef       *ast.PartitionDefinition
-  partSpec      *ast.PartitionSpec
   showFilter    *ast.ShowFilter
   optLike       *ast.OptLike
   selectInto	  *ast.SelectInto
@@ -125,10 +123,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
   alterTable       *ast.AlterTable
   tableOption      *ast.TableOption
   columnTypeOptions *ast.ColumnTypeOptions
-  partitionDefinitionOptions *ast.PartitionDefinitionOptions
-  subPartitionDefinition *ast.SubPartitionDefinition
-  subPartitionDefinitions ast.SubPartitionDefinitions
-  subPartitionDefinitionOptions *ast.SubPartitionDefinitionOptions
   constraintDefinition *ast.ConstraintDefinition
   revertMigration *ast.RevertMigration
   alterMigration  *ast.AlterMigration
@@ -145,14 +139,9 @@ func bindVariable(psqlex psqLexer, bvar string) {
   vindexParams  []ast.VindexParam
   jsonPathParams []ast.JSONPathParam
   jsonObjectParams []*ast.JSONObjectParam
-  partDefs      []*ast.PartitionDefinition
-  partitionValueRange	*ast.PartitionValueRange
-  partitionEngine *ast.PartitionEngine
-  partSpecs     []*ast.PartitionSpec
   characteristics []ast.Characteristic
   selectExpr    ast.SelectExpr
   columns       ast.Columns
-  partitions    ast.Partitions
   tableExprs    ast.TableExprs
   tableNames    ast.TableNames
   exprs         ast.Exprs
@@ -187,9 +176,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
   boolean bool
   boolVal ast.BoolVal
   ignore ast.Ignore
-  partitionOption *ast.PartitionOption
-  subPartition  *ast.SubPartition
-  partitionByType ast.PartitionByType
   definer 	*ast.Definer
   integer 	int
 
@@ -218,8 +204,52 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> SELECT STREAM VSTREAM INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT OFFSET FOR
 %token <str> ALL DISTINCT AS EXISTS ASC DESC INTO DUPLICATE DEFAULT SET LOCK UNLOCK KEYS DO CALL
 %token <str> DISTINCTROW PARSER GENERATED ALWAYS
-%token <str> OUTFILE S3 DATA LOAD LINES TERMINATED ESCAPED ENCLOSED
-%token <str> DUMPFILE CSV HEADER MANIFEST OVERWRITE STARTING OPTIONALLY
+// Not implemented:
+%token <str> ANY ASYMMETRIC AUTHORIZATION CONCURRENTLY CURRENT_CATALOG CURRENT_ROLE CURRENT_SCHEMA DEFERRABLE
+%token <str> FETCH FREEZE GRANT ILIKE INITIALLY INTERSECT ISNULL NOTNULL OVERLAPS PLACING SESSION_USER
+%token <str> SIMILAR SOME SYMMETRIC SYSTEM_USER TABLESAMPLE VARIADIC VERBOSE ABORT ABSENT ABSOLUTE
+%token <str> ACCESS AGGREGATE ALSO ASENSITIVE ASSERTION ASSIGNMENT AT ATOMIC ATTACH ATTRIBUTE
+%token <str> BACKWARD BEFORE BREADTH CACHE CALLED CATALOG CHAIN CHARACTERISTICS
+%token <str> CHECKPOINT CLASS CLOSE CLUSTER COMMENTS CONDITIONAL
+%token <str> CONFIGURATION CONFLICT CONSTRAINTS CONTENT
+%token <str> CONTINUE CONVERSION COST OPTIONALLY
+%token <str> ESCAPED ENCLOSED TERMINATED
+%token <str> STARTING LINES OVERWRITE
+%token <str> MANIFEST HEADER CSV
+%token <str> CUBE CURRENT CURSOR
+%token <str> CYCLE DATA DEC
+%token <str> DECLARE DEFAULTS
+%token <str> DEFERRED DELIMITER
+%token <str> DELIMITERS DEPENDS DEPTH
+%token <str> DETACH DICTIONARY DOCUMENT DOMAIN
+%token <str> EACH ENCODING ENCRYPTED EXCLUDING EXPRESSION
+%token <str> EXTENSION EXTERNAL FAMILY FILTER FINALIZE FORWARD
+%token <str> FUNCTIONS GRANTED GREATEST HANDLER HOLD IDENTITY IMMEDIATE
+%token <str> IMMUTABLE IMPLICIT INCLUDE INCLUDING INCREMENT INDENT INHERIT INHERITS
+%token <str> INLINE INOUT INPUT INSENSITIVE INSTEAD JSON_ARRAYAGG JSON_EXISTS JSON_OBJECTAGG
+%token <str> JSON_QUERY JSON_SCALAR JSON_SERIALIZE KEEP LABEL LARGE LEAKPROOF LEAST LISTEN LOAD LOCATION
+%token <str> LOGGED MAPPING MATCHED MATERIALIZED MERGE_ACTION METHOD MINVALUE MOVE NATIONAL NEW NFC NFD NFKC
+%token <str> NFKD NORMALIZE NORMALIZED NOTHING NOTIFY NULLIF OBJECT OIDS OMIT OPERATOR OPTIONS OUT OVERLAY
+%token <str> OVERRIDING OWNED OWNER PARALLEL PARAMETER PASSING PLAN PLANS POLICY POSITION PRECISION
+%token <str> PREPARED PRESERVE PRIOR PROCEDURAL PROCEDURES PROGRAM PUBLICATION QUOTE QUOTES
+%token <str> RANGE REASSIGN RECHECK REF REFERENCING REFRESH REINDEX RELATIVE REPLICA
+%token <str> RESET RETURN RETURNS REVOKE ROLLUP ROUTINE ROUTINES ROW ROWS
+%token <str> RULE SCALAR SCROLL SEARCH SEQUENCES SERVER SETOF SETS
+%token <str> SNAPSHOT SOURCE STABLE STANDALONE STATEMENT
+%token <str> STATISTICS STDIN STDOUT STRICT STRIP
+%token <str> SUBSCRIPTION SUPPORT SYSID
+%token <str> TARGET TEMP TEMPLATE
+%token <str> TRANSFORM TREAT
+%token <str> TRUSTED
+%token <str> TYPE TYPES
+%token <str> UESCAPE UNCONDITIONAL
+%token <str> UNENCRYPTED UNKNOWN UNLISTEN
+%token <str> UNLOGGED UNTIL VACUUM VALID VALIDATE
+%token <str> VALIDATOR VARYING VERSION VIEWS VOLATILE WHITESPACE
+%token <str> WITHIN WRAPPER XML XMLATTRIBUTES XMLCONCAT XMLELEMENT XMLEXISTS
+%token <str> XMLFOREST XMLNAMESPACES XMLPARSE XMLPI XMLROOT XMLSERIALIZE XMLTABLE YES
+%token <str> ZONE
+// <<<<
 %token <str> VALUES LAST_INSERT_ID
 %token <str> NEXT VALUE SHARE MODE
 %token <str> SQL_NO_CACHE SQL_CACHE SQL_CALC_FOUND_ROWS
@@ -240,7 +270,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 
 // Precedence dictated by psql. But the vitess grammar is simplified.
 // Some of these operators don\'t conflict in our situation. Nevertheless,
-// it's better to have these listed in the correct order. Also, we don\'t
+// it\'s better to have these listed in the correct order. Also, we don\'t
 // support all operators yet.
 // * NOTE: ast.If you change anything here, update precedence.go as well *
 %nonassoc <str> LOWER_THAN_CHARSET
@@ -249,7 +279,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %right <str> UNIQUE KEY
 %left <str> EXPRESSION_PREC_SETTER
 %left <str> OR '|'
-%left <str> XOR
 %left <str> AND
 %right <str> NOT '!'
 %left <str> BETWEEN CASE WHEN THEN ELSE END
@@ -276,7 +305,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <empty> JSON_EXTRACT_OP JSON_UNQUOTE_EXTRACT_OP
 
 // DDL Tokens
-%token <str> CREATE ALTER DROP RENAME ANALYZE ADD FLUSH CHANGE MODIFY DEALLOCATE
+%token <str> CREATE ALTER DROP RENAME ANALYZE ANALYSE ADD FLUSH CHANGE MODIFY DEALLOCATE
 %token <str> REVERT
 %token <str> SCHEMA TABLE INDEX VIEW TO IGNORE IF PRIMARY COLUMN SPATIAL FULLTEXT KEY_BLOCK_SIZE CHECK INDEXES
 %token <str> ACTION CASCADE CONSTRAINT FOREIGN NO REFERENCES RESTRICT
@@ -332,7 +361,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 // Match
 %token <str> MATCH AGAINST BOOLEAN LANGUAGE WITH QUERY EXPANSION WITHOUT VALIDATION
 
-// MySQL reserved words that are unused by this grammar will map to this token.
+// PostgresQL reserved words that are unused by this grammar will map to this token.
 %token <str> UNUSED ARRAY BYTE CUME_DIST DESCRIPTION DENSE_RANK EMPTY EXCEPT FIRST_VALUE GROUPING GROUPS JSON_TABLE LAG LAST_VALUE LATERAL LEAD
 %token <str> NTH_VALUE NTILE OF OVER PERCENT_RANK RANK RECURSIVE ROW_NUMBER SYSTEM WINDOW
 %token <str> ACTIVE ADMIN AUTOEXTEND_SIZE BUCKETS CLONE COLUMN_FORMAT COMPONENT DEFINITION ENFORCED ENGINE_ATTRIBUTE EXCLUDE FOLLOWING GEOMCOLLECTION GET_MASTER_PUBLIC_KEY HISTOGRAM HISTORY
@@ -351,14 +380,9 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> NO_WRITE_TO_BINLOG LOGS ERROR GENERAL HOSTS OPTIMIZER_COSTS USER_RESOURCES SLOW CHANNEL RELAY EXPORT
 
 // ast.TableOptions tokens
-%token <str> AVG_ROW_LENGTH CONNECTION CHECKSUM DELAY_KEY_WRITE ENCRYPTION ENGINE INSERT_METHOD MAX_ROWS MIN_ROWS PACK_KEYS PASSWORD
+%token <str> AVG_ROW_LENGTH CONNECTION CHECKSUM DELAY_KEY_WRITE ENCRYPTION INSERT_METHOD MAX_ROWS MIN_ROWS PACK_KEYS PASSWORD
 %token <str> FIXED DYNAMIC COMPRESSED REDUNDANT COMPACT ROW_FORMAT STATS_AUTO_RECALC STATS_PERSISTENT STATS_SAMPLE_PAGES STORAGE MEMORY DISK
 
-// ast.Partitions tokens
-%token <str> PARTITIONS LINEAR RANGE LIST SUBPARTITION SUBPARTITIONS HASH
-
-%type <partitionByType> range_or_list
-%type <integer> partitions_opt algorithm_opt subpartitions_opt partition_max_rows partition_min_rows
 %type <statement> command
 %type <selStmt> query_expression_parens query_expression query_expression_body select_statement query_primary select_stmt_with_into
 %type <statement> explain_statement explainable_statement
@@ -379,7 +403,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <alterDatabase> alter_database_prefix
 %type <databaseOption> collate character_set encryption
 %type <databaseOptions> create_options create_options_opt
-%type <boolean> default_optional first_opt linear_opt jt_exists_opt jt_path_opt partition_storage_opt
+%type <boolean> default_optional first_opt jt_exists_opt jt_path_opt
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement load_statement
 %type <statement> lock_statement unlock_statement call_statement
@@ -390,12 +414,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <trimType> trim_type
 %type <insertAction> insert_or_replace
 %type <str> explain_synonyms
-%type <partitionOption> partitions_options_opt partitions_options_beginning
-%type <partitionDefinitionOptions> partition_definition_attribute_list_opt
-%type <subPartition> subpartition_opt
-%type <subPartitionDefinition> subpartition_definition
-%type <subPartitionDefinitions> subpartition_definition_list subpartition_definition_list_with_brackets
-%type <subPartitionDefinitionOptions> subpartition_definition_attribute_list_opt
 %type <intervalType> interval_time_stamp interval
 %type <str> cache_opt separator_opt flush_option for_channel_opt maxvalue
 %type <matchExprOption> match_option
@@ -443,13 +461,12 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <order> order
 %type <orderDirection> asc_desc_opt
 %type <limit> limit_opt limit_clause
-%type <selectInto> into_clause
 %type <columnTypeOptions> column_attribute_list_opt generated_column_attribute_list_opt
 %type <str> header_opt export_options manifest_opt overwrite_opt format_opt optionally_opt
 %type <str> fields_opts fields_opt_list fields_opt lines_opts lines_opt lines_opt_list
 %type <lock> locking_clause
+%type <selectInto> into_clause
 %type <columns> ins_column_list column_list at_id_list column_list_opt index_list execute_statement_list_opt
-%type <partitions> opt_partition_clause partition_list
 %type <updateExprs> on_dup_opt
 %type <updateExprs> update_list
 %type <setExprs> set_list
@@ -477,7 +494,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <convertType> convert_type returning_type_opt convert_type_weight_string
 %type <columnType> column_type
 %type <columnType> int_type decimal_type numeric_type time_type char_type spatial_type
-%type <literal> length_opt partition_comment partition_data_directory partition_index_directory
+%type <literal> length_opt
 %type <expr> func_datetime_precision
 %type <columnCharset> charset_opt
 %type <str> collate_opt
@@ -491,7 +508,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <constraintDefinition> constraint_definition check_constraint_definition
 %type <str> index_or_key index_symbols from_or_in index_or_key_opt
 %type <str> name_opt constraint_name_opt
-%type <str> equal_opt partition_tablespace_name
+%type <str> equal_opt
 %type <tableSpec> table_spec table_column_list
 %type <optLike> create_like
 %type <str> table_opt_value
@@ -503,11 +520,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <indexOption> index_option using_index_type
 %type <indexOptions> index_option_list index_option_list_opt using_opt
 %type <constraintInfo> constraint_info check_constraint_info
-%type <partDefs> partition_definitions partition_definitions_opt
-%type <partDef> partition_definition partition_name
-%type <partitionValueRange> partition_value_range
-%type <partitionEngine> partition_engine
-%type <partSpec> partition_operation
 %type <vindexParam> vindex_param
 %type <vindexParams> vindex_param_list vindex_params_opt
 %type <jsonPathParam> json_path_param
@@ -784,18 +796,6 @@ select_stmt_with_into:
 	$1.SetInto($2)
 	$$ = $1
   }
-| query_expression into_clause locking_clause
-  {
-	$1.SetInto($2)
-	$1.SetLock($3)
-	$$ = $1
-  }
-| query_expression locking_clause into_clause
-  {
-	$1.SetInto($3)
-	$1.SetLock($2)
-	$$ = $1
-  }
 | query_expression_parens into_clause
   {
  	$1.SetInto($2)
@@ -817,11 +817,7 @@ vstream_statement:
 // query_primary is an unparenthesized SELECT with no order by clause or beyond.
 query_primary:
 //  1         2            3              4                    5             6                7           8
-  SELECT comment_opt select_options select_expression_list into_clause from_opt where_expression_opt group_by_opt having_opt
-  {
-    $$ = ast.NewSelect(ast.Comments($2), $4/*SelectExprs*/, $3/*options*/, $5/*into*/, $6/*from*/, ast.NewWhere(ast.WhereClause, $7), ast.GroupBy($8), ast.NewWhere(ast.HavingClause, $9))
-  }
-| SELECT comment_opt select_options select_expression_list from_opt where_expression_opt group_by_opt having_opt
+  SELECT comment_opt select_options select_expression_list from_opt where_expression_opt group_by_opt having_opt
   {
     $$ = ast.NewSelect(ast.Comments($2), $4/*SelectExprs*/, $3/*options*/, nil, $5/*from*/, ast.NewWhere(ast.WhereClause, $6), ast.GroupBy($7), ast.NewWhere(ast.HavingClause, $8))
   }
@@ -829,27 +825,26 @@ query_primary:
 
 
 insert_statement:
-  insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause insert_data on_dup_opt
+  insert_or_replace comment_opt ignore_opt into_table_name insert_data on_dup_opt
   {
     // insert_data returns a *ast.Insert pre-filled with Columns & Values
-    ins := $6
+    ins := $5
     ins.Action = $1
     ins.Comments = ast.Comments($2).Parsed()
     ins.Ignore = $3
     ins.Table = $4
-    ins.Partitions = $5
-    ins.OnDup = ast.OnDup($7)
+    ins.OnDup = ast.OnDup($6)
     $$ = ins
   }
-| insert_or_replace comment_opt ignore_opt into_table_name opt_partition_clause SET update_list on_dup_opt
+| insert_or_replace comment_opt ignore_opt into_table_name SET update_list on_dup_opt
   {
-    cols := make(ast.Columns, 0, len($7))
-    vals := make(ast.ValTuple, 0, len($8))
-    for _, updateList := range $7 {
+    cols := make(ast.Columns, 0, len($6))
+    vals := make(ast.ValTuple, 0, len($7))
+    for _, updateList := range $6 {
       cols = append(cols, updateList.Name.Name)
       vals = append(vals, updateList.Expr)
     }
-    $$ = &ast.Insert{Action: $1, Comments: ast.Comments($2).Parsed(), Ignore: $3, Table: $4, Partitions: $5, Columns: cols, Rows: ast.Values{vals}, OnDup: ast.OnDup($8)}
+    $$ = &ast.Insert{Action: $1, Comments: ast.Comments($2).Parsed(), Ignore: $3, Table: $4, Columns: cols, Rows: ast.Values{vals}, OnDup: ast.OnDup($7)}
   }
 
 insert_or_replace:
@@ -869,9 +864,9 @@ update_statement:
   }
 
 delete_statement:
-  with_clause_opt DELETE comment_opt ignore_opt FROM table_name as_opt_id opt_partition_clause where_expression_opt order_by_opt limit_opt
+  with_clause_opt DELETE comment_opt ignore_opt FROM table_name as_opt_id where_expression_opt order_by_opt limit_opt
   {
-    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: ast.TableExprs{&ast.AliasedTableExpr{Expr:$6, As: $7}}, Partitions: $8, Where: ast.NewWhere(ast.WhereClause, $9), OrderBy: $10, Limit: $11}
+    $$ = &ast.Delete{With: $1, Comments: ast.Comments($3).Parsed(), Ignore: $4, TableExprs: ast.TableExprs{&ast.AliasedTableExpr{Expr:$6, As: $7}}, Where: ast.NewWhere(ast.WhereClause, $8), OrderBy: $9, Limit: $10}
   }
 | with_clause_opt DELETE comment_opt ignore_opt FROM table_name_list USING table_references where_expression_opt
   {
@@ -918,15 +913,6 @@ delete_table_list:
 | delete_table_list ',' delete_table_name
   {
     $$ = append($$, $3)
-  }
-
-opt_partition_clause:
-  {
-    $$ = nil
-  }
-| PARTITION openb partition_list closeb
-  {
-  $$ = $3
   }
 
 set_statement:
@@ -1162,11 +1148,10 @@ database_or_schema:
 | SCHEMA
 
 table_spec:
-  '(' table_column_list ')' table_option_list_opt partitions_options_opt
+  '(' table_column_list ')' table_option_list_opt
   {
     $$ = $2
     $$.Options = $4
-    $$.PartitionOption = $5
   }
 
 create_options_opt:
@@ -1332,8 +1317,8 @@ generated_always_opt:
 
 // There is a shift reduce conflict that arises here because UNIQUE and KEY are column_type_option and so is UNIQUE KEY.
 // So in the state "column_type_options UNIQUE. KEY" there is a shift-reduce conflict(resovled by "%rigth <str> UNIQUE KEY").
-// This has been added to emulate what MySQL does. The previous architecture was such that the order of the column options
-// was specific (as stated in the MySQL guide) and did not accept arbitrary order options. For example NOT NULL DEFAULT 1 and not DEFAULT 1 NOT NULL
+// This has been added to emulate what PostgresQL does. The previous architecture was such that the order of the column options
+// was specific (as stated in the PostgresQL guide) and did not accept arbitrary order options. For example NOT NULL DEFAULT 1 and not DEFAULT 1 NOT NULL
 column_attribute_list_opt:
   {
     $$ = &ast.ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: ast.ColKeyNone, Comment: nil, As: nil, Invisible: nil, Format: ast.UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil }
@@ -1409,14 +1394,6 @@ column_attribute_list_opt:
     val := true
     $1.Invisible = &val
     $$ = $1
-  }
-| column_attribute_list_opt ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $1.EngineAttribute = ast.NewStrLiteral($4)
-  }
-| column_attribute_list_opt SECONDARY_ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $1.SecondaryEngineAttribute = ast.NewStrLiteral($4)
   }
 
 column_format:
@@ -2062,30 +2039,10 @@ float_length_opt:
   {
     $$ = ast.LengthScaleOption{}
   }
-| '(' INTEGRAL ',' INTEGRAL ')'
-  {
-    $$ = ast.LengthScaleOption{
-        Length: ast.NewIntLiteral($2),
-        Scale: ast.NewIntLiteral($4),
-    }
-  }
 
 decimal_length_opt:
   {
     $$ = ast.LengthScaleOption{}
-  }
-| '(' INTEGRAL ')'
-  {
-    $$ = ast.LengthScaleOption{
-        Length: ast.NewIntLiteral($2),
-    }
-  }
-| '(' INTEGRAL ',' INTEGRAL ')'
-  {
-    $$ = ast.LengthScaleOption{
-        Length: ast.NewIntLiteral($2),
-        Scale: ast.NewIntLiteral($4),
-    }
   }
 
 unsigned_opt:
@@ -2205,11 +2162,6 @@ index_option:
   {
     $$ = $1
   }
-| KEY_BLOCK_SIZE equal_opt INTEGRAL
-  {
-    // should not be string
-    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewIntLiteral($3)}
-  }
 | COMMENT_KEYWORD STRING
   {
     $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($2)}
@@ -2225,14 +2177,6 @@ index_option:
 | WITH PARSER id_or_var
   {
     $$ = &ast.IndexOption{Name: string($1) + " " + string($2), String: $3.String()}
-  }
-| ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
-  }
-| SECONDARY_ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $$ = &ast.IndexOption{Name: string($1), Value: ast.NewStrLiteral($3)}
   }
 
 equal_opt:
@@ -2541,29 +2485,13 @@ space_separated_table_option_list:
   }
 
 table_option:
-  AUTO_INCREMENT equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
-| AUTOEXTEND_SIZE equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name: string($1), Value: ast.NewIntLiteral($3)}
-  }
-| AVG_ROW_LENGTH equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
-| default_optional charset_or_character_set equal_opt charset
+  default_optional charset_or_character_set equal_opt charset
   {
     $$ = &ast.TableOption{Name:(string($2)), String:$4, CaseSensitive: true}
   }
 | default_optional COLLATE equal_opt charset
   {
     $$ = &ast.TableOption{Name:string($2), String:$4, CaseSensitive: true}
-  }
-| CHECKSUM equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
   }
 | COMMENT_KEYWORD equal_opt STRING
   {
@@ -2577,49 +2505,17 @@ table_option:
   {
     $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
-| DATA DIRECTORY equal_opt STRING
-  {
-    $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:ast.NewStrLiteral($4)}
-  }
 | INDEX DIRECTORY equal_opt STRING
   {
     $$ = &ast.TableOption{Name:(string($1)+" "+string($2)), Value:ast.NewStrLiteral($4)}
-  }
-| DELAY_KEY_WRITE equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
   }
 | ENCRYPTION equal_opt STRING
   {
     $$ = &ast.TableOption{Name:string($1), Value:ast.NewStrLiteral($3)}
   }
-| ENGINE equal_opt table_alias
-  {
-    $$ = &ast.TableOption{Name:string($1), String:$3.String(), CaseSensitive: true}
-  }
-| ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $$ = &ast.TableOption{Name: string($1), Value: ast.NewStrLiteral($3)}
-  }
 | INSERT_METHOD equal_opt insert_method_options
   {
     $$ = &ast.TableOption{Name:string($1), String:string($3)}
-  }
-| KEY_BLOCK_SIZE equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
-| MAX_ROWS equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
-| MIN_ROWS equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
-| PACK_KEYS equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
   }
 | PACK_KEYS equal_opt DEFAULT
   {
@@ -2633,29 +2529,13 @@ table_option:
   {
     $$ = &ast.TableOption{Name:string($1), String:string($3)}
   }
-| SECONDARY_ENGINE_ATTRIBUTE equal_opt STRING
-  {
-    $$ = &ast.TableOption{Name: string($1), Value: ast.NewStrLiteral($3)}
-  }
-| STATS_AUTO_RECALC equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
 | STATS_AUTO_RECALC equal_opt DEFAULT
   {
     $$ = &ast.TableOption{Name:string($1), String:string($3)}
   }
-| STATS_PERSISTENT equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
-  }
 | STATS_PERSISTENT equal_opt DEFAULT
   {
     $$ = &ast.TableOption{Name:string($1), String:string($3)}
-  }
-| STATS_SAMPLE_PAGES equal_opt INTEGRAL
-  {
-    $$ = &ast.TableOption{Name:string($1), Value:ast.NewIntLiteral($3)}
   }
 | TABLESPACE equal_opt sql_id storage_opt
   {
@@ -2742,10 +2622,6 @@ expire_opt:
 ratio_opt:
   {
     $$ = nil
-  }
-| RATIO INTEGRAL
-  {
-    $$ = ast.NewIntLiteral($2)
   }
 | RATIO DECIMAL
   {
@@ -2968,31 +2844,10 @@ alter_commands_modifier:
     }
 
 alter_statement:
-  alter_table_prefix alter_commands_list partitions_options_opt
+  alter_table_prefix alter_commands_list
   {
     $1.FullyParsed = true
     $1.AlterOptions = $2
-    $1.PartitionOption = $3
-    $$ = $1
-  }
-| alter_table_prefix alter_commands_list REMOVE PARTITIONING
-  {
-    $1.FullyParsed = true
-    $1.AlterOptions = $2
-    $1.PartitionSpec = &ast.PartitionSpec{Action: ast.RemoveAction}
-    $$ = $1
-  }
-| alter_table_prefix alter_commands_modifier_list ',' partition_operation
-  {
-    $1.FullyParsed = true
-    $1.AlterOptions = $2
-    $1.PartitionSpec = $4
-    $$ = $1
-  }
-| alter_table_prefix partition_operation
-  {
-    $1.FullyParsed = true
-    $1.PartitionSpec = $2
     $$ = $1
   }
 | ALTER comment_opt algorithm_view definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
@@ -3003,20 +2858,13 @@ alter_statement:
 // and the database identifier is optional. When no identifier is given, the current database
 // is used. This means though that `alter database encryption` is ambiguous whether it means
 // the encryption keyword, or the encryption database name, resulting in the conflict.
-// The preference here is to shift, so it is treated as a database name. This matches the MySQL
+// The preference here is to shift, so it is treated as a database name. This matches the PostgresQL
 // behavior as well.
 | alter_database_prefix table_id_opt create_options
   {
     $1.FullyParsed = true
     $1.DBName = $2
     $1.AlterOptions = $3
-    $$ = $1
-  }
-| alter_database_prefix table_id UPGRADE DATA DIRECTORY NAME
-  {
-    $1.FullyParsed = true
-    $1.DBName = $2
-    $1.UpdateDataDirectory = true
     $$ = $1
   }
 | ALTER comment_opt VSCHEMA CREATE VINDEX table_name vindex_type_opt vindex_params_opt
@@ -3152,102 +3000,6 @@ alter_statement:
     }
   }
 
-partitions_options_opt:
-  {
-    $$ = nil
-  }
-| PARTITION BY partitions_options_beginning partitions_opt subpartition_opt partition_definitions_opt
-    {
-      $3.Partitions = $4
-      $3.SubPartition = $5
-      $3.Definitions = $6
-      $$ = $3
-    }
-
-partitions_options_beginning:
-  linear_opt HASH '(' expression ')'
-    {
-      $$ = &ast.PartitionOption {
-        IsLinear: $1,
-        Type: ast.HashType,
-        Expr: $4,
-      }
-    }
-| linear_opt KEY algorithm_opt '(' column_list ')'
-    {
-      $$ = &ast.PartitionOption {
-        IsLinear: $1,
-        Type: ast.KeyType,
-        KeyAlgorithm: $3,
-        ColList: $5,
-      }
-    }
-| range_or_list '(' expression ')'
-    {
-      $$ = &ast.PartitionOption {
-        Type: $1,
-        Expr: $3,
-      }
-    }
-| range_or_list COLUMNS '(' column_list ')'
-  {
-    $$ = &ast.PartitionOption {
-        Type: $1,
-        ColList: $4,
-    }
-  }
-
-subpartition_opt:
-  {
-    $$ = nil
-  }
-| SUBPARTITION BY linear_opt HASH '(' expression ')' subpartitions_opt
-  {
-    $$ = &ast.SubPartition {
-      IsLinear: $3,
-      Type: ast.HashType,
-      Expr: $6,
-      SubPartitions: $8,
-    }
-  }
-| SUBPARTITION BY linear_opt KEY algorithm_opt '(' column_list ')' subpartitions_opt
-  {
-    $$ = &ast.SubPartition {
-      IsLinear: $3,
-      Type: ast.KeyType,
-      KeyAlgorithm: $5,
-      ColList: $7,
-      SubPartitions: $9,
-    }
-  }
-
-partition_definitions_opt:
-  {
-    $$ = nil
-  }
-| '(' partition_definitions ')'
-  {
-    $$ = $2
-  }
-
-linear_opt:
-  {
-    $$ = false
-  }
-| LINEAR
-  {
-    $$ = true
-  }
-
-algorithm_opt:
-  {
-    $$ = 0
-  }
-| ALGORITHM '=' INTEGRAL
-  {
-    $$ = ast.ConvertStringToInt($3)
-  }
-
 json_table_function:
   JSON_TABLE openb expression ',' text_literal_or_arg jt_columns_clause closeb as_opt_id
   {
@@ -3348,124 +3100,6 @@ json_on_response:
     $$ = &ast.JtOnResponse{ResponseType: ast.DefaultJSONType, Expr: $2}
   }
 
-range_or_list:
-  RANGE
-  {
-    $$ = ast.RangeType
-  }
-| LIST
-  {
-    $$ = ast.ListType
-  }
-
-partitions_opt:
-  {
-    $$ = -1
-  }
-| PARTITIONS INTEGRAL
-  {
-    $$ = ast.ConvertStringToInt($2)
-  }
-
-subpartitions_opt:
-  {
-    $$ = -1
-  }
-| SUBPARTITIONS INTEGRAL
-  {
-    $$ = ast.ConvertStringToInt($2)
-  }
-
-partition_operation:
-  ADD PARTITION '(' partition_definition ')'
-  {
-    $$ = &ast.PartitionSpec{Action: ast.AddAction, Definitions: []*ast.PartitionDefinition{$4}}
-  }
-| DROP PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.DropAction, Names:$3}
-  }
-| REORGANIZE PARTITION partition_list INTO openb partition_definitions closeb
-  {
-    $$ = &ast.PartitionSpec{Action: ast.ReorganizeAction, Names: $3, Definitions: $6}
-  }
-| DISCARD PARTITION partition_list TABLESPACE
-  {
-    $$ = &ast.PartitionSpec{Action:ast.DiscardAction, Names:$3}
-  }
-| DISCARD PARTITION ALL TABLESPACE
-  {
-    $$ = &ast.PartitionSpec{Action:ast.DiscardAction, IsAll:true}
-  }
-| IMPORT PARTITION partition_list TABLESPACE
-  {
-    $$ = &ast.PartitionSpec{Action:ast.ImportAction, Names:$3}
-  }
-| IMPORT PARTITION ALL TABLESPACE
-  {
-    $$ = &ast.PartitionSpec{Action:ast.ImportAction, IsAll:true}
-  }
-| TRUNCATE PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.TruncateAction, Names:$3}
-  }
-| TRUNCATE PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.TruncateAction, IsAll:true}
-  }
-| COALESCE PARTITION INTEGRAL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.CoalesceAction, Number:ast.NewIntLiteral($3) }
-  }
-| EXCHANGE PARTITION sql_id WITH TABLE table_name without_valid_opt
-  {
-    $$ = &ast.PartitionSpec{Action:ast.ExchangeAction, Names: ast.Partitions{$3}, TableName: $6, WithoutValidation: $7}
-  }
-| ANALYZE PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.AnalyzeAction, Names:$3}
-  }
-| ANALYZE PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.AnalyzeAction, IsAll:true}
-  }
-| CHECK PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.CheckAction, Names:$3}
-  }
-| CHECK PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.CheckAction, IsAll:true}
-  }
-| OPTIMIZE PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.OptimizeAction, Names:$3}
-  }
-| OPTIMIZE PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.OptimizeAction, IsAll:true}
-  }
-| REBUILD PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.RebuildAction, Names:$3}
-  }
-| REBUILD PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.RebuildAction, IsAll:true}
-  }
-| REPAIR PARTITION partition_list
-  {
-    $$ = &ast.PartitionSpec{Action:ast.RepairAction, Names:$3}
-  }
-| REPAIR PARTITION ALL
-  {
-    $$ = &ast.PartitionSpec{Action:ast.RepairAction, IsAll:true}
-  }
-| UPGRADE PARTITIONING
-  {
-    $$ = &ast.PartitionSpec{Action:ast.UpgradeAction}
-  }
-
 without_valid_opt:
   {
     $$ = false
@@ -3477,218 +3111,6 @@ without_valid_opt:
 | WITHOUT VALIDATION
   {
     $$ = true
-  }
-
-
-partition_definitions:
-  partition_definition
-  {
-    $$ = []*ast.PartitionDefinition{$1}
-  }
-| partition_definitions ',' partition_definition
-  {
-    $$ = append($1, $3)
-  }
-
-partition_definition:
-  partition_name partition_definition_attribute_list_opt
-  {
-    $$.Options = $2
-  }
-
-partition_definition_attribute_list_opt:
-  {
-    $$ = &ast.PartitionDefinitionOptions{}
-  }
-| partition_definition_attribute_list_opt partition_value_range
-  {
-    $1.ValueRange = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_comment
-  {
-    $1.Comment = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_engine
-  {
-    $1.Engine = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_data_directory
-  {
-    $1.DataDirectory = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_index_directory
-  {
-    $1.IndexDirectory = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_max_rows
-  {
-    val := $2
-    $1.MaxRows = &val
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_min_rows
-  {
-    val := $2
-    $1.MinRows = &val
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt partition_tablespace_name
-  {
-    $1.TableSpace = $2
-    $$ = $1
-  }
-| partition_definition_attribute_list_opt subpartition_definition_list_with_brackets
-  {
-    $1.SubPartitionDefinitions = $2
-    $$ = $1
-  }
-
-subpartition_definition_list_with_brackets:
-  openb subpartition_definition_list closeb{
-    $$ = $2
-  }
-
-subpartition_definition_list:
-  subpartition_definition
-  {
-    $$ = ast.SubPartitionDefinitions{$1}
-  }
-| subpartition_definition_list ',' subpartition_definition
-  {
-    $$ = append($1, $3)
-  }
-
-subpartition_definition:
-  SUBPARTITION sql_id subpartition_definition_attribute_list_opt
-  {
-    $$ = &ast.SubPartitionDefinition{Name:$2, Options: $3}
-  }
-
-subpartition_definition_attribute_list_opt:
-  {
-    $$ = &ast.SubPartitionDefinitionOptions{}
-  }
-| subpartition_definition_attribute_list_opt partition_comment
-  {
-    $1.Comment = $2
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_engine
-  {
-    $1.Engine = $2
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_data_directory
-  {
-    $1.DataDirectory = $2
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_index_directory
-  {
-    $1.IndexDirectory = $2
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_max_rows
-  {
-    val := $2
-    $1.MaxRows = &val
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_min_rows
-  {
-    val := $2
-    $1.MinRows = &val
-    $$ = $1
-  }
-| subpartition_definition_attribute_list_opt partition_tablespace_name
-  {
-    $1.TableSpace = $2
-    $$ = $1
-  }
-
-partition_value_range:
-  VALUES LESS THAN row_tuple
-  {
-    $$ = &ast.PartitionValueRange{
-    	Type: ast.LessThanType,
-    	Range: $4,
-    }
-  }
-| VALUES LESS THAN maxvalue
-  {
-    $$ = &ast.PartitionValueRange{
-    	Type: ast.LessThanType,
-    	Maxvalue: true,
-    }
-  }
-| VALUES IN row_tuple
-  {
-    $$ = &ast.PartitionValueRange{
-    	Type: ast.InType,
-    	Range: $3,
-    }
-  }
-
-partition_storage_opt:
-  {
-    $$ = false
-  }
-| STORAGE
-  {
-    $$ = true
-  }
-
-partition_engine:
-  partition_storage_opt ENGINE equal_opt table_alias
-  {
-    $$ = &ast.PartitionEngine{Storage:$1, Name: $4.String()}
-  }
-
-partition_comment:
-  COMMENT_KEYWORD equal_opt STRING
-  {
-    $$ = ast.NewStrLiteral($3)
-  }
-
-partition_data_directory:
-  DATA DIRECTORY equal_opt STRING
-  {
-    $$ = ast.NewStrLiteral($4)
-  }
-
-partition_index_directory:
-  INDEX DIRECTORY equal_opt STRING
-  {
-    $$ = ast.NewStrLiteral($4)
-  }
-
-partition_max_rows:
-  MAX_ROWS equal_opt INTEGRAL
-  {
-    $$ = ast.ConvertStringToInt($3)
-  }
-
-partition_min_rows:
-  MIN_ROWS equal_opt INTEGRAL
-  {
-    $$ = ast.ConvertStringToInt($3)
-  }
-
-partition_tablespace_name:
-  TABLESPACE equal_opt table_alias
-  {
-    $$ = $3.String()
-  }
-
-partition_name:
-  PARTITION sql_id
-  {
-    $$ = &ast.PartitionDefinition{Name: $2}
   }
 
 maxvalue:
@@ -3860,10 +3282,6 @@ show_statement:
   {
     $$ = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateV, Op: $4}}
   }
-| SHOW ENGINES
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Engines}}
-  }
 | SHOW PLUGINS
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Plugins}}
@@ -3942,10 +3360,6 @@ show_statement:
 | SHOW BINARY LOGS ddl_skip_to_end /* SHOW BINARY LOGS */
   {
     $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2) + " " + string($3)}}
-  }
-| SHOW ENGINE ddl_skip_to_end
-  {
-    $$ = &ast.Show{Internal: &ast.ShowOther{Command: string($2)}}
   }
 | SHOW FUNCTION CODE table_name
   {
@@ -4139,6 +3553,10 @@ explain_format_opt:
   {
     $$ = ast.TraditionalType
   }
+| ANALYSE
+  {
+    $$ = ast.AnalyzeType
+  }
 | ANALYZE
   {
     $$ = ast.AnalyzeType
@@ -4299,10 +3717,6 @@ flush_option_list:
 
 flush_option:
   BINARY LOGS
-  {
-    $$ = string($1) + " " + string($2)
-  }
-| ENGINE LOGS
   {
     $$ = string($1) + " " + string($2)
   }
@@ -4639,10 +4053,6 @@ table_name as_opt_id index_hint_list_opt
   {
     $$ = &ast.AliasedTableExpr{Expr:$1, As: $2, Hints: $3}
   }
-| table_name PARTITION openb partition_list closeb as_opt_id index_hint_list_opt
-  {
-    $$ = &ast.AliasedTableExpr{Expr:$1, Partitions: $4, As: $6, Hints: $7}
-  }
 
 column_list_opt:
   {
@@ -4691,23 +4101,13 @@ index_list:
     $$ = append($$, ast.NewColIdent(string($3)))
   }
 
-partition_list:
-  sql_id
-  {
-    $$ = ast.Partitions{$1}
-  }
-| partition_list ',' sql_id
-  {
-    $$ = append($$, $3)
-  }
-
 // There is a grammar conflict here:
 // 1: ast.INSERT INTO a SELECT * FROM b JOIN c ON b.i = c.i
 // 2: ast.INSERT INTO a SELECT * FROM b JOIN c ON DUPLICATE KEY UPDATE a.i = 1
 // When yacc encounters the ON clause, it cannot determine which way to
 // resolve. The %prec override below makes the parser choose the
 // first construct, which automatically makes the second construct a
-// syntax error. This is the same behavior as MySQL.
+// syntax error. This is the same behavior as PostgresQL.
 join_table:
   table_reference inner_join table_factor join_condition_opt
   {
@@ -4917,10 +4317,6 @@ expression:
   {
 	$$ = &ast.OrExpr{Left: $1, Right: $3}
   }
-| expression XOR expression %prec XOR
-  {
-	$$ = &ast.XorExpr{Left: $1, Right: $3}
-  }
 | expression AND expression %prec AND
   {
 	$$ = &ast.AndExpr{Left: $1, Right: $3}
@@ -5006,6 +4402,10 @@ bit_expr IN col_tuple
  {
 	$$ = $1
  }
+| bit_expr '=' ANY col_tuple
+  {
+	$$ = &ast.ComparisonExpr{Left: $1, Operator: ast.InOp, Right: $4}
+  }
 
 bit_expr:
 bit_expr '|' bit_expr %prec '|'
@@ -5684,10 +5084,6 @@ func_datetime_precision:
   {
     $$ = nil
   }
-| openb INTEGRAL closeb
-  {
-  	$$ = ast.NewIntLiteral($2)
-  }
 | openb VALUE_ARG closeb
   {
     $$ = ast.NewArgument($2[1:])
@@ -5760,14 +5156,6 @@ convert_type_weight_string:
   /* empty */
   {
     $$ = nil
-  }
-| AS BINARY '(' INTEGRAL ')'
-  {
-    $$ = &ast.ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
-  }
-| AS CHAR '(' INTEGRAL ')'
-  {
-    $$ = &ast.ConvertType{Type: string($2), Length: ast.NewIntLiteral($4)}
   }
 
 convert_type:
@@ -5901,10 +5289,6 @@ num_val:
       return 1
     }
     $$ = ast.NewIntLiteral("1")
-  }
-| INTEGRAL VALUES
-  {
-    $$ = ast.NewIntLiteral($1)
   }
 | VALUE_ARG VALUES
   {
@@ -6173,17 +5557,9 @@ FOR UPDATE
   }
 
 into_clause:
-INTO OUTFILE S3 STRING charset_opt format_opt export_options manifest_opt overwrite_opt
+INTO table_name
 {
-$$ = &ast.SelectInto{Type: ast.IntoOutfileS3, FileName:sql_types.EncodeStringSQL($4), Charset:$5, FormatOption:$6, ExportOption:$7, Manifest:$8, Overwrite:$9}
-}
-| INTO DUMPFILE STRING
-{
-$$ = &ast.SelectInto{Type: ast.IntoDumpfile, FileName:sql_types.EncodeStringSQL($3), Charset:ast.ColumnCharset{}, FormatOption:"", ExportOption:"", Manifest:"", Overwrite:""}
-}
-| INTO OUTFILE STRING charset_opt export_options
-{
-$$ = &ast.SelectInto{Type: ast.IntoOutfile, FileName:sql_types.EncodeStringSQL($3), Charset:$4, FormatOption:"", ExportOption:$5, Manifest:"", Overwrite:""}
+$$ = &ast.SelectInto{ExportOption:sql_types.EncodeStringSQL($2.Name.V)}
 }
 
 format_opt:
@@ -6577,523 +5953,515 @@ reserved_table_id:
     $$ = ast.NewTableIdent(string($1))
   }
 /*
-  These are not all necessarily reserved in MySQL, but some are.
+  These are not all necessarily reserved in PostgresQL, but some are.
 
   These are more importantly reserved because they may conflict with our grammar.
-  If you want to move one that is not reserved in MySQL (i.e. ESCAPE) to the
-  non_reserved_keywords, you'll need to deal with any conflicts.
+  If you want to move one that is not reserved in PostgresQL (i.e. ESCAPE) to the
+  non_reserved_keywords, you\'ll need to deal with any conflicts.
 
   Sorted alphabetically
 */
 reserved_keyword:
-  ADD
-| ALL
-| ARRAY
+  ALL
+| ANALYSE
+| ANALYZE
 | AND
+| ANY
+| ARRAY
 | AS
 | ASC
-| BETWEEN
+| ASYMMETRIC
+| AUTHORIZATION
 | BINARY
 | BOTH
-| BY
 | CASE
-| CALL
-| CHANGE
-| CHARACTER
+| CAST
 | CHECK
 | COLLATE
+| COLLATION
 | COLUMN
-| CONVERT
+| CONCURRENTLY
+| CONSTRAINT
 | CREATE
 | CROSS
-| CUME_DIST
+| CURRENT_CATALOG
 | CURRENT_DATE
+| CURRENT_ROLE
+| CURRENT_SCHEMA
 | CURRENT_TIME
 | CURRENT_TIMESTAMP
 | CURRENT_USER
-| SUBSTR
-| SUBSTRING
-| DATABASE
-| DATABASES
 | DEFAULT
-| DELETE
-| DENSE_RANK
+| DEFERRABLE
 | DESC
-| DESCRIBE
 | DISTINCT
-| DISTINCTROW
-| DIV
-| DROP
+| DO
 | ELSE
-| EMPTY
-| ESCAPE
-| EXISTS
-| EXPLAIN
-| EXTRACT
+| END
+| EXCEPT
 | FALSE
-| FIRST_VALUE
+| FETCH
 | FOR
-| FORCE
 | FOREIGN
+| FREEZE
 | FROM
-| FULLTEXT
-| GENERATED
+| FULL
+| GRANT
 | GROUP
-| GROUPING
-| GROUPS
 | HAVING
-| IF
-| IGNORE
+| ILIKE
 | IN
-| INDEX
+| INITIALLY
 | INNER
-| INSERT
-| INTERVAL
+| INTERSECT
 | INTO
 | IS
+| ISNULL
 | JOIN
-| JSON_TABLE
-| KEY
-| LAG
-| LAST_VALUE
 | LATERAL
-| LEAD
 | LEADING
 | LEFT
 | LIKE
 | LIMIT
-| LINEAR
 | LOCALTIME
 | LOCALTIMESTAMP
-| LOCK
-| LOW_PRIORITY
-| MATCH
-| MAXVALUE
-| MOD
 | NATURAL
-| NEXT // next should be doable as non-reserved, but is not due to the special `select next num_val` query that vitess supports
-| NO_WRITE_TO_BINLOG
 | NOT
-| NOW
-| NTH_VALUE
-| NTILE
+| NOTNULL
 | NULL
-| OF
-| OFF
+| OFFSET
 | ON
-| OPTIMIZER_COSTS
+| ONLY
 | OR
 | ORDER
 | OUTER
-| OUTFILE
-| OVER
-| PARTITION
-| PERCENT_RANK
+| OVERLAPS
+| PLACING
 | PRIMARY
-| RANGE
-| RANK
-| READ
-| RECURSIVE
-| REGEXP
-| RENAME
-| REPLACE
+| REFERENCES
+| RETURNING
 | RIGHT
-| ROW_NUMBER
-| SCHEMA
-| SCHEMAS
 | SELECT
-| SEPARATOR
-| SET
-| SHOW
-| SPATIAL
-| STORED
-| STRAIGHT_JOIN
-| SYSTEM
+| SESSION_USER
+| SIMILAR
+| SOME
+| SYMMETRIC
+| SYSTEM_USER
 | TABLE
+| TABLESAMPLE
 | THEN
-| TIMESTAMPADD
-| TIMESTAMPDIFF
 | TO
 | TRAILING
 | TRUE
 | UNION
 | UNIQUE
-| UNLOCK
-| UPDATE
-| USE
+| USER
 | USING
-| UTC_DATE
-| UTC_TIME
-| UTC_TIMESTAMP
-| VALUES
-| VIRTUAL
-| WITH
+| VARIADIC
+| VERBOSE
 | WHEN
 | WHERE
 | WINDOW
-| WRITE
-| XOR
+| WITH
 
 /*
   These are non-reserved Vitess, because they don\'t cause conflicts in the grammar.
-  Some of them may be reserved in MySQL. The good news is we backtick quote them
+  Some of them may be reserved in PostgresQL. The good news is we use \" quote them
   when we rewrite the query, so no issue should arise.
 
   Sorted alphabetically
 */
 non_reserved_keyword:
-  AGAINST
+  ABORT
+| ABSENT
+| ABSOLUTE
+| ACCESS
 | ACTION
-| ACTIVE
+| ADD
 | ADMIN
 | AFTER
-| ALGORITHM
+| AGGREGATE
+| ALSO
+| ALTER
 | ALWAYS
-| ASCII
-| AUTO_INCREMENT
-| AUTOEXTEND_SIZE
-| AVG_ROW_LENGTH
+| ASENSITIVE
+| ASSERTION
+| ASSIGNMENT
+| AT
+| ATOMIC
+| ATTACH
+| ATTRIBUTE
+| BACKWARD
+| BEFORE
 | BEGIN
+| BETWEEN
 | BIGINT
 | BIT
-| BLOB
-| BOOL
 | BOOLEAN
-| BUCKETS
-| BYTE
-| CANCEL
+| BREADTH
+| BY
+| CACHE
+| CALL
+| CALLED
 | CASCADE
 | CASCADED
-| CHANNEL
+| CATALOG
+| CHAIN
 | CHAR
-| CHARSET
-| CHECKSUM
-| CLEANUP
-| CLONE
+| CHARACTER
+| CHARACTERISTICS
+| CHECKPOINT
+| CLASS
+| CLOSE
+| CLUSTER
 | COALESCE
-| CODE
-| COLLATION
-| COLUMN_FORMAT
 | COLUMNS
-| COMMENT_KEYWORD
+| COMMENT
+| COMMENTS
 | COMMIT
 | COMMITTED
-| COMPACT
-| COMPLETE
-| COMPONENT
-| COMPRESSED
 | COMPRESSION
+| CONDITIONAL
+| CONFIGURATION
+| CONFLICT
 | CONNECTION
+| CONSTRAINTS
+| CONTENT
+| CONTINUE
+| CONVERSION
 | COPY
+| COST
 | CSV
+| CUBE
+| CURRENT
+| CURSOR
+| CYCLE
 | DATA
-| DATE
-| DATETIME
+| DATABASE
+| DAY
 | DEALLOCATE
-| DECIMAL_TYPE
-| DELAY_KEY_WRITE
+| DEC
+| DECIMAL
+| DECLARE
+| DEFAULTS
+| DEFERRED
 | DEFINER
-| DEFINITION
-| DESCRIPTION
-| DIRECTORY
+| DELETE
+| DELIMITER
+| DELIMITERS
+| DEPENDS
+| DEPTH
+| DETACH
+| DICTIONARY
 | DISABLE
 | DISCARD
-| DISK
-| DO
+| DOCUMENT
+| DOMAIN
 | DOUBLE
-| DUMPFILE
-| DUPLICATE
-| DYNAMIC
+| DROP
+| EACH
+| EMPTY
 | ENABLE
-| ENCLOSED
-| ENCRYPTION
-| END
-| ENFORCED
-| ENGINE
-| ENGINE_ATTRIBUTE
-| ENGINES
+| ENCODING
+| ENCRYPTED
 | ENUM
 | ERROR
-| ESCAPED
+| ESCAPE
 | EVENT
-| EXCHANGE
 | EXCLUDE
+| EXCLUDING
 | EXCLUSIVE
 | EXECUTE
-| EXPANSION
-| EXPIRE
-| EXPORT
-| EXTENDED
-| FLOAT_TYPE
-| FIELDS
+| EXISTS
+| EXPLAIN
+| EXPRESSION
+| EXTENSION
+| EXTERNAL
+| EXTRACT
+| FAMILY
+| FILTER
+| FINALIZE
 | FIRST
-| FIXED
-| FLUSH
+| FLOAT
 | FOLLOWING
+| FORCE
 | FORMAT
-| FULL
+| FORWARD
 | FUNCTION
-| GENERAL
-| GEOMCOLLECTION
-| GEOMETRY
-| GEOMETRYCOLLECTION
-| GET_MASTER_PUBLIC_KEY
+| FUNCTIONS
+| GENERATED
 | GLOBAL
-| GTID_EXECUTED
-| HASH
+| GRANTED
+| GREATEST
+| GROUPING
+| GROUPS
+| HANDLER
 | HEADER
-| HISTOGRAM
-| HISTORY
-| HOSTS
+| HOLD
+| HOUR
+| IDENTITY
+| IF
+| IMMEDIATE
+| IMMUTABLE
+| IMPLICIT
 | IMPORT
-| INACTIVE
-| INPLACE
-| INSERT_METHOD
-| INSTANT
+| INCLUDE
+| INCLUDING
+| INCREMENT
+| INDENT
+| INDEX
+| INDEXES
+| INHERIT
+| INHERITS
+| INLINE
+| INOUT
+| INPUT
+| INSENSITIVE
+| INSERT
+| INSTEAD
 | INT
 | INTEGER
-| INVISIBLE
+| INTERVAL
 | INVOKER
-| INDEXES
 | ISOLATION
 | JSON
-| JSON_ARRAY %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_ARRAY_APPEND %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_ARRAY_INSERT %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_CONTAINS %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_CONTAINS_PATH %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_DEPTH %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_EXTRACT %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_INSERT %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_KEYS %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_MERGE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_MERGE_PATCH %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_MERGE_PRESERVE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_OBJECT %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_OVERLAPS %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_PRETTY %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_QUOTE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_REMOVE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_REPLACE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_SCHEMA_VALID %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_SCHEMA_VALIDATION_REPORT %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_SEARCH %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_SET %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_STORAGE_FREE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_STORAGE_SIZE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_TYPE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_VALID %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_VALUE %prec FUNCTION_CALL_NON_KEYWORD
-| JSON_UNQUOTE %prec FUNCTION_CALL_NON_KEYWORD
-| KEY_BLOCK_SIZE
+| JSON_ARRAY
+| JSON_ARRAYAGG
+| JSON_EXISTS
+| JSON_OBJECT
+| JSON_OBJECTAGG
+| JSON_QUERY
+| JSON_SCALAR
+| JSON_SERIALIZE
+| JSON_TABLE
+| JSON_VALUE
+| KEEP
+| KEY
 | KEYS
-| KEYSPACES
+| LABEL
 | LANGUAGE
+| LARGE
 | LAST
-| LAST_INSERT_ID
-| LESS
+| LEAKPROOF
+| LEAST
 | LEVEL
-| LINES
-| LINESTRING
-| LIST
+| LISTEN
 | LOAD
 | LOCAL
+| LOCATION
+| LOCK
 | LOCKED
-| LOGS
-| LONGBLOB
-| LONGTEXT
-| LTRIM %prec FUNCTION_CALL_NON_KEYWORD
-| MANIFEST
-| MASTER_COMPRESSION_ALGORITHMS
-| MASTER_PUBLIC_KEY_PATH
-| MASTER_TLS_CIPHERSUITES
-| MASTER_ZSTD_COMPRESSION_LEVEL
-| MAX_ROWS
-| MEDIUMBLOB
-| MEDIUMINT
-| MEDIUMTEXT
-| MEMORY
-| MEMBER
+| LOGGED
+| MAPPING
+| MATCH
+| MATCHED
+| MATERIALIZED
+| MAXVALUE
 | MERGE
-| MIN_ROWS
+| MERGE_ACTION
+| METHOD
+| MINUTE
+| MINVALUE
 | MODE
-| MODIFY
-| MULTILINESTRING
-| MULTIPOINT
-| MULTIPOLYGON
+| MONTH
+| MOVE
 | NAME
 | NAMES
+| NATIONAL
 | NCHAR
 | NESTED
-| NETWORK_NAMESPACE
-| NOWAIT
+| NEW
+| NEXT
+| NFC
+| NFD
+| NFKC
+| NFKD
 | NO
 | NONE
+| NORMALIZE
+| NORMALIZED
+| NOTHING
+| NOTIFY
+| NOWAIT
+| NULLIF
 | NULLS
 | NUMERIC
-| OFFSET
-| OJ
+| OBJECT
+| OF
+| OFF
+| OIDS
 | OLD
-| OPEN
+| OMIT
+| OPERATOR
 | OPTION
-| OPTIONAL
-| OPTIONALLY
+| OPTIONS
 | ORDINALITY
-| ORGANIZATION
-| ONLY
-| OPTIMIZE
 | OTHERS
-| OVERWRITE
-| PACK_KEYS
+| OUT
+| OVER
+| OVERLAY
+| OVERRIDING
+| OWNED
+| OWNER
+| PARALLEL
+| PARAMETER
 | PARSER
 | PARTIAL
-| PARTITIONING
-| PARTITIONS
+| PARTITION
+| PASSING
 | PASSWORD
 | PATH
-| PERSIST
-| PERSIST_ONLY
+| PLAN
+| PLANS
+| POLICY
+| POSITION
 | PRECEDING
+| PRECISION
 | PREPARE
-| PRIVILEGE_CHECKS_USER
+| PREPARED
+| PRESERVE
+| PRIOR
 | PRIVILEGES
-| PROCESS
-| PLUGINS
-| POINT
-| POLYGON
+| PROCEDURAL
 | PROCEDURE
-| PROCESSLIST
-| QUERY
-| RANDOM
-| RATIO
+| PROCEDURES
+| PROGRAM
+| PUBLICATION
+| QUOTE
+| QUOTES
+| RANGE
+| READ
 | REAL
-| REBUILD
-| REDUNDANT
-| REFERENCE
-| REFERENCES
-| RELAY
-| REMOVE
-| REORGANIZE
-| REPAIR
+| REASSIGN
+| RECHECK
+| RECURSIVE
+| REF
+| REFERENCING
+| REFRESH
+| REINDEX
+| RELATIVE
+| RELEASE
+| RENAME
 | REPEATABLE
-| RESTRICT
-| REQUIRE_ROW_FORMAT
-| RESOURCE
-| RESPECT
+| REPLACE
+| REPLICA
+| RESET
 | RESTART
-| RETAIN
-| RETRY
-| RETURNING
-| REUSE
+| RESTRICT
+| RETURN
+| RETURNS
+| REVOKE
 | ROLE
 | ROLLBACK
-| ROW_FORMAT
-| RTRIM %prec FUNCTION_CALL_NON_KEYWORD
-| S3
-| SECONDARY
-| SECONDARY_ENGINE
-| SECONDARY_ENGINE_ATTRIBUTE
-| SECONDARY_LOAD
-| SECONDARY_UNLOAD
+| ROLLUP
+| ROUTINE
+| ROUTINES
+| ROW
+| ROWS
+| RULE
+| SAVEPOINT
+| SCALAR
+| SCHEMA
+| SCHEMAS
+| SCROLL
+| SEARCH
+| SECOND
 | SECURITY
 | SEQUENCE
-| SESSION
+| SEQUENCES
 | SERIALIZABLE
+| SERVER
+| SESSION
+| SET
+| SETOF
+| SETS
 | SHARE
-| SHARED
-| SIGNED
+| SHOW
 | SIMPLE
 | SKIP
-| SLOW
 | SMALLINT
+| SNAPSHOT
+| SOURCE
 | SQL
-| SRID
+| STABLE
+| STANDALONE
 | START
-| STARTING
-| STATS_AUTO_RECALC
-| STATS_PERSISTENT
-| STATS_SAMPLE_PAGES
-| STATUS
+| STATEMENT
+| STATISTICS
+| STDIN
+| STDOUT
 | STORAGE
-| STREAM
-| SUBPARTITION
-| SUBPARTITIONS
+| STORED
+| STRICT
+| STRING
+| STRIP
+| SUBSCRIPTION
+| SUBSTRING
+| SUPPORT
+| SYSID
+| SYSTEM
 | TABLES
 | TABLESPACE
+| TARGET
+| TEMP
+| TEMPLATE
 | TEMPORARY
-| TEMPTABLE
-| TERMINATED
 | TEXT
-| THAN
-| THREAD_PRIORITY
-| THROTTLE
 | TIES
 | TIME
 | TIMESTAMP
-| TINYBLOB
-| TINYINT
-| TINYTEXT
 | TRANSACTION
-| TREE
+| TRANSFORM
+| TREAT
 | TRIGGER
-| TRIGGERS
-| TRIM %prec FUNCTION_CALL_NON_KEYWORD
+| TRIM
 | TRUNCATE
+| TRUSTED
+| TYPE
+| TYPES
+| UESCAPE
 | UNBOUNDED
 | UNCOMMITTED
-| UNDEFINED
-| UNICODE
-| UNSIGNED
-| UNTHROTTLE
-| UNUSED
-| UPGRADE
-| USER
-| USER_RESOURCES
-| VALIDATION
-| VARBINARY
+| UNCONDITIONAL
+| UNENCRYPTED
+| UNKNOWN
+| UNLISTEN
+| UNLOGGED
+| UNTIL
+| UPDATE
+| VACUUM
+| VALID
+| VALIDATE
+| VALIDATOR
+| VALUE
+| VALUES
 | VARCHAR
-| VARIABLES
-| VCPU
-| VGTID_EXECUTED
+| VARYING
+| VERSION
 | VIEW
-| VINDEX
-| VINDEXES
-| VISIBLE
-| VITESS
-| VITESS_KEYSPACES
-| VITESS_METADATA
-| VITESS_MIGRATION
-| VITESS_MIGRATIONS
-| VITESS_REPLICATION_STATUS
-| VITESS_SHARDS
-| VITESS_TABLETS
-| VITESS_TARGET
-| VITESS_THROTTLED_APPS
-| VSCHEMA
-| WARNINGS
+| VIEWS
+| VOLATILE
+| WHITESPACE
+| WITHIN
 | WITHOUT
 | WORK
+| WRAPPER
+| WRITE
+| XML
+| XMLATTRIBUTES
+| XMLCONCAT
+| XMLELEMENT
+| XMLEXISTS
+| XMLFOREST
+| XMLNAMESPACES
+| XMLPARSE
+| XMLPI
+| XMLROOT
+| XMLSERIALIZE
+| XMLTABLE
 | YEAR
-| ZEROFILL
-| DAY
-| DAY_HOUR
-| DAY_MICROSECOND
-| DAY_MINUTE
-| DAY_SECOND
-| HOUR
-| HOUR_MICROSECOND
-| HOUR_MINUTE
-| HOUR_SECOND
-| MICROSECOND
-| MINUTE
-| MINUTE_MICROSECOND
-| MINUTE_SECOND
-| MONTH
-| QUARTER
-| SECOND
-| SECOND_MICROSECOND
-| YEAR_MONTH
-| WEIGHT_STRING %prec FUNCTION_CALL_NON_KEYWORD
+| YES
+| ZONE
 
 openb:
   '('
