@@ -691,7 +691,7 @@ outer:
 				tempty = TYPE(toklev[tempty])
 			}
 			if tempty != nontrst[curprod[0]-NTBASE].value {
-				lerrorf(ruleline, "default action causes potential type clash")
+				lerrorf(ruleline, "default action causes potential type clash, symbol is %q", nontrst[nnonter].name)
 			}
 		}
 		moreprod()
@@ -1341,12 +1341,13 @@ func cpyyvalaccess(fcode *bytes.Buffer, curprod []int, tok int, unionType *strin
 		return
 	}
 
+	pattern := ""
 	if tok < 0 {
-		tok, _ = fdtype(curprod[0])
+		tok, pattern = fdtype(curprod[0])
 	}
 	ti, ok := gotypes[typeset[tok]]
 	if !ok {
-		errorf("missing Go type information for %s", typeset[tok])
+		errorf("missing Go type information for %q, pattern is %q", typeset[tok], pattern)
 	}
 	if !ti.union {
 		fmt.Fprintf(fcode, "%sVAL.%s", prefix, typeset[tok])
@@ -1507,12 +1508,13 @@ loop:
 				if j <= 0 && tok < 0 {
 					errorf("must specify type of $%v", j)
 				}
+				pattern := ""
 				if tok < 0 {
-					tok, _ = fdtype(curprod[j])
+					tok, pattern = fdtype(curprod[j])
 				}
 				ti, ok := gotypes[typeset[tok]]
 				if !ok {
-					errorf("missing Go type information for %s", typeset[tok])
+					errorf("missing Go type information for %q, pattern is %q", typeset[tok], pattern)
 				}
 				if ti.union {
 					fmt.Fprintf(fcode, ".%sUnion()", typeset[tok])
