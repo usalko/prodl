@@ -29,3 +29,6 @@ go.work.sum
 
 # IDE specific
 .vscode
+
+# goyacc debug output
+y.output
