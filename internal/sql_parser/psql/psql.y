@@ -316,7 +316,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> SEQUENCE MERGE TEMPORARY TEMPTABLE INVOKER SECURITY FIRST AFTER LAST
 
 // Migration tokens
-%token <str> VITESS_MIGRATION CANCEL RETRY COMPLETE CLEANUP THROTTLE UNTHROTTLE EXPIRE RATIO
+%token <str> CANCEL RETRY COMPLETE CLEANUP THROTTLE UNTHROTTLE EXPIRE RATIO
 
 // Transaction Tokens
 %token <str> BEGIN START TRANSACTION COMMIT ROLLBACK SAVEPOINT RELEASE WORK
@@ -337,7 +337,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 // SHOW tokens
 %token <str> CODE COLLATION COLUMNS DATABASES ENGINES EVENT EXTENDED FIELDS FULL FUNCTION GTID_EXECUTED
 %token <str> KEYSPACES OPEN PLUGINS PRIVILEGES PROCESSLIST SCHEMAS TABLES TRIGGERS USER
-%token <str> VGTID_EXECUTED VITESS_KEYSPACES VITESS_METADATA VITESS_MIGRATIONS VITESS_REPLICATION_STATUS VITESS_SHARDS VITESS_TABLETS VITESS_TARGET VSCHEMA VITESS_THROTTLED_APPS
+%token <str> VGTID_EXECUTED VSCHEMA
 
 // SET tokens
 %token <str> NAMES GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
@@ -371,7 +371,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> THREAD_PRIORITY TIES UNBOUNDED VCPU VISIBLE RETURNING
 
 // Explain tokens
-%token <str> FORMAT TREE VITESS TRADITIONAL
+%token <str> FORMAT TREE TRADITIONAL
 
 // Lock type tokens
 %token <str> LOCAL LOW_PRIORITY
@@ -407,7 +407,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement load_statement
 %type <statement> lock_statement unlock_statement call_statement
-%type <statement> revert_statement
 %type <strs> comment_opt comment_list
 %type <str> wild_opt check_option_opt cascade_or_local_opt restrict_or_cascade_opt
 %type <explainType> explain_format_opt
@@ -588,7 +587,6 @@ command:
 | lock_statement
 | unlock_statement
 | call_statement
-| revert_statement
 | prepare_statement
 | execute_statement
 | deallocate_statement
@@ -2935,70 +2933,6 @@ alter_statement:
         },
     }
   }
-| ALTER comment_opt VITESS_MIGRATION STRING RETRY
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.RetryMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING CLEANUP
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CleanupMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING COMPLETE
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CompleteMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING CANCEL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CancelMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION CANCEL ALL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CancelAllMigrationType,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING THROTTLE expire_opt ratio_opt
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.ThrottleMigrationType,
-      UUID: string($4),
-      Expire: $6,
-      Ratio: $7,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION THROTTLE ALL expire_opt ratio_opt
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.ThrottleAllMigrationType,
-      Expire: $6,
-      Ratio: $7,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING UNTHROTTLE
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.UnthrottleMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION UNTHROTTLE ALL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.UnthrottleAllMigrationType,
-    }
-  }
 
 json_table_function:
   JSON_TABLE openb expression ',' text_literal_or_arg jt_columns_clause closeb as_opt_id
@@ -3202,10 +3136,6 @@ show_statement:
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
   }
-| SHOW VITESS_KEYSPACES like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
-  }
 | SHOW FUNCTION STATUS like_or_where_opt
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Function, Filter: $4}}
@@ -3294,26 +3224,6 @@ show_statement:
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VGtidExecGlobal, DbName: $4}}
   }
-| SHOW VITESS_METADATA VARIABLES like_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessVariables, Filter: $4}}
-  }
-| SHOW VITESS_MIGRATIONS from_database_opt like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessMigrations, Filter: $4, DbName: $3}}
-  }
-| SHOW VITESS_MIGRATION STRING LOGS
-  {
-    $$ = &ast.ShowMigrationLogs{UUID: string($3)}
-  }
-| SHOW VITESS_THROTTLED_APPS
-  {
-    $$ = &ast.ShowThrottledApps{}
-  }
-| SHOW VITESS_REPLICATION_STATUS like_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessReplicationStatus, Filter: $3}}
-  }
 | SHOW VSCHEMA TABLES
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaTables}}
@@ -3329,18 +3239,6 @@ show_statement:
 | SHOW WARNINGS
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Warnings}}
-  }
-| SHOW VITESS_SHARDS like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessShards, Filter: $3}}
-  }
-| SHOW VITESS_TABLETS like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTablets, Filter: $3}}
-  }
-| SHOW VITESS_TARGET
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTarget}}
   }
 /*
  * Catch-all for show statements without vitess keywords:
@@ -3545,10 +3443,6 @@ explain_format_opt:
   {
     $$ = ast.TreeType
   }
-| FORMAT '=' VITESS
-  {
-    $$ = ast.VitessType
-  }
 | FORMAT '=' TRADITIONAL
   {
     $$ = ast.TraditionalType
@@ -3671,12 +3565,6 @@ unlock_statement:
   UNLOCK TABLES
   {
     $$ = &ast.UnlockTables{}
-  }
-
-revert_statement:
-  REVERT comment_opt VITESS_MIGRATION STRING
-  {
-    $$ = &ast.RevertMigration{Comments: ast.Comments($2).Parsed(), UUID: string($4)}
   }
 
 flush_statement:
