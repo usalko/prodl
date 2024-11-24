@@ -3152,7 +3152,7 @@ INPUT
 select position(("1" in (1,2,3)) in "01");
 END
 ERROR
-syntax error at position 41 near '01'
+syntax error: unexpected STRING, expecting '(' or LIST_ARG at position 41 near '01'
 END
 INPUT
 select cast(variance(ff) as decimal(10,3)) from t2;
@@ -3476,7 +3476,7 @@ INPUT
 select sum(col1) as co12 from t1 group by col2 having col2 10;
 END
 ERROR
-syntax error at position 62 near '10'
+syntax error: unexpected INTEGRAL at position 62 near '10'
 END
 INPUT
 select 1, min(a) from t1i where 1=99;
@@ -3584,7 +3584,7 @@ INPUT
 select max(a5) from t1 where a5 < date'1970-01-01';
 END
 ERROR
-syntax error at position 51 near '1970-01-01'
+syntax error: unexpected STRING at position 51 near '1970-01-01'
 END
 INPUT
 select i.name as k, f.name as c from information_schema.innodb_tables as t, information_schema.innodb_indexes as i, information_schema.innodb_fields as f where t.name='test/t1' and t.table_id = i.table_id and i.index_id = f.index_id order by k, c;
@@ -3800,7 +3800,7 @@ INPUT
 select t2.isbn,city,@bar:=t1.libname,count(distinct t1.libname) as a from t3 left join t1 on t3.libname=t1.libname left join t2 on t3.isbn=t2.isbn group by city having count(distinct t1.libname) > 1;
 END
 ERROR
-syntax error at position 26 near ':'
+syntax error: unexpected LEX_ERROR at position 26 near ':'
 END
 INPUT
 select format('f','')<=replace(1,1,mid(0xd9,2,1));
@@ -3824,7 +3824,7 @@ INPUT
 select 2 as a from (select from t1) b;
 END
 ERROR
-syntax error at position 32 near 'from'
+syntax error: unexpected FROM at position 32 near 'from'
 END
 INPUT
 select benchmark(100, (select avg(func_26093_a(a)) from table_26093));
@@ -3920,7 +3920,7 @@ INPUT
 select row_number() over (), value,description,COUNT(bug_id) from t2 left join t1 on t2.program=t1.product and t2.value=t1.component where program="AAAAA" group by value having COUNT(bug_id) IN (0,2);
 END
 ERROR
-syntax error at position 27
+syntax error: unexpected '(' at position 27
 END
 INPUT
 select from t1 where lower(a)='aaa';
@@ -3980,7 +3980,7 @@ INPUT
 select t1.a,t3.a from t1,(select from t2 where b='c') as t3 where t1.a = t3.a;
 END
 ERROR
-syntax error at position 38 near 'from'
+syntax error: unexpected FROM at position 38 near 'from'
 END
 INPUT
 select ST_astext(Polygon(LineString(Point(0, 0), Point(30, 0), Point(30, 30), Point(1, 0), Point(0, 0))));
@@ -4190,7 +4190,7 @@ INPUT
 select @@session.time_zone into @save_tz;
 END
 ERROR
-syntax error at position 41 near 'save_tz'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 41 near 'save_tz'
 END
 INPUT
 select count(*), min(7), max(7) from t1m, t1i;
@@ -4322,7 +4322,7 @@ INPUT
 select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 1 0, 1 1, 0 1, 0 0))'), st_geomfromtext('polygon((2 0, 3 0, 3 1, 2 1, 2 0))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 2 0, 2 1, 0 1, 0 0))'), st_geomfromtext('polygon((1 0, 3 0, 3 1, 1 1, 1 0))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 1 0, 1 1, 0 1, 0 0))'), st_geomfromtext('polygon((1 0, 2 0, 2 1, 1 1, 1 0))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 2 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 2 5, 3 3, 4 3, 4 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 2 5, 3 2, 6 2, 6 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 4 3, 4 2, 6 2, 6 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 4 3, 4 0, 6 0, 6 3, 5 3, 5 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 2 5, 3 3, 4 3, 4 2, 6 2, 6 5, 0 5))'))) select st_astext(st_intersection( st_geomfromtext('polygon((0 0, 10 0, 10 3, 0 3, 0 0))'), st_geomfromtext('polygon((0 5, 1 3, 2 5, 3 3, 4 3, 4 0, 10 0, 10 3, 6 3, 6 5, 0 5))'))) SELECT ST_AsText(ST_GeomFromText("POINT(10 11) POINT(11 12)")) as result;
 END
 ERROR
-syntax error at position 152 near 'select'
+syntax error: unexpected SELECT at position 152 near 'select'
 END
 INPUT
 select a1,a2,b,min(c),max(c) from t2 where (c > 'f123') group by a1,a2,b;
@@ -4574,7 +4574,7 @@ INPUT
 select length(_latin1';
 END
 ERROR
-syntax error at position 24 near ';'
+syntax error: unexpected LEX_ERROR at position 24 near ';'
 END
 INPUT
 select _latin1'B' collate latin1_bin between _latin1'a' and _latin1'c';
@@ -4670,7 +4670,7 @@ INPUT
 select 1e18 cast('1.2' as decimal(3,2));
 END
 ERROR
-syntax error at position 17 near 'cast'
+syntax error: unexpected CAST at position 17 near 'cast'
 END
 INPUT
 select count(*) from t1 where a >= 10;
@@ -4832,7 +4832,7 @@ INPUT
 select sql_big_result trim(v),count(t) from t1 group by v order by v limit 10;
 END
 ERROR
-syntax error: unexpected '.' at position 28
+syntax error: unexpected '(' at position 28
 END
 INPUT
 select count(distinct x.id_aams) into not_installed from (select from (select t1.id_aams, t2.* from t1 left join t2 on t2.code_id = vlt_code_id and t1.id_aams = t2.id_game where t1.id_aams = 1715000360 order by t2.id desc ) as g group by g.id_aams having g.id is null ) as x;
@@ -4898,7 +4898,7 @@ INPUT
 select /*1*/ user, host, db, info from information_schema.processlist where state = 'User lock' and info = 'select get_lock('test_bug16407', 60)';
 END
 ERROR
-syntax error at position 139 near 'test_bug16407'
+syntax error: unexpected ID at position 139 near 'test_bug16407'
 END
 INPUT
 select from t1 where bigint_col='17666000000000000000';
@@ -5018,7 +5018,7 @@ INPUT
 select concat('0',mid(@my_uuid,16,3),mid(@my_uuid,10,4),left(@my_uuid,8)) into @my_uuidate;
 END
 ERROR
-syntax error: unexpected '/' at position 91 near 'my_uuidate'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 91 near 'my_uuidate'
 END
 INPUT
 select locate('he','hello',null),locate('he',null,2),locate(null,'hello',2);
@@ -5114,7 +5114,7 @@ INPUT
 select collation(insert(_latin2'abcd',2,3,_latin2'ef')), coercibility(insert(_latin2'abcd',2,3,_latin2'ef'));
 END
 ERROR
-syntax error at position 24 near 'insert'
+syntax error: unexpected INSERT, expecting ')' at position 24 near 'insert'
 END
 INPUT
 select grp, group_concat(a separator "")+0 from t1 group by grp;
@@ -7010,7 +7010,7 @@ INPUT
 select hex(char(0xFF using utf8mb4));
 END
 ERROR
-syntax error at position 27 near 'using'
+syntax error: unexpected '(' at position 27 near 'using'
 END
 INPUT
 select from `information_schema`.`TABLE_CONSTRAINTS` where `TABLE_SCHEMA` = NULL;
@@ -13826,7 +13826,7 @@ INPUT
 select hex(char(0xFF using utf8));
 END
 ERROR
-syntax error at position 27 near 'using'
+syntax error: unexpected '(' at position 27 near 'using'
 END
 INPUT
 select date_add("1997-12-31 23:59:59",INTERVAL -100000 YEAR);
@@ -16238,7 +16238,7 @@ INPUT
 select hex(char(0x01 using ucs2));
 END
 ERROR
-syntax error at position 27 near 'using'
+syntax error: unexpected '(' at position 27 near 'using'
 END
 INPUT
 select from information_schema.columns where table_schema = NULL;
@@ -16334,7 +16334,7 @@ INPUT
 select hex(char(0x01 using utf32));
 END
 ERROR
-syntax error at position 27 near 'using'
+syntax error: unexpected '(' at position 27 near 'using'
 END
 INPUT
 select str_to_date("2003-01-02 10:11:12.0012ABCD", "%Y-%m-%d %H:%i:%S.%f") as f1, addtime("-01:01:01.01 GGG", "-23:59:59.1") as f2, microsecond("1997-12-31 23:59:59.01XXXX") as f3;
@@ -17852,7 +17852,7 @@ INPUT
 select hex(char(0x41 using ucs2));
 END
 ERROR
-syntax error at position 27 near 'using'
+syntax error: unexpected '(' at position 27 near 'using'
 END
 INPUT
 select insert('hello', 1, -1, 'hi');
