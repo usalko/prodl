@@ -3359,7 +3359,7 @@ func $$Iaddr(v any) __yyunsafe__.Pointer {
 
 var (
 	$$Debug        = 0
-	$$ErrorVerbose = false
+	$$ErrorVerbose = true
 )
 
 type $$Lexer interface {

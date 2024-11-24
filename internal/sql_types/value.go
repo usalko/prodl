@@ -245,7 +245,7 @@ func (v Value) RawStr() string {
 func (v Value) ToBytes() ([]byte, error) {
 	switch v.typ {
 	case Expression:
-		return nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
+		return nil, sql_parser_errors.NewError(sql_parser_errors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
 	case HexVal:
 		return v.decodeHexVal()
 	case HexNum:

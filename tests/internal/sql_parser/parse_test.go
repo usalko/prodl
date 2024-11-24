@@ -2956,7 +2956,7 @@ func TestValid(t *testing.T) {
 			if tcase.output == "" {
 				tcase.output = tcase.input
 			}
-			tree, err := sql_parser.Parse(tcase.input)
+			tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 			require.NoError(t, err, tcase.input)
 			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
@@ -2996,7 +2996,7 @@ func TestParallelValid(t *testing.T) {
 				if tcase.output == "" {
 					tcase.output = tcase.input
 				}
-				tree, err := sql_parser.Parse(tcase.input)
+				tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 				if err != nil {
 					t.Errorf("Parse(%q) err: %v, want nil", tcase.input, err)
 					continue
@@ -3135,7 +3135,7 @@ func TestInvalid(t *testing.T) {
 	}}
 
 	for _, tcase := range invalidSQL {
-		_, err := sql_parser.Parse(tcase.input)
+		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil {
 			t.Errorf("Parse invalid query(%q), got: nil, want: %s...", tcase.input, tcase.err)
 		}
@@ -3281,7 +3281,7 @@ func TestIntroducers(t *testing.T) {
 			if tcase.output == "" {
 				tcase.output = tcase.input
 			}
-			tree, err := sql_parser.Parse(tcase.input)
+			tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 			assert.NoError(t, err)
 			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
@@ -3381,7 +3381,7 @@ func TestCaseSensitivity(t *testing.T) {
 		if tcase.output == "" {
 			tcase.output = tcase.input
 		}
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -3483,7 +3483,7 @@ func TestKeywords(t *testing.T) {
 		if tcase.output == "" {
 			tcase.output = tcase.input
 		}
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -3559,7 +3559,7 @@ func TestConvert(t *testing.T) {
 		if tcase.output == "" {
 			tcase.output = tcase.input
 		}
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -3603,7 +3603,7 @@ func TestConvert(t *testing.T) {
 	}}
 
 	for _, tcase := range invalidSQL {
-		_, err := sql_parser.Parse(tcase.input)
+		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
 			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
 		}
@@ -3646,7 +3646,7 @@ func TestSelectInto(t *testing.T) {
 			if tcase.output == "" {
 				tcase.output = tcase.input
 			}
-			tree, err := sql_parser.Parse(tcase.input)
+			tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 			require.NoError(t, err)
 			out := ast.String(tree)
 			assert.Equal(t, tcase.output, out)
@@ -3665,7 +3665,7 @@ func TestSelectInto(t *testing.T) {
 	}}
 
 	for _, tcase := range invalidSQL {
-		_, err := sql_parser.Parse(tcase.input)
+		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
 			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
 		}
@@ -3707,7 +3707,7 @@ func TestPositionedErr(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%q", err)
 		}
-		_, err = sql_parser.ParseNext(tkn)
+		_, err = sql_parser.ParseNext(tkn, dialect.MYSQL)
 
 		if posErr, ok := err.(mysql.PositionedErr); !ok {
 			t.Errorf("%s: %v expected PositionedErr, got (%T) %v", tcase.input, err, err, tcase.output)
@@ -3759,7 +3759,7 @@ func TestSubStr(t *testing.T) {
 		if tcase.output == "" {
 			tcase.output = tcase.input
 		}
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -3780,7 +3780,7 @@ func TestLoadData(t *testing.T) {
 		"load data from s3 'x.txt' into table x"}
 
 	for _, tcase := range validSQL {
-		_, err := sql_parser.Parse(tcase)
+		_, err := sql_parser.Parse(tcase, dialect.MYSQL)
 		require.NoError(t, err)
 	}
 }
@@ -4891,7 +4891,7 @@ partition by range (YEAR(purchased)) subpartition by hash (TO_DAYS(purchased))
 	for _, test := range createTableQueries {
 		sql := strings.TrimSpace(test.input)
 		t.Run(sql, func(t *testing.T) {
-			tree, err := sql_parser.ParseStrictDDL(sql)
+			tree, err := sql_parser.ParseStrictDDL(sql, dialect.MYSQL)
 			require.NoError(t, err)
 			got := ast.String(tree)
 			expected := test.output
@@ -4914,7 +4914,7 @@ func TestOne(t *testing.T) {
 		return
 	}
 	sql := strings.TrimSpace(testOne.input)
-	tree, err := sql_parser.Parse(sql)
+	tree, err := sql_parser.Parse(sql, dialect.MYSQL)
 	require.NoError(t, err)
 	got := ast.String(tree)
 	expected := testOne.output
@@ -4944,7 +4944,7 @@ func TestCreateTableLike(t *testing.T) {
 		},
 	}
 	for _, tcase := range testCases {
-		tree, err := sql_parser.ParseStrictDDL(tcase.input)
+		tree, err := sql_parser.ParseStrictDDL(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -4974,7 +4974,7 @@ func TestCreateTableEscaped(t *testing.T) {
 			")",
 	}}
 	for _, tcase := range testCases {
-		tree, err := sql_parser.ParseStrictDDL(tcase.input)
+		tree, err := sql_parser.ParseStrictDDL(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("input: %s, err: %v", tcase.input, err)
 			continue
@@ -4992,7 +4992,7 @@ var (
 		excludeMulti bool // Don't use in the ParseNext multi-statement parsing tests.
 	}{{
 		input:  "select : from t",
-		output: "syntax error at position 9 near ':'",
+		output: "syntax error: unexpected LEX_ERROR at position 9 near ':'",
 	}, {
 		input:  "execute stmt using 1;",
 		output: "syntax error at position 21 near '1'",
@@ -5116,7 +5116,7 @@ var (
 func TestErrors(t *testing.T) {
 	for _, tcase := range invalidSQL {
 		t.Run(tcase.input, func(t *testing.T) {
-			_, err := sql_parser.ParseStrictDDL(tcase.input)
+			_, err := sql_parser.ParseStrictDDL(tcase.input, dialect.MYSQL)
 			require.Error(t, err, tcase.output)
 			require.Equal(t, err.Error(), tcase.output)
 		})
@@ -5150,7 +5150,7 @@ func TestSkipToEnd(t *testing.T) {
 		output: "extra characters encountered after end of DDL: 'select'",
 	}}
 	for _, tcase := range testcases {
-		_, err := sql_parser.Parse(tcase.input)
+		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
 			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
 		}
@@ -5183,7 +5183,7 @@ func loadQueries(t testing.TB, filename string) (queries []string) {
 
 func TestParseDjangoQueries(t *testing.T) {
 	for _, query := range loadQueries(t, "django_queries.txt") {
-		_, err := sql_parser.Parse(query)
+		_, err := sql_parser.Parse(query, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("failed to parse %q: %v", query, err)
 		}
@@ -5192,7 +5192,7 @@ func TestParseDjangoQueries(t *testing.T) {
 
 func TestParseLobstersQueries(t *testing.T) {
 	for _, query := range loadQueries(t, "lobsters.sql.gz") {
-		_, err := sql_parser.Parse(query)
+		_, err := sql_parser.Parse(query, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("failed to parse %q: %v", query, err)
 		}
@@ -5230,7 +5230,7 @@ partition by range (id)
 			oldMySQLVersion := mysql.MySQLVersion
 			defer func() { mysql.MySQLVersion = oldMySQLVersion }()
 			mysql.MySQLVersion = testcase.mysqlVersion
-			tree, err := sql_parser.Parse(testcase.input)
+			tree, err := sql_parser.Parse(testcase.input, dialect.MYSQL)
 			require.NoError(t, err, testcase.input)
 			out := ast.String(tree)
 			require.Equal(t, testcase.output, out)
@@ -5250,7 +5250,7 @@ func BenchmarkParseTraces(b *testing.B) {
 
 			for i := 0; i < b.N; i++ {
 				for _, query := range queries {
-					_, err := sql_parser.Parse(query)
+					_, err := sql_parser.Parse(query, dialect.MYSQL)
 					if err != nil {
 						b.Fatal(err)
 					}
@@ -5276,7 +5276,7 @@ func BenchmarkParseStress(b *testing.B) {
 			b.ResetTimer()
 
 			for i := 0; i < b.N; i++ {
-				_, err := sql_parser.Parse(querySQL)
+				_, err := sql_parser.Parse(querySQL, dialect.MYSQL)
 				if err != nil {
 					b.Fatal(err)
 				}
@@ -5316,7 +5316,7 @@ func BenchmarkParse3(b *testing.B) {
 		b.ReportAllocs()
 
 		for i := 0; i < b.N; i++ {
-			if _, err := sql_parser.Parse(benchQuery); err != nil {
+			if _, err := sql_parser.Parse(benchQuery, dialect.MYSQL); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -5378,7 +5378,7 @@ func testFile(t *testing.T, filename, tempDir string) {
 					tcase.output = tcase.input
 				}
 				expected.WriteString(fmt.Sprintf("%sINPUT\n%s\nEND\n", tcase.comments, escapeNewLines(tcase.input)))
-				tree, err := sql_parser.Parse(tcase.input)
+				tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 				if tcase.errStr != "" {
 					errPresent := ""
 					if err != nil {

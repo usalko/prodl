@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/usalko/sent/internal/sql_parser/cache"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 // keywords is a table of psql keywords that fall into two categories:
@@ -564,7 +565,7 @@ func init() {
 		keywordStrings[kw.Id] = kw.Name
 	}
 
-	cache.KeywordLookupTable = buildCaseInsensitiveTable(keywords)
+	cache.KeywordLookupTables[dialect.PSQL] = buildCaseInsensitiveTable(keywords)
 }
 
 // KeywordString returns the string corresponding to the given keyword

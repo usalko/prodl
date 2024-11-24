@@ -15,9 +15,10 @@
 MAKEFLAGS = -s
 
 psql.go: psql.y
-	go run ../goyacc -fast-append -p psq -o psql.go psql.y
+	go run ../goyacc -v y.output -fast-append -p psq -o psql.go psql.y
 	gofmt -w psql.go
-	rm -f y.output
+
+# 	rm -f y.output
 
 clean:
 	rm -f y.output psql.go psql.go

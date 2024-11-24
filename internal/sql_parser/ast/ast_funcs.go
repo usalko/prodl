@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/usalko/sent/internal/sql_parser/cache"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
 )
@@ -318,12 +319,12 @@ func (node *ParsedComments) AddQueryHint(queryHint string) (Comments, error) {
 		for _, comment := range node.comments {
 			if strings.HasPrefix(comment, queryOptimizerPrefix) {
 				if hasQueryHint {
-					return nil, sql_parser_errors.New(sql_parser_errors.Code_INTERNAL, "Must have only one query hint")
+					return nil, sql_parser_errors.NewError(sql_parser_errors.Code_INTERNAL, "Must have only one query hint")
 				}
 				hasQueryHint = true
 				idx := strings.Index(comment, "*/")
 				if idx == -1 {
-					return nil, sql_parser_errors.New(sql_parser_errors.Code_INTERNAL, "Query hint comment is malformed")
+					return nil, sql_parser_errors.NewError(sql_parser_errors.Code_INTERNAL, "Query hint comment is malformed")
 				}
 				if strings.Contains(comment, queryHint) {
 					newComments = append(Comments{comment}, newComments...)
@@ -790,7 +791,7 @@ func containEscapableChars(s string, at AtCount) bool {
 }
 
 func formatID(buf *TrackedBuffer, original string, at AtCount) {
-	_, isKeyword := cache.KeywordLookupTable.LookupString(original)
+	_, isKeyword := cache.KeywordLookup(original, dialect.MYSQL)
 	if buf.escape || isKeyword || containEscapableChars(original, at) {
 		writeEscapedString(buf, original)
 	} else {

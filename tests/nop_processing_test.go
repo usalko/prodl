@@ -10,6 +10,7 @@ import (
 
 	"github.com/usalko/sent/internal/archive_stream"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 func check(err error, msgs ...any) {
@@ -52,7 +53,7 @@ func TestNopProcessing(t *testing.T) {
 
 			log.Println("read length:", readLength)
 
-			stmt, err := sql_parser.Parse(bytes.NewBuffer(chunk[:readLength]).String())
+			stmt, err := sql_parser.Parse(bytes.NewBuffer(chunk[:readLength]).String(), dialect.PSQL)
 			check(err)
 
 			log.Println("Sql statement", stmt)

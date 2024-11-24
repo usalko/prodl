@@ -205,7 +205,7 @@ func TestSplitStatement(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			sql, rem, err := sql_parser.SplitStatement(tcase.in)
+			sql, rem, err := sql_parser.SplitStatement(tcase.in, dialect.MYSQL)
 			if err != nil {
 				t.Errorf("EndOfStatementPosition(%s): ERROR: %v", tcase.in, err)
 				return

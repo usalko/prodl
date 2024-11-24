@@ -24,6 +24,8 @@ import (
 	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser/mysql"
+	"github.com/usalko/sent/internal/sql_parser/psql"
+	"github.com/usalko/sent/internal/sql_parser/tokenizer"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 )
 
@@ -44,8 +46,8 @@ import (
 // bind variables that were found in the original SQL query. If a DDL statement
 // is partially parsed but still contains a syntax error, the
 // error is ignored and the DDL is returned anyway.
-func Parse2(sql string) (ast.Statement, dialect.BindVars, error) {
-	tokenizer, err := NewStringTokenizer(sql, dialect.MYSQL)
+func Parse2(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, ast.BindVars, error) {
+	tokenizer, err := NewStringTokenizer(sql, sql_dialect)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -64,7 +66,7 @@ func Parse2(sql string) (ast.Statement, dialect.BindVars, error) {
 			tokenizer.SetParseTree(tokenizer.GetPartialDDL())
 			return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
 		}
-		return nil, nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.GetLastError().Error())
+		return nil, nil, sql_parser_errors.NewError(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.GetLastError().Error())
 	}
 	if tokenizer.GetParseTree() == nil {
 		return nil, nil, ErrEmpty
@@ -74,8 +76,8 @@ func Parse2(sql string) (ast.Statement, dialect.BindVars, error) {
 
 // TableFromStatement returns the qualified table name for the query.
 // This works only for select statements.
-func TableFromStatement(sql string) (ast.TableName, error) {
-	stmt, err := Parse(sql)
+func TableFromStatement(sql string, sql_dialect dialect.SqlDialect) (ast.TableName, error) {
+	stmt, err := Parse(sql, sql_dialect)
 	if err != nil {
 		return ast.TableName{}, err
 	}
@@ -98,8 +100,8 @@ func TableFromStatement(sql string) (ast.TableName, error) {
 }
 
 // ParseExpr parses an expression and transforms it to an AST
-func ParseExpr(sql string) (ast.Expr, error) {
-	stmt, err := Parse("select " + sql)
+func ParseExpr(sql string, sql_dialect dialect.SqlDialect) (ast.Expr, error) {
+	stmt, err := Parse("select "+sql, sql_dialect)
 	if err != nil {
 		return nil, err
 	}
@@ -108,19 +110,19 @@ func ParseExpr(sql string) (ast.Expr, error) {
 }
 
 // Parse behaves like Parse2 but does not return a set of bind variables
-func Parse(sql string) (ast.Statement, error) {
-	stmt, _, err := Parse2(sql)
+func Parse(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, error) {
+	stmt, _, err := Parse2(sql, sql_dialect)
 	return stmt, err
 }
 
 // ParseStrictDDL is the same as Parse except it errors on
 // partially parsed DDL statements.
-func ParseStrictDDL(sql string) (ast.Statement, error) {
-	tokenizer, err := NewStringTokenizer(sql, dialect.MYSQL)
+func ParseStrictDDL(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, error) {
+	tokenizer, err := NewStringTokenizer(sql, sql_dialect)
 	if err != nil {
 		return nil, err
 	}
-	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
+	if val, _ := parsePooled(tokenizer, sql_dialect); val != 0 {
 		return nil, tokenizer.GetLastError()
 	}
 	if tokenizer.GetParseTree() == nil {
@@ -131,7 +133,7 @@ func ParseStrictDDL(sql string) (ast.Statement, error) {
 
 // ParseTokenizer is a raw interface to parse from the given tokenizer.
 // This does not used pooled parsers, and should not be used in general.
-func ParseTokenizer(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+func ParseTokenizer(tokenizer tokenizer.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
 	return parse(tokenizer, sql_dialect)
 }
 
@@ -140,38 +142,38 @@ func ParseTokenizer(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect)
 // The tokenizer will always read up to the end of the statement, allowing for
 // the next call to ParseNext to parse any subsequent SQL statements. When
 // there are no more statements to parse, a error of io.EOF is returned.
-func ParseNext(tokenizer dialect.Tokenizer) (ast.Statement, error) {
-	return parseNext(tokenizer, false)
+func ParseNext(tokenizer tokenizer.Tokenizer, sql_dialect dialect.SqlDialect) (ast.Statement, error) {
+	return parseNext(tokenizer, false, sql_dialect)
 }
 
 // ParseNextStrictDDL is the same as ParseNext except it errors on
 // partially parsed DDL statements.
-func ParseNextStrictDDL(tokenizer dialect.Tokenizer) (ast.Statement, error) {
-	return parseNext(tokenizer, true)
+func ParseNextStrictDDL(tokenizer tokenizer.Tokenizer, sql_dialect dialect.SqlDialect) (ast.Statement, error) {
+	return parseNext(tokenizer, true, sql_dialect)
 }
 
-func parseNext(tokenizer dialect.Tokenizer, strict bool) (ast.Statement, error) {
-	if tokenizer.Cur() == ';' {
-		tokenizer.Skip(1)
-		tokenizer.SkipBlank()
+func parseNext(_tokenizer tokenizer.Tokenizer, strict bool, sql_dialect dialect.SqlDialect) (ast.Statement, error) {
+	if _tokenizer.Cur() == ';' {
+		_tokenizer.Skip(1)
+		_tokenizer.SkipBlank()
 	}
-	if tokenizer.Cur() == dialect.EofChar {
+	if _tokenizer.Cur() == tokenizer.EofChar {
 		return nil, io.EOF
 	}
 
-	tokenizer.Reset()
-	tokenizer.SetMulti(true)
-	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
-		if tokenizer.GetPartialDDL() != nil && !strict {
-			tokenizer.SetParseTree(tokenizer.GetPartialDDL())
-			return tokenizer.GetParseTree(), nil
+	_tokenizer.Reset()
+	_tokenizer.SetMulti(true)
+	if val, _ := parsePooled(_tokenizer, sql_dialect); val != 0 {
+		if _tokenizer.GetPartialDDL() != nil && !strict {
+			_tokenizer.SetParseTree(_tokenizer.GetPartialDDL())
+			return _tokenizer.GetParseTree(), nil
 		}
-		return nil, tokenizer.GetLastError()
+		return nil, _tokenizer.GetLastError()
 	}
-	if tokenizer.GetParseTree() == nil {
-		return ParseNext(tokenizer)
+	if _tokenizer.GetParseTree() == nil {
+		return parseNext(_tokenizer, false, sql_dialect)
 	}
-	return tokenizer.GetParseTree(), nil
+	return _tokenizer.GetParseTree(), nil
 }
 
 // ErrEmpty is a sentinel error returned when parsing empty statements.
@@ -179,31 +181,31 @@ var ErrEmpty = sql_parser_errors.NewErrorf(sql_parser_errors.Code_INVALID_ARGUME
 
 // SplitStatement returns the first sql statement up to either a ; or EOF
 // and the remainder from the given buffer
-func SplitStatement(blob string) (string, string, error) {
-	tokenizer, err := NewStringTokenizer(blob, dialect.MYSQL)
+func SplitStatement(blob string, sql_dialect dialect.SqlDialect) (string, string, error) {
+	_tokenizer, err := NewStringTokenizer(blob, sql_dialect)
 	if err != nil {
 		return "", "", err
 	}
 
 	tkn := 0
 	for {
-		tkn, _ = tokenizer.Scan()
-		if tkn == 0 || tkn == ';' || tkn == dialect.EofChar {
+		tkn, _ = _tokenizer.Scan()
+		if tkn == 0 || tkn == ';' || tkn == tokenizer.EofChar {
 			break
 		}
 	}
-	if tokenizer.GetLastError() != nil {
-		return "", "", tokenizer.GetLastError()
+	if _tokenizer.GetLastError() != nil {
+		return "", "", _tokenizer.GetLastError()
 	}
 	if tkn == ';' {
-		return blob[:tokenizer.GetPos()-1], blob[tokenizer.GetPos():], nil
+		return blob[:_tokenizer.GetPos()-1], blob[_tokenizer.GetPos():], nil
 	}
 	return blob, "", nil
 }
 
 // SplitStatementToPieces split raw sql statement that may have multi sql pieces to sql pieces
 // returns the sql pieces blob contains; or error if sql cannot be parsed
-func SplitStatementToPieces(blob string) (pieces []string, err error) {
+func SplitStatementToPieces(blob string, sql_dialect dialect.SqlDialect) (pieces []string, err error) {
 	// fast path: the vast majority of SQL statements do not have semicolons in them
 	if blob == "" {
 		return nil, nil
@@ -216,7 +218,7 @@ func SplitStatementToPieces(blob string) (pieces []string, err error) {
 	}
 
 	pieces = make([]string, 0, 16)
-	tokenizer, err := NewStringTokenizer(blob, dialect.MYSQL)
+	_tokenizer, err := NewStringTokenizer(blob, sql_dialect)
 	if err != nil {
 		return nil, err
 	}
@@ -227,17 +229,17 @@ func SplitStatementToPieces(blob string) (pieces []string, err error) {
 	emptyStatement := true
 loop:
 	for {
-		tkn, _ = tokenizer.Scan()
+		tkn, _ = _tokenizer.Scan()
 		switch tkn {
 		case ';':
-			stmt = blob[stmtBegin : tokenizer.GetPos()-1]
+			stmt = blob[stmtBegin : _tokenizer.GetPos()-1]
 			if !emptyStatement {
 				pieces = append(pieces, stmt)
 				emptyStatement = true
 			}
-			stmtBegin = tokenizer.GetPos()
-		case 0, dialect.EofChar:
-			blobTail := tokenizer.GetPos() - 1
+			stmtBegin = _tokenizer.GetPos()
+		case 0, tokenizer.EofChar:
+			blobTail := _tokenizer.GetPos() - 1
 			if stmtBegin < blobTail {
 				stmt = blob[stmtBegin : blobTail+1]
 				if !emptyStatement {
@@ -250,32 +252,38 @@ loop:
 		}
 	}
 
-	err = tokenizer.GetLastError()
+	err = _tokenizer.GetLastError()
 	return
 }
 
 // NewStringTokenizer creates a new Tokenizer for the
 // sql string.
-func NewStringTokenizer(sql string, sql_dialect dialect.SqlDialect) (dialect.Tokenizer, error) {
+func NewStringTokenizer(sql string, sql_dialect dialect.SqlDialect) (tokenizer.Tokenizer, error) {
 	switch sql_dialect {
 	case dialect.MYSQL:
 		return mysql.NewMysqlStringTokenizer(sql), nil
+	case dialect.PSQL:
+		return psql.NewPsqlStringTokenizer(sql), nil
 	}
-	return nil, fmt.Errorf("Sorry string tokenizer not found for dialect %s", sql_dialect)
+	return nil, fmt.Errorf("sorry string tokenizer not found for dialect %s", sql_dialect.String())
 }
 
-func parsePooled(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+func parsePooled(tokenizer tokenizer.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
 	switch sql_dialect {
 	case dialect.MYSQL:
 		return mysql.ParsePooled(tokenizer), nil
+	case dialect.PSQL:
+		return psql.ParsePooled(tokenizer), nil
 	}
-	return 0, fmt.Errorf("Not implemented for dialect %s", sql_dialect)
+	return 0, fmt.Errorf("not implemented for dialect %s", sql_dialect.String())
 }
 
-func parse(tokenizer dialect.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
+func parse(tokenizer tokenizer.Tokenizer, sql_dialect dialect.SqlDialect) (int, error) {
 	switch sql_dialect {
 	case dialect.MYSQL:
 		return mysql.Parse(tokenizer), nil
+	case dialect.PSQL:
+		return psql.Parse(tokenizer), nil
 	}
-	return 0, fmt.Errorf("Not implemented for dialect %s", sql_dialect)
+	return 0, fmt.Errorf("not implemented for dialect %s", sql_dialect.String())
 }

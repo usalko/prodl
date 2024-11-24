@@ -11,12 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
 	"github.com/usalko/sent/internal/sql_parser/cache"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
 func TestMysqlKeywordTable(t *testing.T) {
 	for _, kw := range mysql.GetKeywords() {
-		lookup, ok := cache.KeywordLookup(kw.Name)
+		lookup, ok := cache.KeywordLookup(kw.Name, dialect.MYSQL)
 		require.Truef(t, ok, "keyword %q failed to match", kw.Name)
 		require.Equalf(t, lookup, kw.Id, "keyword %q matched to %d (expected %d)", kw.Name, lookup, kw.Id)
 	}
@@ -51,7 +52,7 @@ func TestMysqlCompatibility(t *testing.T) {
 			word = "`" + word + "`"
 		}
 		sql := fmt.Sprintf("create table %s(c1 int)", word)
-		_, err := sql_parser.ParseStrictDDL(sql)
+		_, err := sql_parser.ParseStrictDDL(sql, dialect.MYSQL)
 		if err != nil {
 			t.Errorf("%s is not compatible with mysql", word)
 		}

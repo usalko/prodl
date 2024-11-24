@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/usalko/sent/internal/sql_parser"
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 	"github.com/usalko/sent/internal/sql_parser/mysql"
 )
 
@@ -337,7 +338,7 @@ func TestExtractCommentDirectives(t *testing.T) {
 			for _, sql := range sqls {
 				t.Run(sql, func(t *testing.T) {
 					var comments *ast.ParsedComments
-					stmt, _ := sql_parser.Parse(sql)
+					stmt, _ := sql_parser.Parse(sql, dialect.MYSQL)
 					switch s := stmt.(type) {
 					case *ast.Select:
 						comments = s.Comments
@@ -405,27 +406,27 @@ func TestExtractCommentDirectives(t *testing.T) {
 }
 
 func TestSkipQueryPlanCacheDirective(t *testing.T) {
-	stmt, _ := sql_parser.Parse("insert /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ into user(id) values (1), (2)")
+	stmt, _ := sql_parser.Parse("insert /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ into user(id) values (1), (2)", dialect.MYSQL)
 	if !ast.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sql_parser.Parse("insert into user(id) values (1), (2)")
+	stmt, _ = sql_parser.Parse("insert into user(id) values (1), (2)", dialect.MYSQL)
 	if ast.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be false")
 	}
 
-	stmt, _ = sql_parser.Parse("update /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ users set name=1")
+	stmt, _ = sql_parser.Parse("update /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ users set name=1", dialect.MYSQL)
 	if !ast.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sql_parser.Parse("select /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ * from users")
+	stmt, _ = sql_parser.Parse("select /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ * from users", dialect.MYSQL)
 	if !ast.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
 
-	stmt, _ = sql_parser.Parse("delete /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ from users")
+	stmt, _ = sql_parser.Parse("delete /*vt+ SKIP_QUERY_PLAN_CACHE=1 */ from users", dialect.MYSQL)
 	if !ast.SkipQueryPlanCacheDirective(stmt) {
 		t.Errorf("d.SkipQueryPlanCacheDirective(stmt) should be true")
 	}
@@ -450,7 +451,7 @@ func TestIgnoreMaxPayloadSizeDirective(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.query, func(t *testing.T) {
-			stmt, _ := sql_parser.Parse(test.query)
+			stmt, _ := sql_parser.Parse(test.query, dialect.MYSQL)
 			got := ast.IgnoreMaxPayloadSizeDirective(stmt)
 			assert.Equalf(t, test.expected, got, fmt.Sprintf("IgnoreMaxPayloadSizeDirective(stmt) returned %v but expected %v", got, test.expected))
 		})
@@ -476,7 +477,7 @@ func TestIgnoreMaxMaxMemoryRowsDirective(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.query, func(t *testing.T) {
-			stmt, _ := sql_parser.Parse(test.query)
+			stmt, _ := sql_parser.Parse(test.query, dialect.MYSQL)
 			got := ast.IgnoreMaxMaxMemoryRowsDirective(stmt)
 			assert.Equalf(t, test.expected, got, fmt.Sprintf("IgnoreMaxPayloadSizeDirective(stmt) returned %v but expected %v", got, test.expected))
 		})

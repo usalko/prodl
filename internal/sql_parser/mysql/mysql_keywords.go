@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/usalko/sent/internal/sql_parser/cache"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 // keywords is a table of mysql keywords that fall into two categories:
@@ -572,16 +573,6 @@ var keywords = []cache.Keyword{
 	{Name: "vindex", Id: VINDEX},
 	{Name: "vindexes", Id: VINDEXES},
 	{Name: "view", Id: VIEW},
-	{Name: "vitess", Id: VITESS},
-	{Name: "vitess_keyspaces", Id: VITESS_KEYSPACES},
-	{Name: "vitess_metadata", Id: VITESS_METADATA},
-	{Name: "vitess_migration", Id: VITESS_MIGRATION},
-	{Name: "vitess_migrations", Id: VITESS_MIGRATIONS},
-	{Name: "vitess_replication_status", Id: VITESS_REPLICATION_STATUS},
-	{Name: "vitess_shards", Id: VITESS_SHARDS},
-	{Name: "vitess_tablets", Id: VITESS_TABLETS},
-	{Name: "vitess_target", Id: VITESS_TARGET},
-	{Name: "vitess_throttled_apps", Id: VITESS_THROTTLED_APPS},
 	{Name: "vschema", Id: VSCHEMA},
 	{Name: "vstream", Id: VSTREAM},
 	{Name: "warnings", Id: WARNINGS},
@@ -638,7 +629,7 @@ func init() {
 		keywordStrings[kw.Id] = kw.Name
 	}
 
-	cache.KeywordLookupTable = buildCaseInsensitiveTable(keywords)
+	cache.KeywordLookupTables[dialect.MYSQL] = buildCaseInsensitiveTable(keywords)
 }
 
 // KeywordString returns the string corresponding to the given keyword

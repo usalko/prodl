@@ -97,10 +97,10 @@ import (
 // embedded stack trace in the output.
 var LogErrStacks bool
 
-// New returns an error with the supplied message.
-// New also records the stack trace at the point it was called.
-func New(code int32, message string) error {
-	return &fundamental{
+// NewError returns an error with the supplied message.
+// NewError also records the stack trace at the point it was called.
+func NewError(code int32, message string) error {
+	return &fundamentalError{
 		msg:   message,
 		code:  code,
 		stack: callers(),
@@ -111,7 +111,7 @@ func New(code int32, message string) error {
 // as a value that satisfies error.
 // Errorf also records the stack trace at the point it was called.
 func Errorf(code int32, format string, args ...any) error {
-	return &fundamental{
+	return &fundamentalError{
 		msg:   fmt.Sprintf(format, args...),
 		code:  code,
 		stack: callers(),
@@ -122,7 +122,7 @@ func Errorf(code int32, format string, args ...any) error {
 // as a value that satisfies error.
 // NewErrorf also records the stack trace at the point it was called.
 func NewErrorf(code int32, state State, format string, args ...any) error {
-	return &fundamental{
+	return &fundamentalError{
 		msg:   fmt.Sprintf(format, args...),
 		code:  code,
 		state: state,
@@ -130,15 +130,15 @@ func NewErrorf(code int32, state State, format string, args ...any) error {
 	}
 }
 
-// fundamental is an error that has a message and a stack, but no caller.
-type fundamental struct {
+// fundamentalError is an error that has a message and a stack, but no caller.
+type fundamentalError struct {
 	msg   string
 	code  int32
 	state State
 	*stack
 }
 
-func (f *fundamental) Error() string { return f.msg }
+func (f *fundamentalError) Error() string { return f.msg }
 
 // Code returns the error code if it's a vtError.
 // If err is nil, it returns ok.
@@ -146,7 +146,7 @@ func Code(err error) int32 {
 	if err == nil {
 		return Code_OK
 	}
-	if err, ok := err.(*fundamental); ok {
+	if err, ok := err.(*fundamentalError); ok {
 		return err.code
 	}
 
@@ -172,7 +172,7 @@ func ErrState(err error) State {
 	if err == nil {
 		return Undefined
 	}
-	if err, ok := err.(*fundamental); ok {
+	if err, ok := err.(*fundamentalError); ok {
 		return err.state
 	}
 

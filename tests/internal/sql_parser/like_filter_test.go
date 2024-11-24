@@ -21,72 +21,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/ast"
 )
 
 func TestEmptyLike(t *testing.T) {
 	want := "^.*$"
 	got := sql_parser.LikeToRegexp("").String()
-
-	assert.Equal(t, want, got)
-}
-
-func TestLikePrefixRegexp(t *testing.T) {
-	show, e := sql_parser.Parse("show vitess_metadata variables like 'key%'")
-	if e != nil {
-		t.Error(e)
-	}
-
-	want := "^key.*$"
-	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
-
-	assert.Equal(t, want, got)
-}
-
-func TestLikeAnyCharsRegexp(t *testing.T) {
-	show, e := sql_parser.Parse("show vitess_metadata variables like '%val1%val2%'")
-	if e != nil {
-		t.Error(e)
-	}
-
-	want := "^.*val1.*val2.*$"
-	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
-
-	assert.Equal(t, want, got)
-}
-
-func TestSingleAndMultipleCharsRegexp(t *testing.T) {
-	show, e := sql_parser.Parse("show vitess_metadata variables like '_val1_val2%'")
-	if e != nil {
-		t.Error(e)
-	}
-
-	want := "^.val1.val2.*$"
-	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
-
-	assert.Equal(t, want, got)
-}
-
-func TestSpecialCharactersRegexp(t *testing.T) {
-	show, e := sql_parser.Parse("show vitess_metadata variables like '?.*?'")
-	if e != nil {
-		t.Error(e)
-	}
-
-	want := "^\\?\\.\\*\\?$"
-	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
-
-	assert.Equal(t, want, got)
-}
-
-func TestQuoteLikeSpecialCharacters(t *testing.T) {
-	show, e := sql_parser.Parse(`show vitess_metadata variables like 'part1_part2\\%part3_part4\\_part5%'`)
-	if e != nil {
-		t.Error(e)
-	}
-
-	want := "^part1.part2%part3.part4_part5.*$"
-	got := sql_parser.LikeToRegexp(show.(*ast.Show).Internal.(*ast.ShowBasic).Filter.Like).String()
 
 	assert.Equal(t, want, got)
 }

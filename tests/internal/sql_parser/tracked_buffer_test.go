@@ -22,6 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 func TestCanonicalOutput(t *testing.T) {
@@ -165,14 +166,14 @@ func TestCanonicalOutput(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.input, func(t *testing.T) {
-			tree, err := sql_parser.Parse(tc.input)
+			tree, err := sql_parser.Parse(tc.input, dialect.MYSQL)
 			require.NoError(t, err, tc.input)
 
 			out := ast.CanonicalString(tree)
 			require.Equal(t, tc.canonical, out, "bad serialization")
 
 			// Make sure we've generated a valid query!
-			rereadStmt, err := sql_parser.Parse(out)
+			rereadStmt, err := sql_parser.Parse(out, dialect.MYSQL)
 			require.NoError(t, err, out)
 			out = ast.CanonicalString(rereadStmt)
 			require.Equal(t, tc.canonical, out, "bad serialization")

@@ -27,13 +27,14 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 func TestAppend(t *testing.T) {
 	query := "select * from t where a = 1"
-	tree, err := sql_parser.Parse(query)
+	tree, err := sql_parser.Parse(query, dialect.MYSQL)
 	require.NoError(t, err)
 	var b strings.Builder
 	ast.Append(&b, tree)
@@ -51,7 +52,7 @@ func TestAppend(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
-	tree, err := sql_parser.Parse("select * from t where a = 1")
+	tree, err := sql_parser.Parse("select * from t where a = 1", dialect.MYSQL)
 	require.NoError(t, err)
 	expr := tree.(*ast.Select).Where.Expr
 
@@ -86,7 +87,7 @@ func TestSelect(t *testing.T) {
 		t.Errorf("having: %q, want %s", buf.String(), want)
 	}
 
-	tree, err = sql_parser.Parse("select * from t where a = 1 or b = 1")
+	tree, err = sql_parser.Parse("select * from t where a = 1 or b = 1", dialect.MYSQL)
 	require.NoError(t, err)
 	expr = tree.(*ast.Select).Where.Expr
 	sel = &ast.Select{}
@@ -108,7 +109,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	tree, err := sql_parser.Parse("update t set a = 1")
+	tree, err := sql_parser.Parse("update t set a = 1", dialect.MYSQL)
 	require.NoError(t, err)
 
 	upd, ok := tree.(*ast.Update)
@@ -134,7 +135,7 @@ func TestRemoveHints(t *testing.T) {
 		"select * from t use index (i)",
 		"select * from t force index (i)",
 	} {
-		tree, err := sql_parser.Parse(query)
+		tree, err := sql_parser.Parse(query, dialect.MYSQL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -151,16 +152,16 @@ func TestRemoveHints(t *testing.T) {
 }
 
 func TestAddOrder(t *testing.T) {
-	src, err := sql_parser.Parse("select foo, bar from baz order by foo")
+	src, err := sql_parser.Parse("select foo, bar from baz order by foo", dialect.MYSQL)
 	require.NoError(t, err)
 	order := src.(*ast.Select).OrderBy[0]
-	dst, err := sql_parser.Parse("select * from t")
+	dst, err := sql_parser.Parse("select * from t", dialect.MYSQL)
 	require.NoError(t, err)
 	dst.(*ast.Select).AddOrder(order)
 	buf := ast.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t order by foo asc", buf.String())
-	dst, err = sql_parser.Parse("select * from t union select * from s")
+	dst, err = sql_parser.Parse("select * from t union select * from s", dialect.MYSQL)
 	require.NoError(t, err)
 	dst.(*ast.Union).AddOrder(order)
 	buf = ast.NewTrackedBuffer(nil)
@@ -169,16 +170,16 @@ func TestAddOrder(t *testing.T) {
 }
 
 func TestSetLimit(t *testing.T) {
-	src, err := sql_parser.Parse("select foo, bar from baz limit 4")
+	src, err := sql_parser.Parse("select foo, bar from baz limit 4", dialect.MYSQL)
 	require.NoError(t, err)
 	limit := src.(*ast.Select).Limit
-	dst, err := sql_parser.Parse("select * from t")
+	dst, err := sql_parser.Parse("select * from t", dialect.MYSQL)
 	require.NoError(t, err)
 	dst.(*ast.Select).SetLimit(limit)
 	buf := ast.NewTrackedBuffer(nil)
 	dst.Format(buf)
 	require.Equal(t, "select * from t limit 4", buf.String())
-	dst, err = sql_parser.Parse("select * from t union select * from s")
+	dst, err = sql_parser.Parse("select * from t union select * from s", dialect.MYSQL)
 	require.NoError(t, err)
 	dst.(*ast.Union).SetLimit(limit)
 	buf = ast.NewTrackedBuffer(nil)
@@ -241,7 +242,7 @@ func TestDDL(t *testing.T) {
 		affected: []string{"a", "b"},
 	}}
 	for _, tcase := range testcases {
-		got, err := sql_parser.Parse(tcase.query)
+		got, err := sql_parser.Parse(tcase.query, dialect.MYSQL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -259,7 +260,7 @@ func TestDDL(t *testing.T) {
 }
 
 func TestSetAutocommitON(t *testing.T) {
-	stmt, err := sql_parser.Parse("SET autocommit=ON")
+	stmt, err := sql_parser.Parse("SET autocommit=ON", dialect.MYSQL)
 	require.NoError(t, err)
 	s, ok := stmt.(*ast.Set)
 	if !ok {
@@ -284,7 +285,7 @@ func TestSetAutocommitON(t *testing.T) {
 		t.Errorf("SET statement expression is not Literal: %T", e.Expr)
 	}
 
-	stmt, err = sql_parser.Parse("SET @@session.autocommit=ON")
+	stmt, err = sql_parser.Parse("SET @@session.autocommit=ON", dialect.MYSQL)
 	require.NoError(t, err)
 	s, ok = stmt.(*ast.Set)
 	if !ok {
@@ -311,7 +312,7 @@ func TestSetAutocommitON(t *testing.T) {
 }
 
 func TestSetAutocommitOFF(t *testing.T) {
-	stmt, err := sql_parser.Parse("SET autocommit=OFF")
+	stmt, err := sql_parser.Parse("SET autocommit=OFF", dialect.MYSQL)
 	require.NoError(t, err)
 	s, ok := stmt.(*ast.Set)
 	if !ok {
@@ -336,7 +337,7 @@ func TestSetAutocommitOFF(t *testing.T) {
 		t.Errorf("SET statement expression is not Literal: %T", e.Expr)
 	}
 
-	stmt, err = sql_parser.Parse("SET @@session.autocommit=OFF")
+	stmt, err = sql_parser.Parse("SET @@session.autocommit=OFF", dialect.MYSQL)
 	require.NoError(t, err)
 	s, ok = stmt.(*ast.Set)
 	if !ok {
@@ -548,7 +549,7 @@ func TestReplaceExpr(t *testing.T) {
 	}}
 	to := ast.NewArgument("a")
 	for _, tcase := range tcases {
-		tree, err := sql_parser.Parse(tcase.in)
+		tree, err := sql_parser.Parse(tcase.in, dialect.MYSQL)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -792,7 +793,7 @@ func TestSplitStatementToPieces(t *testing.T) {
 				tcase.output = tcase.input
 			}
 
-			stmtPieces, err := sql_parser.SplitStatementToPieces(tcase.input)
+			stmtPieces, err := sql_parser.SplitStatementToPieces(tcase.input, dialect.MYSQL)
 			require.NoError(t, err)
 
 			out := strings.Join(stmtPieces, ";")
@@ -815,7 +816,7 @@ func TestDefaultStatus(t *testing.T) {
 
 func TestShowTableStatus(t *testing.T) {
 	query := "Show Table Status FROM customer"
-	tree, err := sql_parser.Parse(query)
+	tree, err := sql_parser.Parse(query, dialect.MYSQL)
 	require.NoError(t, err)
 	require.NotNil(t, tree)
 }
@@ -830,7 +831,7 @@ func BenchmarkStringTraces(b *testing.B) {
 
 			parsed := make([]ast.Statement, 0, len(queries))
 			for _, q := range queries {
-				pp, err := sql_parser.Parse(q)
+				pp, err := sql_parser.Parse(q, dialect.MYSQL)
 				if err != nil {
 					b.Fatal(err)
 				}

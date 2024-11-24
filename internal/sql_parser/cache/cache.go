@@ -1,10 +1,16 @@
 package cache
 
-// KeywordLookupTable is a perfect hash map that maps **case insensitive** keyword names to their ids
-var KeywordLookupTable *CaseInsensitiveTable
+import "github.com/usalko/sent/internal/sql_parser/dialect"
 
-func KeywordLookup(s string) (int, bool) {
-	return KeywordLookupTable.LookupString(s)
+// KeywordLookupTable is a perfect hash map that maps **case insensitive** keyword names to their ids
+var KeywordLookupTables map[dialect.SqlDialect]*CaseInsensitiveTable = map[dialect.SqlDialect]*CaseInsensitiveTable{}
+
+func KeywordLookup(s string, sql_dialect dialect.SqlDialect) (int, bool) {
+	lookupTable, ok := KeywordLookupTables[sql_dialect]
+	if !ok || lookupTable == nil {
+		return 0, false
+	}
+	return lookupTable.LookupString(s)
 }
 
 type CaseInsensitiveTable struct {

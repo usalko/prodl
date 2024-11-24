@@ -17,11 +17,13 @@ limitations under the License.
 package sql_parser
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/usalko/sent/internal/sql_parser"
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 func TestPreview(t *testing.T) {
@@ -122,34 +124,38 @@ func TestSplitAndExpression(t *testing.T) {
 	testcases := []struct {
 		sql string
 		out []string
-	}{{
-		sql: "select * from t",
-		out: nil,
-	}, {
-		sql: "select * from t where a = 1",
-		out: []string{"a = 1"},
-	}, {
-		sql: "select * from t where a = 1 and b = 1",
-		out: []string{"a = 1", "b = 1"},
-	}, {
-		sql: "select * from t where a = 1 and (b = 1 and c = 1)",
-		out: []string{"a = 1", "b = 1", "c = 1"},
-	}, {
-		sql: "select * from t where a = 1 and (b = 1 or c = 1)",
-		out: []string{"a = 1", "b = 1 or c = 1"},
-	}, {
-		sql: "select * from t where a = 1 and b = 1 or c = 1",
-		out: []string{"a = 1 and b = 1 or c = 1"},
-	}, {
-		sql: "select * from t where a = 1 and b = 1 + (c = 1)",
-		out: []string{"a = 1", "b = 1 + (c = 1)"},
-	}, {
-		sql: "select * from t where (a = 1 and ((b = 1 and c = 1)))",
-		out: []string{"a = 1", "b = 1", "c = 1"},
-	}}
+	}{
+		{
+			sql: "select * from t",
+			out: nil,
+		}, {
+			sql: "select * from t where a = 1",
+			out: []string{"a = 1"},
+		}, {
+			sql: "select * from t where a = 1 and b = 1",
+			out: []string{"a = 1", "b = 1"},
+		}, {
+			sql: "select * from t where a = 1 and (b = 1 and c = 1)",
+			out: []string{"a = 1", "b = 1", "c = 1"},
+		}, {
+			sql: "select * from t where a = 1 and (b = 1 or c = 1)",
+			out: []string{"a = 1", "b = 1 or c = 1"},
+		}, {
+			sql: "select * from t where a = 1 and b = 1 or c = 1",
+			out: []string{"a = 1 and b = 1 or c = 1"},
+		}, {
+			sql: "select * from t where a = 1 and b = 1 + (c = 1)",
+			out: []string{"a = 1", "b = 1 + (c = 1)"},
+		}, {
+			sql: "select * from t where (a = 1 and ((b = 1 and c = 1)))",
+			out: []string{"a = 1", "b = 1", "c = 1"},
+		},
+	}
 	for _, tcase := range testcases {
-		stmt, err := sql_parser.Parse(tcase.sql)
-		assert.NoError(t, err)
+		stmt, err := sql_parser.Parse(tcase.sql, dialect.MYSQL)
+		if err != nil {
+			assert.NoError(t, fmt.Errorf("statement %q, parsed with errors: %q", tcase.sql, err.Error()))
+		}
 		var expr ast.Expr
 		if where := stmt.(*ast.Select).Where; where != nil {
 			expr = where.Expr
@@ -259,11 +265,11 @@ func TestTableFromStatement(t *testing.T) {
 		out: "unrecognized statement: update t set a=1",
 	}, {
 		in:  "bad query",
-		out: "syntax error at position 4 near 'bad'",
+		out: "syntax error: unexpected ID at position 4 near 'bad'",
 	}}
 
 	for _, tc := range testcases {
-		name, err := sql_parser.TableFromStatement(tc.in)
+		name, err := sql_parser.TableFromStatement(tc.in, dialect.MYSQL)
 		var got string
 		if err != nil {
 			got = err.Error()
@@ -291,7 +297,7 @@ func TestGetTableName(t *testing.T) {
 	}}
 
 	for _, tc := range testcases {
-		tree, err := sql_parser.Parse(tc.in)
+		tree, err := sql_parser.Parse(tc.in, dialect.MYSQL)
 		if err != nil {
 			t.Error(err)
 			continue

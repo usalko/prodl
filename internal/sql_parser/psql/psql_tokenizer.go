@@ -27,6 +27,7 @@ import (
 	"github.com/usalko/sent/internal/sql_parser/ast"
 	"github.com/usalko/sent/internal/sql_parser/cache"
 	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/sent/internal/sql_parser/tokenizer"
 	"github.com/usalko/sent/internal/sql_parser_errors"
 	"github.com/usalko/sent/internal/sql_types"
 )
@@ -52,27 +53,27 @@ type PsqlTokenizer struct {
 	buf string
 }
 
-// SetSkipSpecialComments implements dialect.Tokenizer.
+// SetSkipSpecialComments implements tokenizer.Tokenizer.
 func (tkn *PsqlTokenizer) SetSkipSpecialComments(skip bool) {
 	tkn.SkipSpecialComments = skip
 }
 
-// GetBindVars implements dialect.Tokenizer.
-func (tkn *PsqlTokenizer) GetBindVars() dialect.BindVars {
+// GetBindVars implements tokenizer.Tokenizer.
+func (tkn *PsqlTokenizer) GetBindVars() ast.BindVars {
 	return tkn.BindVars
 }
 
-// GetLastError implements dialect.Tokenizer.
+// GetLastError implements tokenizer.Tokenizer.
 func (tkn *PsqlTokenizer) GetLastError() error {
 	return tkn.LastError
 }
 
-// GetPos implements dialect.Tokenizer.
+// GetPos implements tokenizer.Tokenizer.
 func (tkn *PsqlTokenizer) GetPos() int {
 	return tkn.Pos
 }
 
-// SetMulti implements dialect.Tokenizer.
+// SetMulti implements tokenizer.Tokenizer.
 func (tkn *PsqlTokenizer) SetMulti(multi bool) {
 	tkn.multi = multi
 }
@@ -155,7 +156,7 @@ var zeroParser psqParserImpl
 //
 //	showCollationFilterOpt := $4
 //	$$ = &Show{Type: string($2), ShowCollationFilterOpt: &showCollationFilterOpt}
-func ParsePooled(lexer dialect.Tokenizer) int {
+func ParsePooled(lexer tokenizer.Tokenizer) int {
 	parser := parserPool.Get().(*psqParserImpl)
 	defer func() {
 		*parser = zeroParser
@@ -164,7 +165,7 @@ func ParsePooled(lexer dialect.Tokenizer) int {
 	return parser.Parse(lexer.(psqLexer))
 }
 
-func Parse(lexer dialect.Tokenizer) int {
+func Parse(lexer tokenizer.Tokenizer) int {
 	return psqParse(lexer.(psqLexer))
 }
 
@@ -322,7 +323,7 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 		if tkn.Cur() == '`' {
 			tkn.Skip(1)
 			tID, tBytes = tkn.scanLiteralIdentifier()
-		} else if tkn.Cur() == dialect.EofChar {
+		} else if tkn.Cur() == tokenizer.EofChar {
 			return LEX_ERROR, ""
 		} else {
 			tID, tBytes = tkn.scanIdentifier(true)
@@ -366,7 +367,7 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 		}
 		tkn.Skip(1)
 		return ';', ""
-	case ch == dialect.EofChar:
+	case ch == tokenizer.EofChar:
 		return 0, ""
 	default:
 		if ch == '.' && isDigit(tkn.Peek(1)) {
@@ -418,7 +419,7 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 			switch tkn.Cur() {
 			case '-':
 				nextChar := tkn.Peek(1)
-				if nextChar == ' ' || nextChar == '\n' || nextChar == '\t' || nextChar == '\r' || nextChar == dialect.EofChar {
+				if nextChar == ' ' || nextChar == '\n' || nextChar == '\t' || nextChar == '\r' || nextChar == tokenizer.EofChar {
 					tkn.Skip(1)
 					return tkn.scanCommentType1(2)
 				}
@@ -511,7 +512,7 @@ func (tkn *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 		tkn.Skip(1)
 	}
 	keywordName := tkn.buf[start:tkn.Pos]
-	if keywordID, found := cache.KeywordLookupTable.LookupString(keywordName); found {
+	if keywordID, found := cache.KeywordLookup(keywordName, dialect.PSQL); found {
 		return keywordID, keywordName
 	}
 	// dual must always be case-insensitive
@@ -569,7 +570,7 @@ func (tkn *PsqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, 
 		switch tkn.Cur() {
 		case '`':
 			backTickSeen = true
-		case dialect.EofChar:
+		case tokenizer.EofChar:
 			// Premature EOF.
 			return LEX_ERROR, buf.String()
 		default:
@@ -601,7 +602,7 @@ func (tkn *PsqlTokenizer) scanLiteralIdentifier() (int, string) {
 			buf.WriteString(tkn.buf[start:tkn.Pos])
 			tkn.Skip(1)
 			return tkn.scanLiteralIdentifierSlow(&buf)
-		case dialect.EofChar:
+		case tokenizer.EofChar:
 			// Premature EOF.
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		default:
@@ -724,7 +725,7 @@ func (tkn *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 			buffer.WriteString(tkn.buf[start:tkn.Pos])
 			return tkn.scanStringSlow(&buffer, delim, typ)
 
-		case dialect.EofChar:
+		case tokenizer.EofChar:
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
 
@@ -738,7 +739,7 @@ func (tkn *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
 	for {
 		ch := tkn.Cur()
-		if ch == dialect.EofChar {
+		if ch == tokenizer.EofChar {
 			// Unterminated string.
 			return LEX_ERROR, buffer.String()
 		}
@@ -764,7 +765,7 @@ func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 		tkn.Skip(1) // Read one past the delim or escape character.
 
 		if ch == '\\' {
-			if tkn.Cur() == dialect.EofChar {
+			if tkn.Cur() == tokenizer.EofChar {
 				// String terminates mid escape character.
 				return LEX_ERROR, buffer.String()
 			}
@@ -790,7 +791,7 @@ func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 // is started with '//', '--' or '#'.
 func (tkn *PsqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
 	start := tkn.Pos - prefixLen
-	for tkn.Cur() != dialect.EofChar {
+	for tkn.Cur() != tokenizer.EofChar {
 		if tkn.Cur() == '\n' {
 			tkn.Skip(1)
 			break
@@ -813,7 +814,7 @@ func (tkn *PsqlTokenizer) scanCommentType2() (int, string) {
 			}
 			continue
 		}
-		if tkn.Cur() == dialect.EofChar {
+		if tkn.Cur() == tokenizer.EofChar {
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
 		tkn.Skip(1)
@@ -833,7 +834,7 @@ func (tkn *PsqlTokenizer) scanMySQLSpecificComment() (int, string) {
 			}
 			continue
 		}
-		if tkn.Cur() == dialect.EofChar {
+		if tkn.Cur() == tokenizer.EofChar {
 			return LEX_ERROR, tkn.buf[start:tkn.Pos]
 		}
 		tkn.Skip(1)
@@ -859,7 +860,7 @@ func (tkn *PsqlTokenizer) Skip(dist int) {
 
 func (tkn *PsqlTokenizer) Peek(dist int) uint16 {
 	if tkn.Pos+dist >= len(tkn.buf) {
-		return dialect.EofChar
+		return tokenizer.EofChar
 	}
 	return uint16(tkn.buf[tkn.Pos+dist])
 }

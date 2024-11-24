@@ -25,6 +25,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/usalko/sent/internal/sql_parser"
 	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/sent/internal/sql_parser/dialect"
 )
 
 func readable(node ast.Expr) string {
@@ -56,7 +57,7 @@ func TestAndOrPrecedence(t *testing.T) {
 		output: "(a = b or (c = d and e = f))",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -69,7 +70,7 @@ func TestAndOrPrecedence(t *testing.T) {
 }
 
 func TestNotInSubqueryPrecedence(t *testing.T) {
-	tree, err := sql_parser.Parse("select * from a where not id in (select 42)")
+	tree, err := sql_parser.Parse("select * from a where not id in (select 42)", dialect.MYSQL)
 	require.NoError(t, err)
 	not := tree.(*ast.Select).Where.Expr.(*ast.NotExpr)
 	cmp := not.Expr.(*ast.ComparisonExpr)
@@ -90,7 +91,7 @@ func TestNotInSubqueryPrecedence(t *testing.T) {
 }
 
 func TestSubqueryPrecedence(t *testing.T) {
-	tree, err := sql_parser.Parse("select * from a where id in (select 42) and false")
+	tree, err := sql_parser.Parse("select * from a where id in (select 42) and false", dialect.MYSQL)
 	require.NoError(t, err)
 	where := tree.(*ast.Select).Where
 	andExpr := where.Expr.(*ast.AndExpr)
@@ -123,7 +124,7 @@ func TestPlusStarPrecedence(t *testing.T) {
 		output: "((1 * 2) + 3)",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -150,7 +151,7 @@ func TestIsPrecedence(t *testing.T) {
 		output: "((a = 1 and b = 2) is true)",
 	}}
 	for _, tcase := range validSQL {
-		tree, err := sql_parser.Parse(tcase.input)
+		tree, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -204,7 +205,7 @@ func TestParens(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.in, func(t *testing.T) {
-			stmt, err := sql_parser.Parse("select " + tc.in)
+			stmt, err := sql_parser.Parse("select " + tc.in, dialect.MYSQL)
 			require.NoError(t, err)
 			out := ast.String(stmt)
 			require.Equal(t, "select "+tc.expected+" from dual", out)
@@ -229,7 +230,7 @@ func TestRandom(t *testing.T) {
 		inputQ := "select " + ast.String(randomExpr) + " from t"
 
 		// When it's parsed and unparsed
-		parsedInput, err := sql_parser.Parse(inputQ)
+		parsedInput, err := sql_parser.Parse(inputQ, dialect.MYSQL)
 		require.NoError(t, err, inputQ)
 
 		// Then the unparsing should be the same as the input query

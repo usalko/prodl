@@ -15,9 +15,10 @@
 MAKEFLAGS = -s
 
 mysql.go: mysql.y
-	go run ../goyacc -fast-append -p mysq -o mysql.go mysql.y
+	go run ../goyacc -v y.output -fast-append -p mysq -o mysql.go mysql.y
 	gofmt -w mysql.go
-	rm -f y.output
+	
+#	rm -f y.output
 
 clean:
 	rm -f y.output mysql.go psql.go
