@@ -4838,7 +4838,7 @@ INPUT
 select count(distinct x.id_aams) into not_installed from (select from (select t1.id_aams, t2.* from t1 left join t2 on t2.code_id = vlt_code_id and t1.id_aams = t2.id_game where t1.id_aams = 1715000360 order by t2.id desc ) as g group by g.id_aams having g.id is null ) as x;
 END
 ERROR
-syntax error at position 52 near 'not_installed'
+syntax error: unexpected ID, expecting OUTFILE or DUMPFILE at position 52 near 'not_installed'
 END
 INPUT
 select "... and something more ...";
@@ -5156,7 +5156,7 @@ INPUT
 select max_data_length into @orig_max_data_length from information_schema.tables where table_name='t1';
 END
 ERROR
-syntax error at position 50 near 'orig_max_data_length'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 50 near 'orig_max_data_length'
 END
 INPUT
 select hex(substr(_utf16 0x00e400e50068,-3));
@@ -5246,7 +5246,7 @@ INPUT
 select count(*), case interval(qty,2,3,4,5,6,7,8) when -1 then NULL when 0 then "zero" when 1 then "one" when 2 then "two" end as category from t1 group by category;
 END
 ERROR
-syntax error at position 55 near 'when'
+syntax error: unexpected WHEN at position 55 near 'when'
 END
 INPUT
 select table_priv,column_priv from mysql.tables_priv where user="mysqltest_1";
@@ -5258,7 +5258,7 @@ INPUT
 select position('bb' in 'abba');
 END
 ERROR
-syntax error at position 31 near 'abba'
+syntax error: unexpected STRING, expecting '(' or LIST_ARG at position 31 near 'abba'
 END
 INPUT
 select min(7) from t1m;
@@ -5276,7 +5276,7 @@ INPUT
 select position("0" in "baaa" in (1)),position("0" in "1" in (1,2,3)),position("sql" in ("mysql"));
 END
 ERROR
-syntax error at position 30 near 'baaa'
+syntax error: unexpected STRING, expecting '(' or LIST_ARG at position 30 near 'baaa'
 END
 INPUT
 select count(*) from t1 where a = 'aaayyy';
@@ -5360,7 +5360,7 @@ INPUT
 select count(*) from t1 /bin /boot /cdrom /dev /etc /home /lib /lib32 /lib64 /libx32 /lost+found /media /mnt /opt /proc /root /run /sbin /snap /srv /swapfile /sys /tmp /usr /var must be 0 */;
 END
 ERROR
-syntax error at position 26
+syntax error: unexpected '/' at position 26
 END
 INPUT
 select std(s1/s2) from bug22555 group by i;
@@ -5570,7 +5570,7 @@ INPUT
 select (select from (select from (select t1.a from t2) as dt limit 1) dt2) from t1;
 END
 ERROR
-syntax error at position 20 near 'from'
+syntax error: unexpected FROM at position 20 near 'from'
 END
 INPUT
 select substring_index('the king of the the hill',' the ',-2);
@@ -5804,7 +5804,7 @@ INPUT
 select ST_GeomFromText("POLYGON((0 0, 0 10, 10 10, 10 0, 0 0))") into @a;
 END
 ERROR
-syntax error at position 73 near 'a'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 73 near 'a'
 END
 INPUT
 select 'a' union select concat('a', -concat('3',4));
@@ -5972,7 +5972,7 @@ INPUT
 select 1 + /*!00000 2 node_modules/ + 3 /*!99999 noise*/ + 4;
 END
 ERROR
-syntax error at position 57
+syntax error: unexpected '/' at position 57
 END
 INPUT
 select 1, st_touches(t.geom, p.geom) from tbl_polygon t, tbl_polygon p where t.id = 'POLY1' and p.id = 'POLY2';
@@ -6020,7 +6020,7 @@ INPUT
 select user_host, db, sql_text from mysql.slow_log where sql_text like 'select 'events_logs_test'%';
 END
 ERROR
-syntax error: unexpected '/' at position 97 near 'events_logs_test'
+syntax error: unexpected ID at position 97 near 'events_logs_test'
 END
 INPUT
 select ifnull(A=1, 'N') as A, ifnull(B=1, 'N') as B, ifnull(not (A=1), 'N') as nA, ifnull(not (B=1), 'N') as nB, ifnull((A=1) and (B=1), 'N') as AB, ifnull(not ((A=1) and (B=1)), 'N') as `n(AB)`, ifnull((not (A=1) or not (B=1)), 'N') as nAonB, ifnull((A=1) or (B=1), 'N') as AoB, ifnull(not((A=1) or (B=1)), 'N') as `n(AoB)`, ifnull(not (A=1) and not (B=1), 'N') as nAnB from t1;
@@ -6182,7 +6182,7 @@ INPUT
 select mail_id, if(folder.f_description!='', folder.f_description, folder.f_name) as folder_name, date, address_id, phrase, address, subject from folder, (select mail.mail_id as mail_id, date_format(mail.h_date, '%b %e, %Y %h:%i') as date, mail.folder_id, sender.address_id as address_id, sender.phrase as phrase, sender.address as address, mail.h_subject as subject from mail left join mxa as mxa_sender on mail.mail_id=mxa_sender.mail_id and mxa_sender.type='from' left join address as sender on mxa_sender.address_id=sender.address_id mxa as mxa_recipient, address as recipient, where 1 and mail.mail_id=mxa_recipient.mail_id and mxa_recipient.address_id=recipient.address_id and mxa_recipient.type='to' and match(sender.phrase, sender.address, sender.comment) against ('jeremy' in boolean mode) and match(recipient.phrase, recipient.address, recipient.comment) against ('monty' in boolean mode) order by mail.h_date desc limit 0, 25 ) as query where query.folder_id=folder.folder_id;
 END
 ERROR
-syntax error at position 542 near 'mxa'
+syntax error: unexpected ID, expecting ')' at position 542 near 'mxa'
 END
 INPUT
 select (with recursive dt as (select t1.a as a union select a+1 from dt where a<10) select dt1.a from dt dt1 where dt1.a=t1.a ) as subq from t1;
@@ -6644,7 +6644,7 @@ INPUT
 select SQL_BIG_RESULT t1.b from t1, t2 group by t1.b order by 1;
 END
 ERROR
-syntax error at position 26
+syntax error: unexpected '.' at position 26
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf32_spanish_ci;
@@ -6704,7 +6704,7 @@ INPUT
 select -9223372036854775808 2 as result;
 END
 ERROR
-syntax error at position 30 near '2'
+syntax error: unexpected INTEGRAL at position 30 near '2'
 END
 INPUT
 select _koi8r 0xFF regexp _koi8r '[[:lower:]]' COLLATE koi8r_bin;
@@ -6788,7 +6788,7 @@ INPUT
 select substring_index("1abcd;
 END
 ERROR
-syntax error at position 31 near '1abcd;'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 31 near '1abcd;'
 END
 INPUT
 select insert('hello', -4294967296, -4294967296, 'hi');
@@ -6824,7 +6824,7 @@ INPUT
 select interval(55,10,20,30,40,50,60,70,80,90,100),interval(3,1,1+1,1+1+1+1),field("IBM","NCA","ICL","SUN","IBM","DIGITAL"),field("A","B","C"),elt(2,"ONE","TWO","THREE"),interval(0,1,2,3,4),elt(1,1,2,3)|0,elt(1,1.1,1.2,1.3)+0;
 END
 ERROR
-syntax error at position 52
+syntax error: unexpected ',' at position 52
 END
 INPUT
 select FIELD('b',_latin2'A','B');
@@ -6854,7 +6854,7 @@ INPUT
 select CAST(TIMESTAMP "2004-01-22 21:45:33" AS BINARY(4));
 END
 ERROR
-syntax error at position 44 near '2004-01-22 21:45:33'
+syntax error: unexpected STRING at position 44 near '2004-01-22 21:45:33'
 END
 INPUT
 select st_contains(st_intersection(ST_GeomFromText('point(1 1)'), ST_GeomFromText('multipoint(2 2, 3 3)')), st_intersection(ST_GeomFromText('point(0 0)'), ST_GeomFromText('point(1 1)')));
@@ -6938,7 +6938,7 @@ INPUT
 select @category3_id:= 10003;
 END
 ERROR
-syntax error at position 22 near ':'
+syntax error: unexpected LEX_ERROR at position 22 near ':'
 END
 INPUT
 select c as c_a from t1 where c='a';
@@ -7010,7 +7010,7 @@ INPUT
 select hex(char(0xFF using utf8mb4));
 END
 ERROR
-syntax error: unexpected '(' at position 27 near 'using'
+syntax error: unexpected USING, expecting ')' at position 27 near 'using'
 END
 INPUT
 select from `information_schema`.`TABLE_CONSTRAINTS` where `TABLE_SCHEMA` = NULL;
@@ -7304,7 +7304,7 @@ INPUT
 select length(';
 END
 ERROR
-syntax error at position 17 near ';'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 17 near ';'
 END
 INPUT
 select CONVERT(_koi8r'����' USING utf8mb4) LIKE CONVERT(_koi8r'����' USING utf8mb4);
@@ -7502,7 +7502,7 @@ INPUT
 select ST_GeomFromText('linestring(7 6, 15 4)') into @l;
 END
 ERROR
-syntax error at position 56 near 'l'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 56 near 'l'
 END
 INPUT
 select concat("max=",connection) 'p1';
@@ -7574,7 +7574,7 @@ INPUT
 select char(195 using utf8mb4);
 END
 ERROR
-syntax error at position 22 near 'using'
+syntax error: unexpected USING, expecting ')' at position 22 near 'using'
 END
 INPUT
 select concat(a, if(b>10, N'x', N'y')) from t1;
@@ -7586,7 +7586,7 @@ INPUT
 select sql_buffer_result max(f1) is null from t1;
 END
 ERROR
-syntax error at position 30
+syntax error: unexpected '(' at position 30
 END
 INPUT
 select substring('hello', -1, -1);
@@ -7598,7 +7598,7 @@ INPUT
 select a, a is not false, a is not true, a is not unknown from t1;
 END
 ERROR
-syntax error at position 58 near 'unknown'
+syntax error: unexpected ID, expecting NULL or TRUE or FALSE at position 58 near 'unknown'
 END
 INPUT
 select cast(NULL as signed), cast(1/0 as signed);
@@ -7634,7 +7634,7 @@ INPUT
 select a, group_concat(distinct b) from t1 group by a with rollup;
 END
 ERROR
-syntax error at position 59 near 'with'
+syntax error: unexpected WITH at position 59 near 'with'
 END
 INPUT
 select quote(trim(concat(' ', 'a')));
@@ -7742,7 +7742,7 @@ INPUT
 select t2.isbn,city,concat(@bar:=t1.libname),count(distinct t1.libname) as a from t3 left join t1 on t3.libname=t1.libname left join t2 on t3.isbn=t2.isbn group by city having count(distinct t1.libname) > 1;
 END
 ERROR
-syntax error at position 33 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 33 near ':'
 END
 INPUT
 select ST_DISTANCE(ST_GeomFromText('polygon((0 0, 3 6, 6 3, 0 0),(2 2, 3 4, 4 3, 2 2))'), ST_GeomFromText('point(3 3)'));
@@ -7850,13 +7850,13 @@ INPUT
 select @category1_id:= 10001;
 END
 ERROR
-syntax error at position 22 near ':'
+syntax error: unexpected LEX_ERROR at position 22 near ':'
 END
 INPUT
 select hex(char(0x0102 using utf32));
 END
 ERROR
-syntax error at position 29 near 'using'
+syntax error: unexpected USING, expecting ')' at position 29 near 'using'
 END
 INPUT
 select 5 mod 3, 5 mod -3, -5 mod 3, -5 mod -3;
@@ -8282,7 +8282,7 @@ INPUT
 select hex(@utf82:= CONVERT(@ujis2 USING utf8));
 END
 ERROR
-syntax error: unexpected LEX_ERROR at position 19 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 19 near ':'
 END
 INPUT
 select from t5 order by a,b;
@@ -8384,7 +8384,7 @@ INPUT
 select quote(concat('abc'', 'cba'));
 END
 ERROR
-syntax error at position 37 near '));'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 37 near '));'
 END
 INPUT
 select max(t1.a1), max(t2.a1) from t1, t2 where t2.a2=9;
@@ -8426,7 +8426,7 @@ INPUT
 select t2.* from ((select from t1) as A inner join t2 on A.ID = t2.FID);
 END
 ERROR
-syntax error at position 31 near 'from'
+syntax error: unexpected FROM at position 31 near 'from'
 END
 INPUT
 select from information_schema.COLUMNS where table_name="t1" and column_name= "a" order by table_name;
@@ -8672,7 +8672,7 @@ INPUT
 select a, a is false, a is true, a is unknown from t1;
 END
 ERROR
-syntax error at position 46 near 'unknown'
+syntax error: unexpected ID, expecting NULL or TRUE or FALSE or NOT at position 46 near 'unknown'
 END
 INPUT
 select std(e) from bug22555 group by i;
@@ -8810,7 +8810,7 @@ INPUT
 select (with cte as (select t1.a) select from cte) from t1;
 END
 ERROR
-syntax error at position 46 near 'from'
+syntax error: unexpected FROM at position 46 near 'from'
 END
 INPUT
 select from v1d;
@@ -8840,7 +8840,7 @@ INPUT
 select hex(weight_string(_utf8mb4 0xF0908080 /bin /boot /cdrom /dev /etc /home /lib /lib32 /lib64 /libx32 /lost+found /media /mnt /opt /proc /root /run /sbin /snap /srv /swapfile /sys /tmp /usr /var U+10000 node_modules/ collate utf8mb4_unicode_ci));
 END
 ERROR
-syntax error at position 201 near 'U'
+syntax error: unexpected ID, expecting ')' at position 201 near 'U'
 END
 INPUT
 select from t1 natural left join t2 natural left join t3;
@@ -9050,7 +9050,7 @@ INPUT
 select quote(''"test');
 END
 ERROR
-syntax error at position 24 near 'test');'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 24 near 'test');'
 END
 INPUT
 select from t1 where a like '%PES%';
@@ -9212,7 +9212,7 @@ INPUT
 select @stamp1:=f2 from t1;
 END
 ERROR
-syntax error at position 16 near ':'
+syntax error: unexpected LEX_ERROR at position 16 near ':'
 END
 INPUT
 select t1.*,t2.* from mysqltest_2.t1,mysqltest_2.t2;
@@ -9290,7 +9290,7 @@ INPUT
 select sysdate() into @b;
 END
 ERROR
-syntax error at position 25 near 'b'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 25 near 'b'
 END
 INPUT
 select inet_ntoa(null),inet_aton(null);
@@ -9596,7 +9596,7 @@ INPUT
 select char(0xd18f using utf8);
 END
 ERROR
-syntax error at position 25 near 'using'
+syntax error: unexpected USING, expecting ')' at position 25 near 'using'
 END
 INPUT
 select count(*) + MAX_REQ - MAX_REQ + MAX_REQ - MAX_REQ + MAX_REQ - MAX_REQ + MAX_REQ - MAX_REQ + MAX_REQ - MAX_REQ from t1 group by MAX_REQ;
@@ -9638,13 +9638,13 @@ INPUT
 select hex(weight_string('a' as char(-1)));
 END
 ERROR
-syntax error at position 39
+syntax error: unexpected '-', expecting INTEGRAL at position 39
 END
 INPUT
 select count(*) from t3 /bin /boot /cdrom /dev /etc /home /lib /lib32 /lib64 /libx32 /lost+found /media /mnt /opt /proc /root /run /sbin /snap /srv /swapfile /sys /tmp /usr /var must be 2 */;
 END
 ERROR
-syntax error at position 26
+syntax error: unexpected '/' at position 26
 END
 INPUT
 select count(*) from t1 where facility IS NOT NULL;
@@ -9698,7 +9698,7 @@ INPUT
 select hex(char(0x010203 using ucs2));
 END
 ERROR
-syntax error at position 31 near 'using'
+syntax error: unexpected USING, expecting ')' at position 31 near 'using'
 END
 INPUT
 select ST_astext(st_difference(st_intersection(ST_GeomFromText('point(1 1)'), ST_GeomFromText('multipoint(2 2, 3 3)')), st_difference(ST_GeomFromText('point(0 0)'), ST_GeomFromText('point(1 1)'))));
@@ -9896,7 +9896,7 @@ INPUT
 select length(repeat("a",1000000)),length(concat(repeat("a",32000),repeat("a",32000),repeat("a",32000))),length(replace("aaaaa","a",concat(repeat("a",32000)))),length(insert(repeat("a",48000),1,1000,repeat("a",48000)));
 END
 ERROR
-syntax error at position 174 near 'insert'
+syntax error: unexpected INSERT, expecting ')' at position 174 near 'insert'
 END
 INPUT
 select a1,a2,b,min(c),max(c) from t2 where (a2 >= 'b') and (b = 'a') and (c > 'b111') group by a1,a2,b;
@@ -10070,7 +10070,7 @@ INPUT
 select "Test delimiter :;
 END
 ERROR
-syntax error at position 26 near 'Test delimiter :;'
+syntax error: unexpected LEX_ERROR at position 26 near 'Test delimiter :;'
 END
 INPUT
 select space(-4294967297);
@@ -10112,7 +10112,7 @@ INPUT
 select 1e8 sum(distinct df) from t1;
 END
 ERROR
-syntax error at position 16
+syntax error: unexpected '(' at position 16
 END
 INPUT
 select from t1 where soundex(a) = soundex('Test');
@@ -10172,7 +10172,7 @@ INPUT
 select count(*) from t1 where v between 'a' and 'a ' and v between 'a ' and 'b;
 END
 ERROR
-syntax error at position 80 near 'b;'
+syntax error: unexpected LEX_ERROR at position 80 near 'b;'
 END
 INPUT
 select t1.*, t2.*, t1.value<=>t2.value from t1, t2 where t1.id=t2.id and t1.id=1;
@@ -10280,7 +10280,7 @@ INPUT
 select {fn length("hello")}, { date "1997-10-20" };
 END
 ERROR
-syntax error: unexpected '/' at position 9 near '{'
+syntax error: unexpected LEX_ERROR at position 9 near '{'
 END
 INPUT
 select cast(repeat('1',20) as unsigned);
@@ -10526,13 +10526,13 @@ INPUT
 select t1.*, t1.* as 'with_alias' from t1;
 END
 ERROR
-syntax error at position 21 near 'as'
+syntax error: unexpected AS at position 21 near 'as'
 END
 INPUT
 select POSITION(_latin1'B' COLLATE latin1_general_ci IN _latin1'abcd' COLLATE latin1_bin);
 END
 ERROR
-syntax error at position 64 near '_latin1'
+syntax error: unexpected UNDERSCORE_LATIN1, expecting '(' or LIST_ARG at position 64 near '_latin1'
 END
 INPUT
 select charset(user());
@@ -10658,7 +10658,7 @@ INPUT
 select uuid() into @my_uuid;
 END
 ERROR
-syntax error: unexpected '.' at position 28 near 'my_uuid'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 28 near 'my_uuid'
 END
 INPUT
 select NULLIF(NULL,NULL), NULLIF(NULL,1), NULLIF(NULL,1.0), NULLIF(NULL,"test");
@@ -10820,7 +10820,7 @@ INPUT
 select hex(convert(char(2557 using latin1) using utf8));
 END
 ERROR
-syntax error at position 35 near 'using'
+syntax error: unexpected USING, expecting ')' at position 35 near 'using'
 END
 INPUT
 select group_concat(t1.b,t2.c) from t1 inner join t2 using(a) group by t1.a;
@@ -11108,7 +11108,7 @@ INPUT
 select a, count(a) from t1 group by a with rollup;
 END
 ERROR
-syntax error at position 43 near 'with'
+syntax error: unexpected WITH at position 43 near 'with'
 END
 INPUT
 select from t1,t2 left join t3 on (t2.i=t3.i) order by t1.i,t2.i,t3.i;
@@ -11192,7 +11192,7 @@ INPUT
 select f1, group_concat(f1+1) from t1 group by f1 with rollup;
 END
 ERROR
-syntax error at position 55 near 'with'
+syntax error: unexpected WITH at position 55 near 'with'
 END
 INPUT
 select substring('hello', -18446744073709551617, -18446744073709551617);
@@ -11366,7 +11366,7 @@ INPUT
 select hex(char(1 using utf8mb4));
 END
 ERROR
-syntax error at position 24 near 'using'
+syntax error: unexpected USING, expecting ')' at position 24 near 'using'
 END
 INPUT
 select left('hello',null), right('hello',null);
@@ -11450,7 +11450,7 @@ INPUT
 select t1.a as str, length(t1.a) as str_length, t2.a as pos, t2.a + 10 as length, insert(t1.a, t2.a, t2.a + 10, '1234567') as 'insert' from t1, t2;
 END
 ERROR
-syntax error at position 89 near 'insert'
+syntax error: unexpected INSERT at position 89 near 'insert'
 END
 INPUT
 select from mysql.slow_log;
@@ -11498,7 +11498,7 @@ INPUT
 select a as 'x', t1.* as 'with_alias' from t1;
 END
 ERROR
-syntax error at position 25 near 'as'
+syntax error: unexpected AS at position 25 near 'as'
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf16_romanian_ci;
@@ -11720,7 +11720,7 @@ INPUT
 select a, MAX(b), INTERVAL (MAX(b), 1,3,10,30,39,40,50,60,100,1000) from t1 group by a;
 END
 ERROR
-syntax error at position 73 near 'from'
+syntax error: unexpected FROM at position 73 near 'from'
 END
 INPUT
 select d as e, two as f from v;
@@ -11864,7 +11864,7 @@ INPUT
 select POSITION(_latin1'B' IN _latin2'abcd');
 END
 ERROR
-syntax error at position 38 near '_latin2'
+syntax error: unexpected UNDERSCORE_LATIN2, expecting '(' or LIST_ARG at position 38 near '_latin2'
 END
 INPUT
 select t1.id, t1.data, t2.data from t1, t2 where t1.id = t2.id order by t1.id;
@@ -12116,7 +12116,7 @@ INPUT
 select (select d from t2 where d > a), t1.* as 'with_alias' from t1;
 END
 ERROR
-syntax error at position 47 near 'as'
+syntax error: unexpected AS at position 47 near 'as'
 END
 INPUT
 select from t1,t2 natural right join t3 order by t1.i,t2.i,t3.i;
@@ -12308,7 +12308,7 @@ INPUT
 select distinct t_00.a1 from t1 t_00 where exists ( select from t2 where a1 = t_00.a1 );
 END
 ERROR
-syntax error at position 64 near 'from'
+syntax error: unexpected FROM at position 64 near 'from'
 END
 INPUT
 select locate('LO','hello' collate utf8mb4_bin,2);
@@ -12338,7 +12338,7 @@ INPUT
 select straight_join from t1,t2 force index (primary) where t1.a=t2.a;
 END
 ERROR
-syntax error at position 26 near 'from'
+syntax error: unexpected FROM at position 26 near 'from'
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf16_esperanto_ci;
@@ -12416,7 +12416,7 @@ INPUT
 select position(binary 'll' in 'hello'),position('a' in binary 'hello');
 END
 ERROR
-syntax error at position 39 near 'hello'
+syntax error: unexpected STRING, expecting '(' or LIST_ARG at position 39 near 'hello'
 END
 INPUT
 select CAST('10 ' as unsigned integer);
@@ -12728,7 +12728,7 @@ INPUT
 select into outfile 'test/t1.txt' from t1;
 END
 ERROR
-syntax error at position 12 near 'into'
+syntax error: unexpected INTO at position 12 near 'into'
 END
 INPUT
 select a.f1 as a, b.f4 as b, a.f1 > b.f4 as gt, a.f1 < b.f4 as lt, a.f1<=>b.f4 as eq from t1 a, t1 b;
@@ -12770,7 +12770,7 @@ INPUT
 select @@sql_mode into @full_mode;
 END
 ERROR
-syntax error at position 34 near 'full_mode'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 34 near 'full_mode'
 END
 INPUT
 select @a, @b;
@@ -12932,7 +12932,7 @@ INPUT
 select concat("a",NULL),replace(NULL,"a","b"),replace("string","i",NULL),replace("string",NULL,"i"),insert("abc",1,1,NULL),left(NULL,1);
 END
 ERROR
-syntax error at position 107 near 'insert'
+syntax error: unexpected INSERT at position 107 near 'insert'
 END
 INPUT
 select substring_index('aaaaaaaaa1','1',1);
@@ -12968,7 +12968,7 @@ INPUT
 select (select t2.* as 'x' from t2) from t1;
 END
 ERROR
-syntax error at position 23 near 'as'
+syntax error: unexpected AS, expecting FOR or LOCK or ')' at position 23 near 'as'
 END
 INPUT
 select group_concat(b) from t1 group by a;
@@ -13034,13 +13034,13 @@ INPUT
 select char(0xff,0x8f using utf8mb4);
 END
 ERROR
-syntax error: unexpected '.' at position 28 near 'using'
+syntax error: unexpected USING, expecting ')' at position 28 near 'using'
 END
 INPUT
 select a, group_concat(b) from t1 group by a with rollup;
 END
 ERROR
-syntax error at position 50 near 'with'
+syntax error: unexpected WITH at position 50 near 'with'
 END
 INPUT
 select insert('txs',2,1,'hi'),insert('is ',4,0,'a'),insert('txxxxt',2,4,'es');
@@ -13136,7 +13136,7 @@ INPUT
 select char_length(';
 END
 ERROR
-syntax error at position 22 near ';'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 22 near ';'
 END
 INPUT
 select ST_geomfromtext(col9,col89) as a from t1;
@@ -13262,7 +13262,7 @@ INPUT
 select hex(char(0x01020304 using ucs2));
 END
 ERROR
-syntax error at position 33 near 'using'
+syntax error: unexpected USING, expecting ')' at position 33 near 'using'
 END
 INPUT
 select 'a' union select concat('a', -0.0000);
@@ -13388,7 +13388,7 @@ INPUT
 select t1.*,t2.* from t1 as t0,{ oj t2 left outer join t1 on (t1.a=t2.a) } WHERE t0.a=2;
 END
 ERROR
-syntax error at position 33 near '{'
+syntax error: unexpected LEX_ERROR at position 33 near '{'
 END
 INPUT
 select length(s1),char_length(s1) from t1;
@@ -13592,7 +13592,7 @@ INPUT
 select 4|||| delimiter 'abcd'|||| select 5;
 END
 ERROR
-syntax error at position 13
+syntax error: unexpected OR at position 13
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf16_german2_ci;
@@ -13784,7 +13784,7 @@ INPUT
 select hex(a) a, hex(@u:=convert(a using utf8)) b, hex(convert(@u using big5)) c from t1 order by a;
 END
 ERROR
-syntax error at position 25 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 25 near ':'
 END
 INPUT
 select t,count(t) from t1 group by t order by t limit 10;
@@ -13826,7 +13826,7 @@ INPUT
 select hex(char(0xFF using utf8));
 END
 ERROR
-syntax error: unexpected '(' at position 27 near 'using'
+syntax error: unexpected USING, expecting ')' at position 27 near 'using'
 END
 INPUT
 select date_add("1997-12-31 23:59:59",INTERVAL -100000 YEAR);
@@ -13880,7 +13880,7 @@ INPUT
 select a as 'x', t1.* as 'with_alias', b as 'x' from t1;
 END
 ERROR
-syntax error at position 25 near 'as'
+syntax error: unexpected AS at position 25 near 'as'
 END
 INPUT
 select yearweek("2000-01-06",0) as '2000', yearweek("2001-01-06",0) as '2001', yearweek("2002-01-06",0) as '2002',yearweek("2003-01-06",0) as '2003', yearweek("2004-01-06",0) as '2004', yearweek("2005-01-06",0) as '2005', yearweek("2006-01-06",0) as '2006';
@@ -13958,7 +13958,7 @@ INPUT
 select t1.*, (select t2.* as 'x' from t2) from t1;
 END
 ERROR
-syntax error at position 29 near 'as'
+syntax error: unexpected AS, expecting FOR or LOCK or ')' at position 29 near 'as'
 END
 INPUT
 select hex(weight_string(_utf16 0xD800DC00 collate utf16_unicode_ci));
@@ -14126,7 +14126,7 @@ INPUT
 select interval(null, 1, 10, 100);
 END
 ERROR
-syntax error at position 35
+syntax error: unexpected ';' at position 35
 END
 INPUT
 select TABLE_ROWS from information_schema.tables where table_schema="information_schema" and table_name="COLUMNS";
@@ -14414,7 +14414,7 @@ INPUT
 select a, (select t2.* as 'x' from t2) from t1;
 END
 ERROR
-syntax error at position 26 near 'as'
+syntax error: unexpected AS, expecting FOR or LOCK or ')' at position 26 near 'as'
 END
 INPUT
 select max(a3) from t1 where a3 = 'DEN' and a2 = 2;
@@ -14444,7 +14444,7 @@ INPUT
 select 24 60 60 1000 1000 10 into @my_uuid_one_day;
 END
 ERROR
-syntax error at position 13 near '60'
+syntax error: unexpected INTEGRAL at position 13 near '60'
 END
 INPUT
 select count(*) from t2 where t = "bbb";
@@ -14744,7 +14744,7 @@ INPUT
 select hex(@utf83:= CONVERT(@ujis3 USING utf8));
 END
 ERROR
-syntax error: unexpected LEX_ERROR at position 19 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 19 near ':'
 END
 INPUT
 select from t1 where MATCH a,b AGAINST('"space model' IN BOOLEAN MODE);
@@ -14762,7 +14762,7 @@ INPUT
 select (select from (select t1.a) cte) from t1;
 END
 ERROR
-syntax error at position 20 near 'from'
+syntax error: unexpected FROM at position 20 near 'from'
 END
 INPUT
 select from t11;
@@ -14810,7 +14810,7 @@ INPUT
 select char(196 using utf8);
 END
 ERROR
-syntax error at position 22 near 'using'
+syntax error: unexpected USING, expecting ')' at position 22 near 'using'
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf32_romanian_ci;
@@ -14972,7 +14972,7 @@ INPUT
 select ST_GeomFromText('linestring(5 5, 15 4)') into @l;
 END
 ERROR
-syntax error at position 56 near 'l'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 56 near 'l'
 END
 INPUT
 select a1,a2,b,min(c),max(c) from t1 where a1 >= 'c' or a2 < 'b' group by a1,a2,b;
@@ -15398,7 +15398,7 @@ INPUT
 select t1.time+0,t1.date+0,t1.timestamp+0,concat(date," ",time), t1.quarter+t1.week, t1.year+timestampadd, timestampdiff from t1;
 END
 ERROR
-syntax error at position 107
+syntax error: unexpected ',', expecting '(' at position 107
 END
 INPUT
 select substring_index('aaaaaaaaa1','aa',1);
@@ -15446,7 +15446,7 @@ INPUT
 select bit_length(';
 END
 ERROR
-syntax error at position 21 near ';'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 21 near ';'
 END
 INPUT
 select from t3 order by a desc;
@@ -15470,7 +15470,7 @@ INPUT
 select hex(char(0x01020304 using utf32));
 END
 ERROR
-syntax error at position 33 near 'using'
+syntax error: unexpected USING, expecting ')' at position 33 near 'using'
 END
 INPUT
 select count(distinct case when id<=64 then id end) from tb;
@@ -15626,7 +15626,7 @@ INPUT
 select @@GLOBAL.relay_log_info_repository into @save_relay_log_info_repository;
 END
 ERROR
-syntax error at position 79 near 'save_relay_log_info_repository'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 79 near 'save_relay_log_info_repository'
 END
 INPUT
 select SUBSTR('abcdefg',-1,-1) FROM DUAL;
@@ -15650,7 +15650,7 @@ INPUT
 select floor(conv(@my_uuidate,16,10)/@my_uuid_one_day) into @my_uuid_date;
 END
 ERROR
-syntax error at position 74 near 'my_uuid_date'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 74 near 'my_uuid_date'
 END
 INPUT
 select a1,max(c),min(c) from t3 where (a2 = 'a') and (b = 'b') group by a1;
@@ -15824,7 +15824,7 @@ INPUT
 select A.* from (t1 inner join (select from t2) as A on t1.ID = A.FID);
 END
 ERROR
-syntax error at position 44 near 'from'
+syntax error: unexpected FROM at position 44 near 'from'
 END
 INPUT
 select b.id, group_concat(b.name) from t1 a, t1 b group by b.id;
@@ -15962,7 +15962,7 @@ INPUT
 select index_length into @paked_keys_size from information_schema.tables where table_name='t1';
 END
 ERROR
-syntax error at position 42 near 'paked_keys_size'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 42 near 'paked_keys_size'
 END
 INPUT
 select group_concat(c1 order by binary c1 separator '') from t1 group by c1 collate utf16_croatian_ci;
@@ -16034,7 +16034,7 @@ INPUT
 select CONNECTION_ID() into @thread_id;
 END
 ERROR
-syntax error at position 39 near 'thread_id'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 39 near 'thread_id'
 END
 INPUT
 select from information_schema.CHARACTER_SETS where CHARACTER_SET_NAME like 'latin1%' order by character_set_name;
@@ -16238,7 +16238,7 @@ INPUT
 select hex(char(0x01 using ucs2));
 END
 ERROR
-syntax error: unexpected '(' at position 27 near 'using'
+syntax error: unexpected USING, expecting ')' at position 27 near 'using'
 END
 INPUT
 select from information_schema.columns where table_schema = NULL;
@@ -16334,7 +16334,7 @@ INPUT
 select hex(char(0x01 using utf32));
 END
 ERROR
-syntax error: unexpected '(' at position 27 near 'using'
+syntax error: unexpected USING, expecting ')' at position 27 near 'using'
 END
 INPUT
 select str_to_date("2003-01-02 10:11:12.0012ABCD", "%Y-%m-%d %H:%i:%S.%f") as f1, addtime("-01:01:01.01 GGG", "-23:59:59.1") as f2, microsecond("1997-12-31 23:59:59.01XXXX") as f3;
@@ -16358,7 +16358,7 @@ INPUT
 select @category2_id:= 10002;
 END
 ERROR
-syntax error at position 22 near ':'
+syntax error: unexpected LEX_ERROR at position 22 near ':'
 END
 INPUT
 select CONVERT("2004-01-22 21:45:33",DATE);
@@ -16520,7 +16520,7 @@ INPUT
 select @test_compress_string:='string for test compress function aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ';
 END
 ERROR
-syntax error at position 30 near ':'
+syntax error: unexpected LEX_ERROR at position 30 near ':'
 END
 INPUT
 select length(quote(concat(char(0),"test")));
@@ -16826,7 +16826,7 @@ INPUT
 select count(*), interval(qty,2,3,4,5,6,7,8) as category from t1 group by category;
 END
 ERROR
-syntax error at position 48 near 'as'
+syntax error: unexpected AS at position 48 near 'as'
 END
 INPUT
 select SQL_BUFFER_RESULT from t1 order by 1, 2;
@@ -16958,7 +16958,7 @@ INPUT
 select hex(@utf81:= CONVERT(@ujis1 USING utf8));
 END
 ERROR
-syntax error: unexpected LEX_ERROR at position 19 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 19 near ':'
 END
 INPUT
 select strcmp(_koi8r'a', _koi8r'A' COLLATE koi8r_bin);
@@ -17144,7 +17144,7 @@ INPUT
 select tt.field100 from t1 join (select from t1) tt where t1.field100=tt.field100 limit 1;
 END
 ERROR
-syntax error at position 45 near 'from'
+syntax error: unexpected FROM at position 45 near 'from'
 END
 INPUT
 select cast(repeat('1',20) as signed);
@@ -17486,13 +17486,13 @@ INPUT
 select distinct from test;
 END
 ERROR
-syntax error at position 21 near 'from'
+syntax error: unexpected FROM at position 21 near 'from'
 END
 INPUT
 select 1 from t1 where 1 < some (select cast(a as datetime) from t1);
 END
 ERROR
-syntax error at position 40 near 'select'
+syntax error: unexpected SELECT, expecting ')' at position 40 near 'select'
 END
 INPUT
 select hex(a) from t1 where a like 'A_' order by a;
@@ -17576,7 +17576,7 @@ INPUT
 select 'hello',"'hello'",'""hello""','''h''e''l''l''o''',"hel""lo",'hel'lo';
 END
 ERROR
-syntax error at position 77 near ';'
+syntax error: unexpected LEX_ERROR at position 77 near ';'
 END
 INPUT
 select unix_timestamp('2038-01-20 01:00:00');
@@ -17720,7 +17720,7 @@ INPUT
 select -9223372036854775808 1 as result;
 END
 ERROR
-syntax error at position 30 near '1'
+syntax error: unexpected INTEGRAL at position 30 near '1'
 END
 INPUT
 select distinct nullif(a,b) as c from t1 z order by z.c;
@@ -17852,7 +17852,7 @@ INPUT
 select hex(char(0x41 using ucs2));
 END
 ERROR
-syntax error: unexpected '(' at position 27 near 'using'
+syntax error: unexpected USING, expecting ')' at position 27 near 'using'
 END
 INPUT
 select insert('hello', 1, -1, 'hi');
@@ -17864,7 +17864,7 @@ INPUT
 select i from t1 where i = 1 into j;
 END
 ERROR
-syntax error at position 36 near 'j'
+syntax error: unexpected ID, expecting OUTFILE or DUMPFILE at position 36 near 'j'
 END
 INPUT
 select c from t2;
@@ -17888,7 +17888,7 @@ INPUT
 select @stamp2:=f2 from t1;
 END
 ERROR
-syntax error at position 16 near ':'
+syntax error: unexpected LEX_ERROR at position 16 near ':'
 END
 INPUT
 select last_day('2005-00-00');
@@ -17936,7 +17936,7 @@ INPUT
 select char(0xff,0x8f using utf8);
 END
 ERROR
-syntax error: unexpected '.' at position 28 near 'using'
+syntax error: unexpected USING, expecting ')' at position 28 near 'using'
 END
 INPUT
 select TRUE,FALSE,NULL;
@@ -17978,7 +17978,7 @@ INPUT
 select POSITION(_latin1'B' COLLATE latin1_bin IN _latin1'abcd');
 END
 ERROR
-syntax error at position 57 near '_latin1'
+syntax error: unexpected UNDERSCORE_LATIN1, expecting '(' or LIST_ARG at position 57 near '_latin1'
 END
 INPUT
 select from v2;
@@ -18020,7 +18020,7 @@ INPUT
 select count(*) into n from t1;
 END
 ERROR
-syntax error at position 23 near 'n'
+syntax error: unexpected ID, expecting OUTFILE or DUMPFILE at position 23 near 'n'
 END
 INPUT
 select time("1997-12-31 25:59:59.000001");
@@ -18038,7 +18038,7 @@ INPUT
 select char(0xd1,0x8f using utf8);
 END
 ERROR
-syntax error: unexpected '.' at position 28 near 'using'
+syntax error: unexpected USING, expecting ')' at position 28 near 'using'
 END
 INPUT
 select distinct b from t2 where (a2 >= 'b') and (b = 'a');
@@ -18122,7 +18122,7 @@ INPUT
 select collation(char(123)), collation(char(123 using binary));
 END
 ERROR
-syntax error at position 54 near 'using'
+syntax error: unexpected USING, expecting ')' at position 54 near 'using'
 END
 INPUT
 select c cy from t1 where c='y';
@@ -18176,7 +18176,7 @@ INPUT
 select hex(convert(char(2557 using latin1) using utf8mb4));
 END
 ERROR
-syntax error at position 35 near 'using'
+syntax error: unexpected USING, expecting ')' at position 35 near 'using'
 END
 INPUT
 select 0x961838f6fc3c7f9ec17b5d900410d8aa like '%-113%';
@@ -18242,7 +18242,7 @@ INPUT
 select -9223372036854775808 0 as result;
 END
 ERROR
-syntax error at position 30 near '0'
+syntax error: unexpected INTEGRAL at position 30 near '0'
 END
 INPUT
 select userid,count(*) from t1 group by userid order by userid desc;
@@ -18674,13 +18674,13 @@ INPUT
 select char(123 using binary);
 END
 ERROR
-syntax error at position 22 near 'using'
+syntax error: unexpected USING, expecting ')' at position 22 near 'using'
 END
 INPUT
 select char_length(left(@a:='тест',5)), length(@a), @a;
 END
 ERROR
-syntax error: unexpected '.' at position 28 near ':'
+syntax error: unexpected LEX_ERROR, expecting ',' or ')' at position 28 near ':'
 END
 INPUT
 select t1.*,t2.* from t1 left join t2 on (t1.b=t2.b) where coercibility(t2.a) = 5 order by t1.a,t2.a;
@@ -18932,7 +18932,7 @@ INPUT
 select 1e8 min(df) from t1;
 END
 ERROR
-syntax error at position 16
+syntax error: unexpected '(' at position 16
 END
 INPUT
 select group_concat(c1 order by c1) from t1 group by c1 collate utf8_icelandic_ci;
@@ -19106,7 +19106,7 @@ INPUT
 select a from t1 where a in (with cte as (select t1.a) select /*+ no_semijoin() node_modules/ a from cte);
 END
 ERROR
-syntax error at position 107 near '/*+ no_semijoin() node_modules/ a from cte);'
+syntax error: unexpected LEX_ERROR at position 107 near '/*+ no_semijoin() node_modules/ a from cte);'
 END
 INPUT
 select from v1a;
@@ -19130,7 +19130,7 @@ INPUT
 select sql_big_result trim(v),count(c) from t1 group by v order by v limit 10;
 END
 ERROR
-syntax error: unexpected '.' at position 28
+syntax error: unexpected '(' at position 28
 END
 INPUT
 select 1, min(a) from t1m where a=99;
@@ -19142,7 +19142,7 @@ INPUT
 select char(196 using utf8mb4);
 END
 ERROR
-syntax error at position 22 near 'using'
+syntax error: unexpected USING, expecting ')' at position 22 near 'using'
 END
 INPUT
 select trim(null from 'kate') as "must_be_null";
@@ -19172,7 +19172,7 @@ INPUT
 select SQL_BIG_RESULT bit_and(col), bit_or(col) from t1 group by col;
 END
 ERROR
-syntax error at position 31
+syntax error: unexpected '(' at position 31
 END
 INPUT
 select 3;
@@ -19448,7 +19448,7 @@ INPUT
 select (select d from t2 where d > a) as 'x', t1.* as 'with_alias' from t1;
 END
 ERROR
-syntax error at position 54 near 'as'
+syntax error: unexpected AS at position 54 near 'as'
 END
 INPUT
 select count(*) from t1 where a = 1;
@@ -19682,7 +19682,7 @@ INPUT
 select sql_big_result t2.id, avg(rating+0.0e0) from t2 group by t2.id;
 END
 ERROR
-syntax error at position 26
+syntax error: unexpected '.' at position 26
 END
 INPUT
 select cast(NULL as signed);
@@ -19736,7 +19736,7 @@ INPUT
 select straight_join from t2 right join t1 on t2.a=t1.a;
 END
 ERROR
-syntax error at position 26 near 'from'
+syntax error: unexpected FROM at position 26 near 'from'
 END
 INPUT
 select 0x0000000001020003F03F40408484040ADDE40 like 0x256F3B38312A7725;
@@ -19796,7 +19796,7 @@ INPUT
 select repeat('a', cast(2 as unsigned int));
 END
 ERROR
-syntax error at position 42 near 'int'
+syntax error: unexpected INT, expecting ')' at position 42 near 'int'
 END
 INPUT
 select locate('he','hello',2);
@@ -20102,7 +20102,7 @@ INPUT
 select char(53647 using utf8mb4);
 END
 ERROR
-syntax error at position 24 near 'using'
+syntax error: unexpected USING, expecting ')' at position 24 near 'using'
 END
 INPUT
 select right('hello', -18446744073709551617);
@@ -20120,7 +20120,7 @@ INPUT
 select t2.* from (select from t1) as A inner join t2 on A.ID = t2.FID;
 END
 ERROR
-syntax error at position 30 near 'from'
+syntax error: unexpected FROM at position 30 near 'from'
 END
 INPUT
 select col1 as count_col1,col2 from t1 as tmp1 group by col1,col2 having col1 = 10;
@@ -20192,7 +20192,7 @@ INPUT
 select max(t1.connection) into connection from t1;
 END
 ERROR
-syntax error at position 42 near 'connection'
+syntax error: unexpected CONNECTION, expecting OUTFILE or DUMPFILE at position 42 near 'connection'
 END
 INPUT
 select hex(_utf32 X'44');
@@ -20210,7 +20210,7 @@ INPUT
 select 1ea10.1a20,1e+ 1e+10 from 1ea10;
 END
 ERROR
-syntax error at position 10 near '1e'
+syntax error: unexpected LEX_ERROR at position 10 near '1e'
 END
 INPUT
 select date_add("1997-12-31 23:59:59",INTERVAL 1 DAY);
@@ -20264,7 +20264,7 @@ INPUT
 select char(0xd1,0x8f using utf8mb4);
 END
 ERROR
-syntax error: unexpected '.' at position 28 near 'using'
+syntax error: unexpected USING, expecting ')' at position 28 near 'using'
 END
 INPUT
 select quote(1/0), quote('Z');
@@ -20306,7 +20306,7 @@ INPUT
 select FROM t1;
 END
 ERROR
-syntax error at position 12 near 'FROM'
+syntax error: unexpected FROM at position 12 near 'FROM'
 END
 INPUT
 select case a when 1 then "one" when 2 then "two" else "nothing" end as fcase, count(*) from t1 group by fcase;
@@ -20372,7 +20372,7 @@ INPUT
 select sql_big_result t2.id, avg(rating) from t2 group by t2.id;
 END
 ERROR
-syntax error at position 26
+syntax error: unexpected '.' at position 26
 END
 INPUT
 select ST_Astext(ST_Envelope(ST_MPointFromWKB(ST_AsWKB(MultiPoint(Point('0', '-0'),Point('-0', '0'), Point('0', '0')))))) as result;
@@ -20396,7 +20396,7 @@ INPUT
 select hex(char(0x0102 using ucs2));
 END
 ERROR
-syntax error at position 29 near 'using'
+syntax error: unexpected USING, expecting ')' at position 29 near 'using'
 END
 INPUT
 select f1 from t1 where makedate(2006,1) between date(f1) and date(f3);
@@ -20426,7 +20426,7 @@ INPUT
 select count(distinct x.id_aams) from (select from (select t1.id_aams, t2.* from t1 left join t2 on t2.code_id='G0000000012' and t1.id_aams=t2.id_game where t1.id_aams=1715000360 order by t2.id desc ) as g group by g.id_aams having g.id is null ) as x;
 END
 ERROR
-syntax error at position 51 near 'from'
+syntax error: unexpected FROM at position 51 near 'from'
 END
 INPUT
 select from t1 natural join (t2 natural join (t3 natural join t4));
@@ -20732,7 +20732,7 @@ INPUT
 select ST_GeomFromText('linestring(-2 -2, 12 7)') into @l;
 END
 ERROR
-syntax error at position 58 near 'l'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 58 near 'l'
 END
 INPUT
 select RANDOM_BYTES(1025);
@@ -20822,7 +20822,7 @@ INPUT
 select ST_GeomFromText('linestring(6 2, 12 1)') into @l;
 END
 ERROR
-syntax error at position 56 near 'l'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 56 near 'l'
 END
 INPUT
 select hex(substr(_utf16 0x00e400e5D800DC00,-2));
@@ -20900,7 +20900,7 @@ INPUT
 select "Test default delimiter;
 END
 ERROR
-syntax error at position 32 near 'Test default delimiter;'
+syntax error: unexpected LEX_ERROR at position 32 near 'Test default delimiter;'
 END
 INPUT
 select from t1 where match a against ("te*" in boolean mode)+0;
@@ -20912,7 +20912,7 @@ INPUT
 select sql_buffer_result max(f1)+1 from t1;
 END
 ERROR
-syntax error at position 30
+syntax error: unexpected '(' at position 30
 END
 INPUT
 select t1Aa.col1 from t1aA,t2Aa where t1Aa.col1 = t2aA.col1;
@@ -21026,7 +21026,7 @@ INPUT
 select 1 /bin /boot /cdrom /dev /etc /home /lib /lib32 /lib64 /libx32 /lost+found /media /mnt /opt /proc /root /run /sbin /snap /srv /swapfile /sys /tmp /usr /var long multi line comment */;
 END
 ERROR
-syntax error at position 174 near 'multi'
+syntax error: unexpected ID at position 174 near 'multi'
 END
 INPUT
 select date_add(date,INTERVAL 1 MONTH) from t1;
@@ -21134,7 +21134,7 @@ INPUT
 select char(195 using utf8);
 END
 ERROR
-syntax error at position 22 near 'using'
+syntax error: unexpected USING, expecting ')' at position 22 near 'using'
 END
 INPUT
 select a1,a2,b,min(c),max(c) from t2 where (c < 'a0') group by a1,a2,b;
@@ -21158,7 +21158,7 @@ INPUT
 select i from t1 where i=1 into k;
 END
 ERROR
-syntax error at position 34 near 'k'
+syntax error: unexpected ID, expecting OUTFILE or DUMPFILE at position 34 near 'k'
 END
 INPUT
 select s.*, '*', m.*, (s.match_1_h - m.home) UUX from t2 s straight_join t1 m where m.match_id = 1 order by UUX desc;
@@ -21776,7 +21776,7 @@ INPUT
 select hex(char(1 using utf8));
 END
 ERROR
-syntax error at position 24 near 'using'
+syntax error: unexpected USING, expecting ')' at position 24 near 'using'
 END
 INPUT
 select col1 as count_col1,col2 from t1 as tmp1 group by col1,col2 having count_col1 = 10;
@@ -22088,7 +22088,7 @@ INPUT
 select count(distinct (f1+1)) from t1 group by f1 with rollup;
 END
 ERROR
-syntax error at position 55 near 'with'
+syntax error: unexpected WITH at position 55 near 'with'
 END
 INPUT
 select -9223372036854775808;
@@ -22154,7 +22154,7 @@ INPUT
 select sum(all a),count(all a),avg(all a),std(all a),variance(all a),bit_or(all a),bit_and(all a),min(all a),max(all a),min(all c),max(all c) from t1;
 END
 ERROR
-syntax error at position 15 near 'all'
+syntax error: unexpected ALL, expecting ')' at position 15 near 'all'
 END
 INPUT
 select BIN(a) from t1;
@@ -22238,7 +22238,7 @@ INPUT
 select 1/*!000002*/;
 END
 ERROR
-syntax error at position 20 near '2'
+syntax error: unexpected INTEGRAL at position 20 near '2'
 END
 INPUT
 select 1, min(a) from t1i where a=99;
@@ -22292,7 +22292,7 @@ INPUT
 select char(53647 using utf8);
 END
 ERROR
-syntax error at position 24 near 'using'
+syntax error: unexpected USING, expecting ')' at position 24 near 'using'
 END
 INPUT
 select 'A' like 'a' collate utf8mb4_bin;
@@ -22358,7 +22358,7 @@ INPUT
 select length(repeat("a",65500)),length(concat(repeat("a",32000),repeat("a",32000))),length(replace("aaaaa","a",concat(repeat("a",10000)))),length(insert(repeat("a",40000),1,30000,repeat("b",50000)));
 END
 ERROR
-syntax error at position 154 near 'insert'
+syntax error: unexpected INSERT, expecting ')' at position 154 near 'insert'
 END
 INPUT
 select date_add(date,INTERVAL 1 HOUR) from t1;
@@ -22430,7 +22430,7 @@ INPUT
 select char(0xd18f using utf8mb4);
 END
 ERROR
-syntax error at position 25 near 'using'
+syntax error: unexpected USING, expecting ')' at position 25 near 'using'
 END
 INPUT
 select st_within(st_intersection(ST_GeomFromText('point(1 1)'), ST_GeomFromText('multipoint(2 2, 3 3)')), st_intersection(ST_GeomFromText('point(0 0)'), ST_GeomFromText('point(1 1)')));
@@ -22604,7 +22604,7 @@ INPUT
 select @@GLOBAL.expire_logs_days into @save_expire_logs_days;
 END
 ERROR
-syntax error at position 61 near 'save_expire_logs_days'
+syntax error: unexpected AT_ID, expecting OUTFILE or DUMPFILE at position 61 near 'save_expire_logs_days'
 END
 INPUT
 select from t1 where a=if(b<10,_ucs2 0x0062,_ucs2 0x00C0);
@@ -22640,7 +22640,7 @@ INPUT
 select hex(char(0x010203 using utf32));
 END
 ERROR
-syntax error at position 31 near 'using'
+syntax error: unexpected USING, expecting ')' at position 31 near 'using'
 END
 INPUT
 select ST_geometryfromtext(b) IS NULL, ST_geometryfromwkb(b) IS NULL, ST_astext(b) IS NULL, ST_aswkb(b) IS NULL, ST_geometrytype(b) IS NULL, ST_centroid(b) IS NULL, ST_envelope(b) IS NULL, ST_startpoint(b) IS NULL, ST_endpoint(b) IS NULL, ST_exteriorring(b) IS NULL, ST_pointn(b, 1) IS NULL, ST_geometryn(b, 1) IS NULL, ST_interiorringn(b, 1) IS NULL, multipoint(b) IS NULL, ST_isempty(b) IS NULL, ST_issimple(b) IS NULL, ST_isclosed(b) IS NULL, ST_dimension(b) IS NULL, ST_numgeometries(b) IS NULL, ST_numinteriorrings(b) IS NULL, ST_numpoints(b) IS NULL, ST_area(b) IS NULL, ST_length(b) IS NULL, ST_srid(b) IS NULL, ST_x(b) IS NULL, ST_y(b) IS NULL from t1;
@@ -22682,7 +22682,7 @@ INPUT
 select substring('abc', cast(2 as unsigned int));
 END
 ERROR
-syntax error at position 47 near 'int'
+syntax error: unexpected INT, expecting ')' at position 47 near 'int'
 END
 INPUT
 select length(a) from t1;
@@ -22880,7 +22880,7 @@ INPUT
 select hex(@utf84:= CONVERT(@ujis4 USING utf8));
 END
 ERROR
-syntax error: unexpected LEX_ERROR at position 19 near ':'
+syntax error: unexpected LEX_ERROR, expecting ')' at position 19 near ':'
 END
 INPUT
 select (select dt.a from (select 1 as a, t2.a as b from t2 having t1.a) dt where dt.b=t1.a) as subq from t1;
@@ -22904,7 +22904,7 @@ INPUT
 select FROM t4 where fld3='bonfire';
 END
 ERROR
-syntax error at position 12 near 'FROM'
+syntax error: unexpected FROM at position 12 near 'FROM'
 END
 INPUT
 select ST_AsText(a) from t1 where MBRContains(ST_GeomFromText('Polygon((0 0, 0 2, 2 2, 2 0, 0 0))'), a) and MBRContains(ST_GeomFromText('Polygon((0 0, 0 7, 7 7, 7 0, 0 0))'), a);
@@ -23096,7 +23096,7 @@ INPUT
 select tt.* from (select from t1) as tt order by 1, 2;
 END
 ERROR
-syntax error at position 30 near 'from'
+syntax error: unexpected FROM at position 30 near 'from'
 END
 INPUT
 select @@key_cache_block_size;
