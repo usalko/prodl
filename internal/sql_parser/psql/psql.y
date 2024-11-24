@@ -414,7 +414,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <insertAction> insert_or_replace
 %type <str> explain_synonyms
 %type <intervalType> interval_time_stamp interval
-%type <str> cache_opt separator_opt flush_option for_channel_opt maxvalue
+%type <str> cache_opt separator_opt flush_option for_channel_opt
 %type <matchExprOption> match_option
 %type <boolean> distinct_opt union_op replace_opt local_opt
 %type <selectExprs> select_expression_list select_expression_list_opt
@@ -461,8 +461,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <orderDirection> asc_desc_opt
 %type <limit> limit_opt limit_clause
 %type <columnTypeOptions> column_attribute_list_opt generated_column_attribute_list_opt
-%type <str> header_opt export_options manifest_opt overwrite_opt format_opt optionally_opt
-%type <str> fields_opts fields_opt_list fields_opt lines_opts lines_opt lines_opt_list
 %type <lock> locking_clause
 %type <selectInto> into_clause
 %type <columns> ins_column_list column_list at_id_list column_list_opt index_list execute_statement_list_opt
@@ -479,7 +477,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <str> default_opt
 %type <ignore> ignore_opt
 %type <str> columns_or_fields extended_opt storage_opt
-%type <showFilter> like_or_where_opt like_opt
+%type <showFilter> like_or_where_opt
 %type <boolean> exists_opt not_exists_opt enforced enforced_opt temp_opt full_opt
 %type <empty> to_opt
 %type <str> reserved_keyword non_reserved_keyword
@@ -499,7 +497,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <str> collate_opt
 %type <boolean> binary_opt
 %type <LengthScaleOption> float_length_opt decimal_length_opt
-%type <boolean> unsigned_opt zero_fill_opt without_valid_opt
+%type <boolean> unsigned_opt zero_fill_opt
 %type <strs> enum_values
 %type <columnDefinition> column_definition
 %type <columnDefinitions> column_definition_list
@@ -538,8 +536,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <colKeyOpt> keys
 %type <referenceDefinition> reference_definition reference_definition_opt
 %type <str> underscore_charsets
-%type <str> expire_opt
-%type <literal> ratio_opt
 %start any_command
 
 %%
@@ -2608,24 +2604,6 @@ after_opt:
     $$ = $2
   }
 
-expire_opt:
-  {
-    $$ = ""
-  }
-| EXPIRE STRING
-  {
-    $$ = string($2)
-  }
-
-ratio_opt:
-  {
-    $$ = nil
-  }
-| RATIO DECIMAL
-  {
-    $$ = ast.NewDecimalLiteral($2)
-  }
-
 alter_commands_list:
   {
     $$ = nil
@@ -3034,29 +3012,6 @@ json_on_response:
     $$ = &ast.JtOnResponse{ResponseType: ast.DefaultJSONType, Expr: $2}
   }
 
-without_valid_opt:
-  {
-    $$ = false
-  }
-| WITH VALIDATION
-  {
-    $$ = false
-  }
-| WITHOUT VALIDATION
-  {
-    $$ = true
-  }
-
-maxvalue:
-  MAXVALUE
-  {
-    $$ = ""
-  }
-| openb MAXVALUE closeb
-  {
-    $$ = ""
-  }
-
 rename_statement:
   RENAME TABLE rename_list
   {
@@ -3333,16 +3288,6 @@ like_or_where_opt:
   {
     $$ = &ast.ShowFilter{Filter:$2}
   }
-
-like_opt:
-  /* empty */
-    {
-      $$ = nil
-    }
-  | LIKE STRING
-    {
-      $$ = &ast.ShowFilter{Like:string($2)}
-    }
 
 session_or_local_opt:
   /* empty */
@@ -5449,131 +5394,6 @@ INTO table_name
 {
 $$ = &ast.SelectInto{ExportOption:sql_types.EncodeStringSQL($2.Name.V)}
 }
-
-format_opt:
-  {
-    $$ = ""
-  }
-| FORMAT CSV header_opt
-  {
-    $$ = " format csv" + $3
-  }
-| FORMAT TEXT header_opt
-  {
-    $$ = " format text" + $3
-  }
-
-header_opt:
-  {
-    $$ = ""
-  }
-| HEADER
-  {
-    $$ = " header"
-  }
-
-manifest_opt:
-  {
-    $$ = ""
-  }
-| MANIFEST ON
-  {
-    $$ = " manifest on"
-  }
-| MANIFEST OFF
-  {
-    $$ = " manifest off"
-  }
-
-overwrite_opt:
-  {
-    $$ = ""
-  }
-| OVERWRITE ON
-  {
-    $$ = " overwrite on"
-  }
-| OVERWRITE OFF
-  {
-    $$ = " overwrite off"
-  }
-
-export_options:
-  fields_opts lines_opts
-  {
-    $$ = $1 + $2
-  }
-
-lines_opts:
-  {
-    $$ = ""
-  }
-| LINES lines_opt_list
-  {
-    $$ = " lines" + $2
-  }
-
-lines_opt_list:
-  lines_opt
-  {
-    $$ = $1
-  }
-| lines_opt_list lines_opt
-  {
-    $$ = $1 + $2
-  }
-
-lines_opt:
-  STARTING BY STRING
-  {
-    $$ = " starting by " + sql_types.EncodeStringSQL($3)
-  }
-| TERMINATED BY STRING
-  {
-    $$ = " terminated by " + sql_types.EncodeStringSQL($3)
-  }
-
-fields_opts:
-  {
-    $$ = ""
-  }
-| columns_or_fields fields_opt_list
-  {
-    $$ = " " + $1 + $2
-  }
-
-fields_opt_list:
-  fields_opt
-  {
-    $$ = $1
-  }
-| fields_opt_list fields_opt
-  {
-    $$ = $1 + $2
-  }
-
-fields_opt:
-  TERMINATED BY STRING
-  {
-    $$ = " terminated by " + sql_types.EncodeStringSQL($3)
-  }
-| optionally_opt ENCLOSED BY STRING
-  {
-    $$ = $1 + " enclosed by " + sql_types.EncodeStringSQL($4)
-  }
-| ESCAPED BY STRING
-  {
-    $$ = " escaped by " + sql_types.EncodeStringSQL($3)
-  }
-
-optionally_opt:
-  {
-    $$ = ""
-  }
-| OPTIONALLY
-  {
-    $$ = " optionally"
-  }
 
 // insert_data expands all combinations into a single rule.
 // This avoids a shift/reduce conflict while encountering the
