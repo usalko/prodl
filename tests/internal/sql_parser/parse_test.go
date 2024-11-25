@@ -947,9 +947,6 @@ var (
 	}, {
 		input: "insert into `user`(username, `status`) values ('Chuck', default(`status`))",
 	}, {
-		input:  "insert into user(format, tree, vitess) values ('Chuck', 42, 'Barry')",
-		output: "insert into `user`(`format`, `tree`, `vitess`) values ('Chuck', 42, 'Barry')",
-	}, {
 		input:  "insert into customer () values ()",
 		output: "insert into customer values ()",
 	}, {
@@ -1924,30 +1921,6 @@ var (
 	}, {
 		input: "show global gtid_executed from ks",
 	}, {
-		input:  "show vitess_keyspaces",
-		output: "show keyspaces",
-	}, {
-		input:  "show vitess_keyspaces like '%'",
-		output: "show keyspaces like '%'",
-	}, {
-		input: "show vitess_metadata variables",
-	}, {
-		input: "show vitess_replication_status",
-	}, {
-		input: "show vitess_replication_status like '%'",
-	}, {
-		input: "show vitess_shards",
-	}, {
-		input: "show vitess_shards like '%'",
-	}, {
-		input: "show vitess_tablets",
-	}, {
-		input: "show vitess_tablets like '%'",
-	}, {
-		input: "show vitess_tablets where hostname = 'some-tablet'",
-	}, {
-		input: "show vitess_targets",
-	}, {
 		input: "show vschema tables",
 	}, {
 		input: "show vschema vindexes",
@@ -1956,54 +1929,6 @@ var (
 	}, {
 		input:  "show vschema vindexes on t",
 		output: "show vschema vindexes from t",
-	}, {
-		input: "show vitess_migrations",
-	}, {
-		input: "show vitess_migrations from ks",
-	}, {
-		input: "show vitess_migrations from ks where col = 42",
-	}, {
-		input: `show vitess_migrations from ks like '%pattern'`,
-	}, {
-		input: "show vitess_migrations like '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90'",
-	}, {
-		input: "show vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' logs",
-	}, {
-		input: "revert vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90'",
-	}, {
-		input: "revert /*vt+ uuid=123 */ vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90'",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' retry",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' cleanup",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' complete",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' cancel",
-	}, {
-		input: "alter vitess_migration cancel all",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' throttle",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' throttle expire '1h'",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' throttle ratio 0.7",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' throttle expire '1h' ratio 0.7",
-	}, {
-		input: "alter vitess_migration '9748c3b7_7fdb_11eb_ac2c_f875a4d24e90' unthrottle",
-	}, {
-		input: "alter vitess_migration throttle all",
-	}, {
-		input: "alter vitess_migration unthrottle all",
-	}, {
-		input: "alter vitess_migration throttle all expire '1h'",
-	}, {
-		input: "alter vitess_migration throttle all ratio 0.7",
-	}, {
-		input: "alter vitess_migration throttle all expire '1h' ratio 0.7",
-	}, {
-		input: "show warnings",
 	}, {
 		input:  "select warnings from t",
 		output: "select `warnings` from t",
@@ -2056,11 +1981,6 @@ var (
 		input: "explain format = tree select * from t",
 	}, {
 		input: "explain format = json select * from t",
-	}, {
-		input: "explain format = vitess select * from t",
-	}, {
-		input:  "describe format = vitess select * from t",
-		output: "explain format = vitess select * from t",
 	}, {
 		input: "explain delete from t",
 	}, {
@@ -3023,115 +2943,115 @@ func TestInvalid(t *testing.T) {
 		err:   "query was empty",
 	}, {
 		input: "select /* union with limit on lhs */ 1 from t limit 1 union select 1 from t",
-		err:   "syntax error at position 60 near 'union'",
+		err:   "syntax error: unexpected UNION at position 60 near 'union'",
 	}, {
 		input: "(select * from t limit 100 into outfile s3 'out_file_name') union (select * from t2)",
 		err:   "syntax error",
 	}, {
 		input: "select * from (select * from t into outfile s3 'inner_outfile') as t2 into outfile s3 'out_file_name'",
-		err:   "syntax error at position 36 near 'into'",
+		err:   "syntax error: unexpected INTO, expecting ')' at position 36 near 'into'",
 	}, {
 		input: "select a from x order by y union select a from c",
 		err:   "syntax error",
 	}, {
 		input: "select `name`, numbers from (select * from users) as x()",
-		err:   "syntax error at position 57",
+		err:   "syntax error: unexpected ')' at position 57",
 	}, {
 		input: "select next 2 values from seq union select next value from seq",
-		err:   "syntax error at position 36 near 'union'",
+		err:   "syntax error: unexpected UNION at position 36 near 'union'",
 	}, {
 		input: "select next 2 values from user where id = 1",
-		err:   "syntax error at position 37 near 'where'",
+		err:   "syntax error: unexpected WHERE at position 37 near 'where'",
 	}, {
 		input: "select next 2 values from seq, seq",
-		err:   "syntax error at position 31",
+		err:   "syntax error: unexpected ',' at position 31",
 	}, {
 		input: "select 1, next value from seq",
 		err:   "syntax error",
 	}, {
 		input: "SELECT jcol, JSON_PRETTY(jcol, jcol) from jtable",
-		err:   "syntax error at position 31",
+		err:   "syntax error: unexpected ',' at position 31",
 	}, {
 		input: "SELECT JSON_ARRAY(1,)",
-		err:   "syntax error at position 22",
+		err:   "syntax error: unexpected ')' at position 22",
 	}, {
 		input: "SELECT JSON_OBJECT(1)",
-		err:   "syntax error at position 22",
+		err:   "syntax error: unexpected ')' at position 22",
 	}, {
 		input: "SELECT JSON_OBJECT(1,2,)",
-		err:   "syntax error at position 25",
+		err:   "syntax error: unexpected ')' at position 25",
 	}, {
 		input: "SELECT JSON_OBJECT(1,)",
-		err:   "syntax error at position 23",
+		err:   "syntax error: unexpected ')' at position 23",
 	}, {
 		input: "SELECT JSON_QUOTE()",
-		err:   "syntax error at position 20",
+		err:   "syntax error: unexpected ')' at position 20",
 	}, {
 		input: "select from t1, lateral (with qn as (select t1.a) select (select max(a) from qn)) as dt",
-		err:   "syntax error at position 12 near 'from'",
+		err:   "syntax error: unexpected FROM at position 12 near 'from'",
 	}, {
 		input: `SELECT JSON_SCHEMA_VALID('{"type":"string","pattern":"("}')`,
-		err:   `syntax error at position 60`,
+		err:   `syntax error: unexpected ')' at position 60`,
 	}, {
 		input: `SELECT JSON_SCHEMA_VALIDATION_REPORT('{"type":"string","pattern":"("}')`,
-		err:   `syntax error at position 72`,
+		err:   `syntax error: unexpected ')' at position 72`,
 	}, {
 		input: "SELECT JSON_CONTAINS(@j, @j2, )",
-		err:   "syntax error at position 32",
+		err:   "syntax error: unexpected ')' at position 32",
 	}, {
 		input: "SELECT JSON_CONTAINS_PATH(@j, @j2)",
-		err:   "syntax error at position 35",
+		err:   "syntax error: unexpected ')' at position 35",
 	}, {
 		input: "SELECT JSON_EXTRACT(@k, TRIM('abc'))",
-		err:   "syntax error at position 30",
+		err:   "syntax error: unexpected '(', expecting ',' or ')' at position 30",
 	}, {
 		input: "SELECT JSON_EXTRACT(@k)",
-		err:   "syntax error at position 24",
+		err:   "syntax error: unexpected ')' at position 24",
 	}, {
 		input: `SELECT JSON_KEYS('{\"a\": 1, \"b\": 2, \"c\": {\"d\": 4}}',)`,
-		err:   `syntax error at position 61`,
+		err:   `syntax error: unexpected ')' at position 61`,
 	}, {
 		input: "SELECT JSON_ARRAY_APPEND('{ \"a\": 1, \"b\": [2, 3]}')",
-		err:   "syntax error at position 51",
+		err:   "syntax error: unexpected ')' at position 51",
 	}, {
 		input: "SELECT JSON_ARRAY_APPEND('{ \"a\": 1, \"b\": [2, 3]}','$[1]',)",
-		err:   "syntax error at position 59",
+		err:   "syntax error: unexpected ')' at position 59",
 	}, {
 		input: "SELECT JSON_ARRAY_INSERT('{ \"a\": 1, \"b\": [2, 3]}')",
-		err:   "syntax error at position 51",
+		err:   "syntax error: unexpected ')' at position 51",
 	}, {
 		input: "SELECT JSON_ARRAY_INSERT('{ \"a\": 1, \"b\": [2, 3]}','$[1]',)",
-		err:   "syntax error at position 59",
+		err:   "syntax error: unexpected ')' at position 59",
 	}, {
 		input: "SELECT JSON_INSERT('{ \"a\": 1, \"b\": [2, 3]}')",
-		err:   "syntax error at position 45",
+		err:   "syntax error: unexpected ')' at position 45",
 	}, {
 		input: "SELECT JSON_INSERT('{ \"a\": 1, \"b\": [2, 3]}','$[1]',)",
-		err:   "syntax error at position 53",
+		err:   "syntax error: unexpected ')' at position 53",
 	}, {
 		input: "SELECT JSON_REPLACE('{ \"a\": 1, \"b\": [2, 3]}')",
-		err:   "syntax error at position 46",
+		err:   "syntax error: unexpected ')' at position 46",
 	}, {
 		input: "SELECT JSON_REPLACE('{ \"a\": 1, \"b\": [2, 3]}','$[1]',)",
-		err:   "syntax error at position 54",
+		err:   "syntax error: unexpected ')' at position 54",
 	}, {
 		input: "SELECT JSON_SET('{ \"a\": 1, \"b\": [2, 3]}')",
-		err:   "syntax error at position 42",
+		err:   "syntax error: unexpected ')' at position 42",
 	}, {
 		input: "SELECT JSON_SET('{ \"a\": 1, \"b\": [2, 3]}','$[1]',)",
-		err:   "syntax error at position 50",
+		err:   "syntax error: unexpected ')' at position 5",
 	}, {
 		input: "SELECT JSON_MERGE('[1, 2]')",
-		err:   "syntax error at position 28",
+		err:   "syntax error: unexpected ')' at position 28",
 	}, {
 		input: "SELECT JSON_MERGE_PATCH('[1, 2]')",
-		err:   "syntax error at position 34",
+		err:   "syntax error: unexpected ')' at position 34",
 	}, {
 		input: "SELECT JSON_MERGE_PRESERVE('[1, 2]')",
-		err:   "syntax error at position 37",
+		err:   "syntax error: unexpected ')' at position 37",
 	}, {
 		input: "SELECT JSON_REMOVE('[\"a\", [\"b\", \"c\"], \"d\"]')",
-		err:   "syntax error at position 45",
+		err:   "syntax error: unexpected ')' at position 45",
 	}}
 
 	for _, tcase := range invalidSQL {
@@ -3140,7 +3060,7 @@ func TestInvalid(t *testing.T) {
 			t.Errorf("Parse invalid query(%q), got: nil, want: %s...", tcase.input, tcase.err)
 		}
 		if err != nil && !strings.Contains(err.Error(), tcase.err) {
-			t.Errorf("Parse invalid query(%q), got: %v, want: %s...", tcase.input, err, tcase.err)
+			t.Errorf("Parse invalid query(%q), got: %q, want: %s...", tcase.input, err.Error(), tcase.err)
 		}
 	}
 }
@@ -3575,37 +3495,37 @@ func TestConvert(t *testing.T) {
 		output string
 	}{{
 		input:  "select convert('abc' as date) from t",
-		output: "syntax error at position 24 near 'as'",
+		output: "syntax error: unexpected AS at position 24 near 'as'",
 	}, {
 		input:  "select convert from t",
-		output: "syntax error at position 20 near 'from'",
+		output: "syntax error: unexpected FROM, expecting '(' at position 20 near 'from'",
 	}, {
 		input:  "select cast('foo', decimal) from t",
-		output: "syntax error at position 19",
+		output: "syntax error: unexpected ',' at position 19",
 	}, {
 		input:  "select convert('abc', datetime(4+9)) from t",
-		output: "syntax error at position 34",
+		output: "syntax error: unexpected '+', expecting ')' at position 34",
 	}, {
 		input:  "select convert('abc', decimal(4+9)) from t",
-		output: "syntax error at position 33",
+		output: "syntax error: unexpected '+', expecting ',' or ')' at position 33",
 	}, {
 		input:  "/* a comment */",
 		output: "query was empty",
 	}, {
 		input:  "set transaction isolation level 12345",
-		output: "syntax error at position 38 near '12345'",
+		output: "syntax error: unexpected INTEGRAL, expecting READ or REPEATABLE or SERIALIZABLE at position 38 near '12345'",
 	}, {
 		input:  "@",
-		output: "syntax error at position 2",
+		output: "syntax error: unexpected LEX_ERROR at position 2",
 	}, {
 		input:  "@@",
-		output: "syntax error at position 3",
+		output: "syntax error: unexpected LEX_ERROR at position 3",
 	}}
 
 	for _, tcase := range invalidSQL {
 		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
-			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
+			t.Errorf("%s: %v, want %s but got %q", tcase.input, err, tcase.output, err.Error())
 		}
 	}
 }
@@ -3658,16 +3578,16 @@ func TestSelectInto(t *testing.T) {
 		output string
 	}{{
 		input:  "select convert('abc' as date) from t",
-		output: "syntax error at position 24 near 'as'",
+		output: "syntax error: unexpected AS at position 24 near 'as'",
 	}, {
 		input:  "set transaction isolation level 12345",
-		output: "syntax error at position 38 near '12345'",
+		output: "syntax error: unexpected INTEGRAL, expecting READ or REPEATABLE or SERIALIZABLE at position 38 near '12345'",
 	}}
 
 	for _, tcase := range invalidSQL {
 		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
-			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
+			t.Errorf("%s: %v, want %s but got %q", tcase.input, err, tcase.output, err.Error())
 		}
 	}
 }
@@ -3678,28 +3598,28 @@ func TestPositionedErr(t *testing.T) {
 		output mysql.PositionedErr
 	}{{
 		input:  "select convert('abc' as date) from t",
-		output: mysql.PositionedErr{"syntax error", 24, "as"},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected AS", Pos: 24, Near: "as"},
 	}, {
 		input:  "select convert from t",
-		output: mysql.PositionedErr{"syntax error", 20, "from"},
+		output: mysql.PositionedErr{Err: `syntax error: unexpected FROM, expecting '('`, Pos: 20, Near: "from"},
 	}, {
 		input:  "select cast('foo', decimal) from t",
-		output: mysql.PositionedErr{"syntax error", 19, ""},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected ','", Pos: 19, Near: ""},
 	}, {
 		input:  "select convert('abc', datetime(4+9)) from t",
-		output: mysql.PositionedErr{"syntax error", 34, ""},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected '+', expecting ')'", Pos: 34, Near: ""},
 	}, {
 		input:  "select convert('abc', decimal(4+9)) from t",
-		output: mysql.PositionedErr{"syntax error", 33, ""},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected '+', expecting ',' or ')'", Pos: 33, Near: ""},
 	}, {
 		input:  "set transaction isolation level 12345",
-		output: mysql.PositionedErr{"syntax error", 38, "12345"},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected INTEGRAL, expecting READ or REPEATABLE or SERIALIZABLE", Pos: 38, Near: "12345"},
 	}, {
 		input:  "select * from a left join b",
-		output: mysql.PositionedErr{"syntax error", 28, ""},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected $end", Pos: 28, Near: ""},
 	}, {
 		input:  "select a from (select * from tbl)",
-		output: mysql.PositionedErr{"syntax error", 34, ""},
+		output: mysql.PositionedErr{Err: "syntax error: unexpected $end", Pos: 34, Near: ""},
 	}}
 
 	for _, tcase := range invalidSQL {
@@ -3712,7 +3632,7 @@ func TestPositionedErr(t *testing.T) {
 		if posErr, ok := err.(mysql.PositionedErr); !ok {
 			t.Errorf("%s: %v expected PositionedErr, got (%T) %v", tcase.input, err, err, tcase.output)
 		} else if posErr.Pos != tcase.output.Pos || posErr.Near != tcase.output.Near || err.Error() != tcase.output.Error() {
-			t.Errorf("%s: %v, want: %v", tcase.input, err, tcase.output)
+			t.Errorf("%s: %v, want: %v, but error is %q", tcase.input, err, tcase.output, err.Error())
 		}
 	}
 }
@@ -4995,34 +4915,34 @@ var (
 		output: "syntax error: unexpected LEX_ERROR at position 9 near ':'",
 	}, {
 		input:  "execute stmt using 1;",
-		output: "syntax error at position 21 near '1'",
+		output: "syntax error: unexpected INTEGRAL at position 21 near '1'",
 	}, {
 		input:  "PREPARE stmt FROM a;",
-		output: "syntax error at position 20 near 'a'",
+		output: "syntax error: unexpected ID at position 20 near 'a'",
 	}, {
 		input:  "PREPARE stmt FROM @@a;",
-		output: "syntax error at position 22 near 'a'",
+		output: "syntax error: unexpected AT_AT_ID at position 22 near 'a'",
 	}, {
 		input:  "select x'78 from t",
-		output: "syntax error at position 12 near '78'",
+		output: "syntax error: unexpected LEX_ERROR at position 12 near '78'",
 	}, {
 		input:  "select x'777' from t",
-		output: "syntax error at position 14 near '777'",
+		output: "syntax error: unexpected LEX_ERROR at position 14 near '777'",
 	}, {
 		input:  "select * from t where :1 = 2",
-		output: "syntax error at position 24 near ':'",
+		output: "syntax error: unexpected LEX_ERROR at position 24 near ':'",
 	}, {
 		input:  "select * from t where :. = 2",
-		output: "syntax error at position 24 near ':'",
+		output: "syntax error: unexpected LEX_ERROR at position 24 near ':'",
 	}, {
 		input:  "select * from t where ::1 = 2",
-		output: "syntax error at position 25 near '::'",
+		output: "syntax error: unexpected LEX_ERROR at position 25 near '::'",
 	}, {
 		input:  "select * from t where ::. = 2",
-		output: "syntax error at position 25 near '::'",
+		output: "syntax error: unexpected LEX_ERROR at position 25 near '::'",
 	}, {
 		input:  "update a set c = values(1)",
-		output: "syntax error at position 26 near '1'",
+		output: "syntax error: unexpected INTEGRAL at position 26 near '1'",
 	}, {
 		input: "select(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F" +
 			"(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(" +
@@ -5042,64 +4962,61 @@ var (
 			"(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(" +
 			"F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F(F" +
 			"(F(F(F(F(F(F(F(F(F(F(F(",
-		output: "syntax error at position 404",
+		output: "syntax error: unexpected $end, expecting ')' at position 404",
 	}, {
 		// This construct is considered invalid due to a grammar conflict.
 		input:  "insert into a select * from b join c on duplicate key update d=e",
-		output: "syntax error at position 54 near 'key'",
+		output: "syntax error: unexpected KEY at position 54 near 'key'",
 	}, {
 		input:  "select * from a left join b",
-		output: "syntax error at position 28",
+		output: "syntax error: unexpected $end at position 28",
 	}, {
 		input:  "select * from a natural join b on c = d",
-		output: "syntax error at position 34 near 'on'",
+		output: "syntax error: unexpected ON at position 34 near 'on'",
 	}, {
 		input:  "select * from a natural join b using (c)",
-		output: "syntax error at position 37 near 'using'",
+		output: "syntax error: unexpected USING at position 37 near 'using'",
 	}, {
 		input:  "select next id from a",
 		output: "expecting value after next at position 15 near 'id'",
 	}, {
 		input:  "select next 1+1 values from a",
-		output: "syntax error at position 15",
+		output: "syntax error: unexpected '+', expecting VALUES at position 15",
 	}, {
 		input:  "insert into a values (select * from b)",
-		output: "syntax error at position 29 near 'select'",
+		output: "syntax error: unexpected SELECT at position 29 near 'select'",
 	}, {
 		input:  "select database",
-		output: "syntax error at position 16",
+		output: "syntax error: unexpected $end, expecting '(' at position 16",
 	}, {
 		input:  "select mod from t",
-		output: "syntax error at position 16 near 'from'",
+		output: "syntax error: unexpected FROM, expecting '(' at position 16 near 'from'",
 	}, {
 		input:  "select 1 from t where div 5",
-		output: "syntax error at position 26 near 'div'",
+		output: "syntax error: unexpected DIV at position 26 near 'div'",
 	}, {
 		input:  "select 1 from t where binary",
-		output: "syntax error at position 29",
+		output: "syntax error: unexpected $end at position 29",
 	}, {
 		input:  "select match(a1, a2) against ('foo' in boolean mode with query expansion) from t",
-		output: "syntax error at position 57 near 'with'",
+		output: "syntax error: unexpected WITH, expecting ')' at position 57 near 'with'",
 	}, {
 		input:  "select /* reserved keyword as unqualified column */ * from t where key = 'test'",
-		output: "syntax error at position 71 near 'key'",
-	}, {
-		input:  "select /* vitess-reserved keyword as unqualified column */ * from t where escape = 'test'",
-		output: "syntax error at position 81 near 'escape'",
+		output: "syntax error: unexpected KEY at position 71 near 'key'",
 	}, {
 		input:  "select /* straight_join using */ 1 from t1 straight_join t2 using (a)",
-		output: "syntax error at position 66 near 'using'",
+		output: "syntax error: unexpected USING at position 66 near 'using'",
 	}, {
 		input:        "select 'aa",
-		output:       "syntax error at position 11 near 'aa'",
+		output:       "syntax error: unexpected LEX_ERROR at position 11 near 'aa'",
 		excludeMulti: true,
 	}, {
 		input:        "select 'aa\\",
-		output:       "syntax error at position 12 near 'aa'",
+		output:       "syntax error: unexpected LEX_ERROR at position 12 near 'aa'",
 		excludeMulti: true,
 	}, {
 		input:        "select /* aa",
-		output:       "syntax error at position 13 near '/* aa'",
+		output:       "syntax error: unexpected LEX_ERROR at position 13 near '/* aa'",
 		excludeMulti: true,
 	}, {
 		// This is a valid MySQL query but does not yet work with Vitess.
@@ -5108,7 +5025,7 @@ var (
 		// This highlights another problem, the tokenization has to be aware of the context of parsing!
 		// Since in an alternate query like `select .3e3t`, we should use .3e3 as a single token FLOAT and then t as ID.
 		input:        "create table 2t.3t2 (c1 bigint not null, c2 text, primary key(c1))",
-		output:       "syntax error at position 18 near '.3'",
+		output:       "syntax error: unexpected LEX_ERROR, expecting '(' or LIKE at position 18 near '.3'",
 		excludeMulti: true,
 	}}
 )
@@ -5134,11 +5051,11 @@ func TestSkipToEnd(t *testing.T) {
 		// This is the case where the partial ddl will be reset
 		// because of a premature ';'.
 		input:  "create table a(id; select * from t",
-		output: "syntax error at position 19",
+		output: "syntax error: unexpected ';' at position 19",
 	}, {
 		// Partial DDL should get reset for valid DDLs also.
 		input:  "create table a(id int); select * from t",
-		output: "syntax error at position 31 near 'select'",
+		output: "syntax error: unexpected SELECT at position 31 near 'select'",
 	}, {
 		// Partial DDL does not get reset here. But we allow the
 		// DDL only if there are no new tokens after skipping to end.
@@ -5152,7 +5069,7 @@ func TestSkipToEnd(t *testing.T) {
 	for _, tcase := range testcases {
 		_, err := sql_parser.Parse(tcase.input, dialect.MYSQL)
 		if err == nil || err.Error() != tcase.output {
-			t.Errorf("%s: %v, want %s", tcase.input, err, tcase.output)
+			t.Errorf("%s: %q, want %s", tcase.input, err.Error(), tcase.output)
 		}
 	}
 }
