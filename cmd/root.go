@@ -11,10 +11,10 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "sent",
-	Short: "Sql dump loader",
+	Use:   "prodl",
+	Short: "PROcessing Dump & Loading",
 	Long: `
-Sent is a CLI library for Go that do transform your data from sql dump.
+PROcessing Dump & Loading is a CLI library for Go that do transform your data from sql dump and load to the sql database.
 `,
 }
 
