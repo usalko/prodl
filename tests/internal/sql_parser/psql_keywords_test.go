@@ -102,8 +102,11 @@ CREATE TABLE public.articles_article (
     published boolean NOT NULL
 );
 	`
-	_, err := sql_parser.SplitStatementToPieces(expressions, dialect.PSQL)
+	pieces, err := sql_parser.SplitStatementToPieces(expressions, dialect.PSQL)
 	if err != nil {
 		t.Errorf("%q", err)
+	}
+	if len(pieces) != 15 {
+		t.Errorf("count of pieces is %v but expected %v", len(pieces), 15)
 	}
 }
