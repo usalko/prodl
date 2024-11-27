@@ -249,6 +249,13 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> WITHIN WRAPPER XML XMLATTRIBUTES XMLCONCAT XMLELEMENT XMLEXISTS
 %token <str> XMLFOREST XMLNAMESPACES XMLPARSE XMLPI XMLROOT XMLSERIALIZE XMLTABLE YES
 %token <str> ZONE
+// Non reserved but sql2023
+%token <str> ARRAY_MAX_CARDINALITY CHARACTER_SET_CATALOG COMMAND_FUNCTION_CODE CURRENT_DEFAULT_TRANSFORM_GROUP
+%token <str> CURRENT_TRANSFORM_GROUP_FOR_TYPE DATETIME_INTERVAL_CODE DATETIME_INTERVAL_PRECISION
+%token <str> DYNAMIC_FUNCTION_CODE END_EXEC PARAMETER_ORDINAL_POSITION PARAMETER_SPECIFIC_CATALOG
+%token <str> PARAMETER_SPECIFIC_NAME PARAMETER_SPECIFIC_SCHEMA RETURNED_OCTET_LENGTH TRANSACTIONS_COMMITTED
+%token <str> TRANSACTIONS_ROLLED_BACK USER_DEFINED_TYPE_CATALOG USER_DEFINED_TYPE_CODE USER_DEFINED_TYPE_NAME
+%token <str> USER_DEFINED_TYPE_SCHEMA
 // <<<<
 %token <str> VALUES LAST_INSERT_ID
 %token <str> NEXT VALUE SHARE MODE
@@ -480,7 +487,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <showFilter> like_or_where_opt
 %type <boolean> exists_opt not_exists_opt enforced enforced_opt temp_opt full_opt
 %type <empty> to_opt
-%type <str> reserved_keyword non_reserved_keyword
+%type <str> reserved_keyword non_reserved_keyword non_reserved_keyword_sql2023
 %type <colIdent> sql_id reserved_sql_id col_alias as_ci_opt
 %type <expr> charset_value
 %type <tableIdent> table_id reserved_table_id table_alias as_opt_id table_id_opt from_database_opt
@@ -5626,6 +5633,10 @@ sql_id:
   {
     $$ = ast.NewColIdent(string($1))
   }
+| non_reserved_keyword_sql2023
+  {
+    $$ = ast.NewColIdent(string($1))
+  }
 
 reserved_sql_id:
   sql_id
@@ -5640,6 +5651,10 @@ table_id:
     $$ = ast.NewTableIdent(string($1.String()))
   }
 | non_reserved_keyword
+  {
+    $$ = ast.NewTableIdent(string($1))
+  }
+| non_reserved_keyword_sql2023
   {
     $$ = ast.NewTableIdent(string($1))
   }
@@ -5773,7 +5788,7 @@ reserved_keyword:
 | WITH
 
 /*
-  These are non-reserved Vitess, because they don\'t cause conflicts in the grammar.
+  These are non-reserved, because they don\'t cause conflicts in the grammar.
   Some of them may be reserved in PostgresQL. The good news is we use \" quote them
   when we rewrite the query, so no issue should arise.
 
@@ -6170,6 +6185,35 @@ non_reserved_keyword:
 | YEAR
 | YES
 | ZONE
+
+
+/*
+  These are non-reserved, in PostgresQL, but reserved in sql2023. The good news is we use \" quote them
+  when we rewrite the query, so no issue should arise.
+
+  Sorted alphabetically
+*/
+non_reserved_keyword_sql2023:
+  ARRAY_MAX_CARDINALITY
+| CHARACTER_SET_CATALOG
+| COMMAND_FUNCTION_CODE
+| CURRENT_DEFAULT_TRANSFORM_GROUP
+| CURRENT_TRANSFORM_GROUP_FOR_TYPE
+| DATETIME_INTERVAL_CODE
+| DATETIME_INTERVAL_PRECISION
+| DYNAMIC_FUNCTION_CODE
+| END_EXEC
+| PARAMETER_ORDINAL_POSITION
+| PARAMETER_SPECIFIC_CATALOG
+| PARAMETER_SPECIFIC_NAME
+| PARAMETER_SPECIFIC_SCHEMA
+| RETURNED_OCTET_LENGTH 
+| TRANSACTIONS_COMMITTED
+| TRANSACTIONS_ROLLED_BACK
+| USER_DEFINED_TYPE_CATALOG
+| USER_DEFINED_TYPE_CODE
+| USER_DEFINED_TYPE_NAME
+| USER_DEFINED_TYPE_SCHEMA
 
 openb:
   '('

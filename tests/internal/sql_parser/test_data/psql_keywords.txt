@@ -232,7 +232,7 @@ ENABLE	non-reserved
 ENCODING	non-reserved	non-reserved	non-reserved	 
 ENCRYPTED	non-reserved	 	 	 
 END	reserved	reserved	reserved	reserved
-END-EXEC	 	reserved	reserved	reserved
+END_EXEC	 	reserved	reserved	reserved
 END_FRAME	 	reserved	reserved	 
 END_PARTITION	 	reserved	reserved	 
 ENFORCED	 	non-reserved	non-reserved	 
