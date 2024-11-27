@@ -25,10 +25,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_parser/cache"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser_errors"
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_parser/cache"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // Walk calls visit on every node.

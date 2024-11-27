@@ -41,11 +41,11 @@ else
     # REGENERATE SENSITIVE INFO FROM TEMPLATE
     cat >'.env' <<EOF
 # Golang package version (without v)
-SENT_PACKAGE_VERSION=0.0.0
+PRODL_PACKAGE_VERSION=0.0.0
 EOF
 fi
 
-# Warn: SENT_PACKAGE_VERSION read from .env file
+# Warn: PRODL_PACKAGE_VERSION read from .env file
 
 # =============================================================================
 
@@ -57,27 +57,27 @@ if [ "$COMMAND" == "tests" ] || [ "$COMMAND" == "test" ]; then
 fi
 
 if [ "$COMMAND" == "version" ]; then
-    echo Previous version "$SENT_PACKAGE_VERSION"
+    echo Previous version "$PRODL_PACKAGE_VERSION"
     echo Please enter new version \(format: x.y.z, where x, y and z are integer numbers\)
-    read NEW_SENT_PACKAGE_VERSION
+    read NEW_PRODL_PACKAGE_VERSION
 
-    echo $NEW_SENT_PACKAGE_VERSION
+    echo $NEW_PRODL_PACKAGE_VERSION
     # Check version format
-    [[ "$NEW_SENT_PACKAGE_VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+ ]] || ( echo ERROR: wrong version format; exit 1 )
+    [[ "$NEW_PRODL_PACKAGE_VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+ ]] || ( echo ERROR: wrong version format; exit 1 )
 
     # Replace versions in go.mod files
-    find . -name go.mod -exec sed -i "s/$SENT_PACKAGE_VERSION/$NEW_SENT_PACKAGE_VERSION/g" '{}' \;
+    find . -name go.mod -exec sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" '{}' \;
     [ $? -eq 0 ] || ( echo Fail replace version in go.mod files; exit 1 ) 
 
     # Replace version in README.md
-    sed -i "s/$SENT_PACKAGE_VERSION/$NEW_SENT_PACKAGE_VERSION/g" ./README.md
+    sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" ./README.md
     [ $? -eq 0 ] || ( echo Fail replace version in README.md; exit 1 )
 
-    if [ "$SENT_PACKAGE_VERSION" != "$NEW_SENT_PACKAGE_VERSION" ]; then
+    if [ "$PRODL_PACKAGE_VERSION" != "$NEW_PRODL_PACKAGE_VERSION" ]; then
         git add .
-        git commit -m "There is the new version $NEW_SENT_PACKAGE_VERSION"
+        git commit -m "There is the new version $NEW_PRODL_PACKAGE_VERSION"
         git push
-        TAG_NAME="v$NEW_SENT_PACKAGE_VERSION"
+        TAG_NAME="v$NEW_PRODL_PACKAGE_VERSION"
         git tag "$TAG_NAME"
         git tag "ft/$TAG_NAME"
         git tag "tests/$TAG_NAME"
@@ -89,7 +89,7 @@ if [ "$COMMAND" == "version" ]; then
     fi
 
     # Replace version in .env file
-    sed -i "s/$SENT_PACKAGE_VERSION/$NEW_SENT_PACKAGE_VERSION/g" ./.env
+    sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" ./.env
 fi
 
 if [ "$COMMAND" == "generate" ] || [ "$COMMAND" == "gen" ]; then

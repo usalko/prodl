@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // formatFast formats the node.

@@ -21,12 +21,12 @@ import (
 	"io"
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/mysql"
-	"github.com/usalko/sent/internal/sql_parser/psql"
-	"github.com/usalko/sent/internal/sql_parser/tokenizer"
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/mysql"
+	"github.com/usalko/prodl/internal/sql_parser/psql"
+	"github.com/usalko/prodl/internal/sql_parser/tokenizer"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 // Instructions for creating new types: If a type

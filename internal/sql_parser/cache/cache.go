@@ -1,6 +1,6 @@
 package cache
 
-import "github.com/usalko/sent/internal/sql_parser/dialect"
+import "github.com/usalko/prodl/internal/sql_parser/dialect"
 
 // KeywordLookupTable is a perfect hash map that maps **case insensitive** keyword names to their ids
 var KeywordLookupTables map[dialect.SqlDialect]*CaseInsensitiveTable = map[dialect.SqlDialect]*CaseInsensitiveTable{}

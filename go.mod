@@ -1,4 +1,4 @@
-module github.com/usalko/sent
+module github.com/usalko/prodl
 
 go 1.23
 

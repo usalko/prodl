@@ -22,10 +22,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/mysql"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/mysql"
 )
 
 func TestSplitComments(t *testing.T) {

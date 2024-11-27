@@ -19,8 +19,8 @@ package sql_parser
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 type SetNormalizer struct {

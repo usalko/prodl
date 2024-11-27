@@ -26,7 +26,7 @@ import (
 
 	"context"
 
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 func TestWrapNil(t *testing.T) {

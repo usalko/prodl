@@ -22,9 +22,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 // TestParseNextValid concatenates all the valid SQL test cases and check it can read

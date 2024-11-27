@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_parser/cache"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/cache"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 // keywords is a table of mysql keywords that fall into two categories:

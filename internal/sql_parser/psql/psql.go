@@ -11,9 +11,9 @@ import (
 //line psql.y:18
 
 import (
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/tokenizer"
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/tokenizer"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 func setParseTree(psqlex psqLexer, stmt ast.Statement) {

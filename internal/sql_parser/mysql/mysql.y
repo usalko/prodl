@@ -18,9 +18,9 @@ limitations under the License.
 package mysql
 
 import (
-    "github.com/usalko/sent/internal/sql_parser/ast"
-	  "github.com/usalko/sent/internal/sql_parser/tokenizer"
-    "github.com/usalko/sent/internal/sql_types"
+    "github.com/usalko/prodl/internal/sql_parser/ast"
+	  "github.com/usalko/prodl/internal/sql_parser/tokenizer"
+    "github.com/usalko/prodl/internal/sql_types"
 )
 
 func setParseTree(mysqlex mysqLexer, stmt ast.Statement) {

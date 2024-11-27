@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/usalko/sent/internal/archive_stream"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/archive_stream"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 func check(err error, msgs ...any) {

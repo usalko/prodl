@@ -21,9 +21,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/mysql"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/mysql"
 )
 
 func TestLiteralID(t *testing.T) {

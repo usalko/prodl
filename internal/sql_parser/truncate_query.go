@@ -19,7 +19,7 @@ package sql_parser
 import (
 	"flag"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
 )
 
 var (

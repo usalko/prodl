@@ -22,7 +22,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	hack "github.com/usalko/sent/internal/hack"
+	hack "github.com/usalko/prodl/internal/hack"
 )
 
 type cachedObject interface {

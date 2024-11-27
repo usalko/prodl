@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/archive_stream"
+	"github.com/usalko/prodl/internal/archive_stream"
 )
 
 func TestReadBuf(t *testing.T) {

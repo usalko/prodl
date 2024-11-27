@@ -19,8 +19,8 @@ package sql_parser
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // This file contains types that are 'Encodable'.

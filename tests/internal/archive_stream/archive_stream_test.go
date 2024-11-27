@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/usalko/sent/internal/archive_stream"
+	"github.com/usalko/prodl/internal/archive_stream"
 )
 
 func check(err error, msgs ...any) {

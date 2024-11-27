@@ -26,9 +26,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/usalko/sent/internal/bytes2"
-	"github.com/usalko/sent/internal/hack"
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/bytes2"
+	"github.com/usalko/prodl/internal/hack"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 var (

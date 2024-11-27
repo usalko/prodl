@@ -24,12 +24,12 @@ import (
 	"sync"
 	"unicode"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/cache"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/tokenizer"
-	"github.com/usalko/sent/internal/sql_parser_errors"
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/cache"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/tokenizer"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // PsqlTokenizer is the struct used to generate SQL

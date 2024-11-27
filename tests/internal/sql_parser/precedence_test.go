@@ -23,9 +23,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/ast"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 func readable(node ast.Expr) string {
@@ -205,7 +205,7 @@ func TestParens(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.in, func(t *testing.T) {
-			stmt, err := sql_parser.Parse("select " + tc.in, dialect.MYSQL)
+			stmt, err := sql_parser.Parse("select "+tc.in, dialect.MYSQL)
 			require.NoError(t, err)
 			out := ast.String(stmt)
 			require.Equal(t, "select "+tc.expected+" from dual", out)

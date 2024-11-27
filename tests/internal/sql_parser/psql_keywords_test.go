@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	// "github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/cache"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/psql"
+	// "github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/cache"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/psql"
 )
 
 func TestKeywordTable(t *testing.T) {

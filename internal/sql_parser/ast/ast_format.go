@@ -19,7 +19,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // Format formats the node.
