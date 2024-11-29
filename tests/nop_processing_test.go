@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -10,8 +9,14 @@ import (
 
 	"github.com/usalko/prodl/internal/archive_stream"
 	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
+
+type TextAndError struct {
+	Text string
+	Err  error
+}
 
 func check(err error, msgs ...any) {
 	if err != nil {
@@ -41,28 +46,35 @@ func TestNopProcessing(t *testing.T) {
 
 		if !entry.IsDir() {
 			rc, err := entry.Open()
+			defer func() {
+				if err := rc.Close(); err != nil {
+					log.Fatalf("close gzip entry reader fail: %s", err)
+				}
+			}()
+
 			if err != nil {
 				log.Fatalf("unable to open gzip file: %s", err)
 			}
-			chunk := [4096]byte{}
-			readLength, err := io.ReadAtLeast(rc, chunk[:], 4096)
+			statements := make([]ast.Statement, 0)
+			parseErrors := make([]TextAndError, 0)
+			sql_parser.StatementStream(rc, dialect.PSQL,
+				func(statementText string, statement ast.Statement, parseError error) {
+					if statement != nil {
+						statements = append(statements, statement)
+					}
+					if parseError != nil {
+						parseErrors = append(parseErrors, TextAndError{statementText, parseError})
+					}
+				})
 
-			if readLength == 0 && err != nil {
-				log.Fatalf("read gzip file content fail: %s", err)
+			expectedStatementsCount := 14
+			if len(statements) != expectedStatementsCount {
+				t.Errorf("count of parsed statements is %v but expected %v", len(statements), expectedStatementsCount)
 			}
 
-			log.Println("read length:", readLength)
-
-			stmt, err := sql_parser.Parse(bytes.NewBuffer(chunk[:readLength]).String(), dialect.PSQL)
-			check(err)
-
-			log.Println("Sql statement", stmt)
-
-			// if uint64(len(content)) != entry.UncompressedSize64 {
-			// 	log.Fatalf("read zip file length not equal with UncompressedSize64")
-			// }
-			if err := rc.Close(); err != nil {
-				log.Fatalf("close gzip entry reader fail: %s", err)
+			expectedErrorsCount := 0
+			if len(parseErrors) > expectedErrorsCount {
+				t.Errorf("nop processing has parse errors %v, %v", len(parseErrors), parseErrors)
 			}
 		}
 	}

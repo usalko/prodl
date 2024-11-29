@@ -9,6 +9,11 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
+type TextAndError struct {
+	Text string
+	Err  error
+}
+
 func TestStatementStream(t *testing.T) {
 	stringForStream := `
 --
@@ -63,24 +68,38 @@ CREATE TABLE public.articles_article (
 );`
 	var textPieces []string = make([]string, 0)
 	var parsedStatements []ast.Statement = make([]ast.Statement, 0)
+	parseErrors := make([]TextAndError, 0)
+
 	err := sql_parser.StatementStream(
 		strings.NewReader(stringForStream),
 		dialect.PSQL,
 		// PROCESS STATEMENTS
-		func(statement_text string, statement ast.Statement, parse_error error) {
-			textPieces = append(textPieces, statement_text)
+		func(statementText string, statement ast.Statement, parseError error) {
+			textPieces = append(textPieces, statementText)
 			if statement != nil {
 				parsedStatements = append(parsedStatements, statement)
+			}
+			if parseError != nil {
+				parseErrors = append(parseErrors, TextAndError{statementText, parseError})
 			}
 		},
 	)
 	if err != nil {
 		t.Errorf("%q", err)
 	}
-	if len(textPieces) != 15 {
-		t.Errorf("count of text pieces is %v but expected %v", len(textPieces), 15)
+
+	expectedTextPiecesCount := 15
+	if len(textPieces) != expectedTextPiecesCount {
+		t.Errorf("count of text pieces is %v but expected %v", len(textPieces), expectedTextPiecesCount)
 	}
-	if len(parsedStatements) != 14 {
-		t.Errorf("count of statements is %v but expected %v", len(parsedStatements), 15)
+
+	expectedParseErrorsCount := 0
+	if len(parseErrors) > expectedParseErrorsCount {
+		t.Errorf("unexpected errors: %v", parseErrors)
+	}
+
+	expectedParseStatementsCount := 15
+	if len(parsedStatements) != expectedParseStatementsCount {
+		t.Errorf("count of statements is %v but expected %v", len(parsedStatements), expectedParseStatementsCount)
 	}
 }
