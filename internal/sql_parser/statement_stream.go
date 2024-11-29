@@ -20,7 +20,7 @@ var (
 	ErrIncompleteStatement = errors.New("ErrIncompleteStatement")
 )
 
-type StatementProcessor func(statement_text string, statement ast.Statement, parse_error error)
+type StatementProcessor func(statementText string, statement ast.Statement, parseError error)
 
 // Process text and return tail not processed (incomplete sql sentence)
 func processText(text string, sql_dialect dialect.SqlDialect, processor StatementProcessor) (string, error) {
