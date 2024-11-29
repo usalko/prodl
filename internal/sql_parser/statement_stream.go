@@ -58,21 +58,13 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 		case ';':
 			rawSql = text[stmtBegin : _tokenizer.GetPos()-1]
 			if !statementIsEmpty {
-				stmt := _tokenizer.GetParseTree()
+				stmt := _tokenizer.GetPartialDDL()
 				processor(rawSql, stmt, _tokenizer.GetLastError())
 				statementIsEmpty = true
 			}
 			stmtBegin = _tokenizer.GetPos()
 		case 0, tokenizer.EofChar:
-			blobTail := _tokenizer.GetPos() - 1
-			if stmtBegin < blobTail {
-				rawSql = text[stmtBegin : blobTail+1]
-				if !statementIsEmpty {
-					stmt := _tokenizer.GetParseTree()
-					processor(rawSql, stmt, _tokenizer.GetLastError())
-				}
-			}
-			return text[blobTail:], ErrIncompleteStatement
+			return text[stmtBegin:], ErrIncompleteStatement
 		default:
 			statementIsEmpty = false
 		}
@@ -89,10 +81,11 @@ func StatementStream(blob io.Reader, sql_dialect dialect.SqlDialect, processor S
 	for {
 		n, err := blob.Read(page)
 		if n < PAGE_SIZE || err == io.EOF {
-			statementBuffer.Write(page)
+			statementBuffer.Write(page[:n])
 			processText(statementBuffer.String(), sql_dialect, processor)
 			return nil
 		}
+		statementBuffer.Write(page)
 		buffTail, err := processText(statementBuffer.String(), sql_dialect, processor)
 		if err == ErrIncompleteStatement {
 			statementBuffer.Reset()
