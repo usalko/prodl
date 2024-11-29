@@ -164,7 +164,7 @@ func (node *Delete) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
-func (node *Set) Format(buf *TrackedBuffer) {
+func (node *ColSet) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "set %v%v", node.Comments, node.Exprs)
 }
 
@@ -1588,7 +1588,7 @@ func (node *UpdateExpr) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
-func (node SetExprs) Format(buf *TrackedBuffer) {
+func (node ColSetExprs) Format(buf *TrackedBuffer) {
 	var prefix string
 	for _, n := range node {
 		buf.astPrintf(node, "%s%v", prefix, n)
@@ -1597,7 +1597,7 @@ func (node SetExprs) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
-func (node *SetExpr) Format(buf *TrackedBuffer) {
+func (node *ColSetExpr) Format(buf *TrackedBuffer) {
 	if node.Scope != ImplicitScope {
 		buf.literal(node.Scope.ToString())
 		buf.WriteByte(' ')

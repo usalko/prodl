@@ -7249,6 +7249,16 @@ func (st *psqSymType) colNameUnion() *ast.ColName {
 	return v
 }
 
+func (st *psqSymType) colSetExprUnion() *ast.ColSetExpr {
+	v, _ := st.union.(*ast.ColSetExpr)
+	return v
+}
+
+func (st *psqSymType) colSetExprsUnion() ast.ColSetExprs {
+	v, _ := st.union.(ast.ColSetExprs)
+	return v
+}
+
 func (st *psqSymType) colTupleUnion() ast.ColTuple {
 	v, _ := st.union.(ast.ColTuple)
 	return v
@@ -7561,16 +7571,6 @@ func (st *psqSymType) selectExprsUnion() ast.SelectExprs {
 
 func (st *psqSymType) selectIntoUnion() *ast.SelectInto {
 	v, _ := st.union.(*ast.SelectInto)
-	return v
-}
-
-func (st *psqSymType) setExprUnion() *ast.SetExpr {
-	v, _ := st.union.(*ast.SetExpr)
-	return v
-}
-
-func (st *psqSymType) setExprsUnion() ast.SetExprs {
-	v, _ := st.union.(ast.SetExprs)
 	return v
 }
 
@@ -9557,7 +9557,7 @@ psqdefault:
 		var psqLOCAL ast.Statement
 //line psql.y:921
 		{
-			psqLOCAL = &ast.Set{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Exprs: psqDollar[3].setExprsUnion()}
+			psqLOCAL = &ast.ColSet{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Exprs: psqDollar[3].colSetExprsUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 95:
@@ -16947,58 +16947,58 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 1090:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-		var psqLOCAL ast.SetExprs
+		var psqLOCAL ast.ColSetExprs
 //line psql.y:5514
 		{
-			psqLOCAL = ast.SetExprs{psqDollar[1].setExprUnion()}
+			psqLOCAL = ast.ColSetExprs{psqDollar[1].colSetExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1091:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 //line psql.y:5518
 		{
-			psqSLICE := (*ast.SetExprs)(psqIaddr(psqVAL.union))
-			*psqSLICE = append(*psqSLICE, psqDollar[3].setExprUnion())
+			psqSLICE := (*ast.ColSetExprs)(psqIaddr(psqVAL.union))
+			*psqSLICE = append(*psqSLICE, psqDollar[3].colSetExprUnion())
 		}
 	case 1092:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-		var psqLOCAL *ast.SetExpr
+		var psqLOCAL *ast.ColSetExpr
 //line psql.y:5524
 		{
-			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
+			psqLOCAL = &ast.ColSetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
 		}
 		psqVAL.union = psqLOCAL
 	case 1093:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-		var psqLOCAL *ast.SetExpr
+		var psqLOCAL *ast.ColSetExpr
 //line psql.y:5528
 		{
-			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
+			psqLOCAL = &ast.ColSetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
 		}
 		psqVAL.union = psqLOCAL
 	case 1094:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-		var psqLOCAL *ast.SetExpr
+		var psqLOCAL *ast.ColSetExpr
 //line psql.y:5532
 		{
-			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: psqDollar[3].exprUnion()}
+			psqLOCAL = &ast.ColSetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: psqDollar[3].exprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1095:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-		var psqLOCAL *ast.SetExpr
+		var psqLOCAL *ast.ColSetExpr
 //line psql.y:5536
 		{
-			psqLOCAL = &ast.SetExpr{Name: ast.NewColIdent(string(psqDollar[1].str)), Scope: ast.ImplicitScope, Expr: psqDollar[2].exprUnion()}
+			psqLOCAL = &ast.ColSetExpr{Name: ast.NewColIdent(string(psqDollar[1].str)), Scope: ast.ImplicitScope, Expr: psqDollar[2].exprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1096:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-		var psqLOCAL *ast.SetExpr
+		var psqLOCAL *ast.ColSetExpr
 //line psql.y:5540
 		{
-			psqDollar[2].setExprUnion().Scope = psqDollar[1].scopeUnion()
-			psqLOCAL = psqDollar[2].setExprUnion()
+			psqDollar[2].colSetExprUnion().Scope = psqDollar[1].scopeUnion()
+			psqLOCAL = psqDollar[2].colSetExprUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 1098:

@@ -321,12 +321,12 @@ func CloneSQLNode(in SQLNode) SQLNode {
 		return CloneSelectExprs(in)
 	case *SelectInto:
 		return CloneRefOfSelectInto(in)
-	case *Set:
+	case *ColSet:
 		return CloneRefOfSet(in)
-	case *SetExpr:
-		return CloneRefOfSetExpr(in)
-	case SetExprs:
-		return CloneSetExprs(in)
+	case *ColSetExpr:
+		return CloneRefOfColSetExpr(in)
+	case ColSetExprs:
+		return CloneColSetExprs(in)
 	case *SetTransaction:
 		return CloneRefOfSetTransaction(in)
 	case *Show:
@@ -1951,18 +1951,18 @@ func CloneRefOfSelectInto(n *SelectInto) *SelectInto {
 }
 
 // CloneRefOfSet creates a deep clone of the input.
-func CloneRefOfSet(n *Set) *Set {
+func CloneRefOfSet(n *ColSet) *ColSet {
 	if n == nil {
 		return nil
 	}
 	out := *n
 	out.Comments = CloneRefOfParsedComments(n.Comments)
-	out.Exprs = CloneSetExprs(n.Exprs)
+	out.Exprs = CloneColSetExprs(n.Exprs)
 	return &out
 }
 
-// CloneRefOfSetExpr creates a deep clone of the input.
-func CloneRefOfSetExpr(n *SetExpr) *SetExpr {
+// CloneRefOfColSetExpr creates a deep clone of the input.
+func CloneRefOfColSetExpr(n *ColSetExpr) *ColSetExpr {
 	if n == nil {
 		return nil
 	}
@@ -1972,14 +1972,14 @@ func CloneRefOfSetExpr(n *SetExpr) *SetExpr {
 	return &out
 }
 
-// CloneSetExprs creates a deep clone of the input.
-func CloneSetExprs(n SetExprs) SetExprs {
+// CloneColSetExprs creates a deep clone of the input.
+func CloneColSetExprs(n ColSetExprs) ColSetExprs {
 	if n == nil {
 		return nil
 	}
-	res := make(SetExprs, 0, len(n))
+	res := make(ColSetExprs, 0, len(n))
 	for _, x := range n {
-		res = append(res, CloneRefOfSetExpr(x))
+		res = append(res, CloneRefOfColSetExpr(x))
 	}
 	return res
 }
@@ -3129,7 +3129,7 @@ func CloneStatement(in Statement) Statement {
 		return CloneRefOfSavepoint(in)
 	case *Select:
 		return CloneRefOfSelect(in)
-	case *Set:
+	case *ColSet:
 		return CloneRefOfSet(in)
 	case *SetTransaction:
 		return CloneRefOfSetTransaction(in)

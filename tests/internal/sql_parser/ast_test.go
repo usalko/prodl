@@ -262,7 +262,7 @@ func TestDDL(t *testing.T) {
 func TestSetAutocommitON(t *testing.T) {
 	stmt, err := sql_parser.Parse("SET autocommit=ON", dialect.MYSQL)
 	require.NoError(t, err)
-	s, ok := stmt.(*ast.Set)
+	s, ok := stmt.(*ast.ColSet)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -287,7 +287,7 @@ func TestSetAutocommitON(t *testing.T) {
 
 	stmt, err = sql_parser.Parse("SET @@session.autocommit=ON", dialect.MYSQL)
 	require.NoError(t, err)
-	s, ok = stmt.(*ast.Set)
+	s, ok = stmt.(*ast.ColSet)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -314,7 +314,7 @@ func TestSetAutocommitON(t *testing.T) {
 func TestSetAutocommitOFF(t *testing.T) {
 	stmt, err := sql_parser.Parse("SET autocommit=OFF", dialect.MYSQL)
 	require.NoError(t, err)
-	s, ok := stmt.(*ast.Set)
+	s, ok := stmt.(*ast.ColSet)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
@@ -339,7 +339,7 @@ func TestSetAutocommitOFF(t *testing.T) {
 
 	stmt, err = sql_parser.Parse("SET @@session.autocommit=OFF", dialect.MYSQL)
 	require.NoError(t, err)
-	s, ok = stmt.(*ast.Set)
+	s, ok = stmt.(*ast.ColSet)
 	if !ok {
 		t.Errorf("SET statement is not Set: %T", s)
 	}
