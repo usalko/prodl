@@ -60,21 +60,26 @@ CREATE TABLE public.articles_article (
     pub_date date NOT NULL,
     preview character varying(300) NOT NULL,
     published boolean NOT NULL
-);
-
-`
-	var statements []string = make([]string, 0)
+);`
+	var textPieces []string = make([]string, 0)
+	var parsedStatements []ast.Statement = make([]ast.Statement, 0)
 	err := sql_parser.StatementStream(
 		strings.NewReader(stringForStream),
 		dialect.PSQL,
 		func(statement_text string, statement ast.Statement, parse_error error) {
-			statements = append(statements, statement_text)
+			textPieces = append(textPieces, statement_text)
+			if statement != nil {
+				parsedStatements = append(parsedStatements, statement)
+			}
 		},
 	)
 	if err != nil {
 		t.Errorf("%q", err)
 	}
-	if len(statements) != 15 {
-		t.Errorf("count of statements is %v but expected %v", len(statements), 15)
+	if len(textPieces) != 15 {
+		t.Errorf("count of text pieces is %v but expected %v", len(textPieces), 15)
+	}
+	if len(parsedStatements) != 15 {
+		t.Errorf("count of statements is %v but expected %v", len(parsedStatements), 15)
 	}
 }
