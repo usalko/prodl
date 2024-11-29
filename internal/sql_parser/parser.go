@@ -52,7 +52,7 @@ func Parse2(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, ast.Bind
 		return nil, nil, err
 	}
 
-	if val, _ := parsePooled(tokenizer, dialect.MYSQL); val != 0 {
+	if val, _ := parsePooled(tokenizer, sql_dialect); val != 0 {
 		if tokenizer.GetPartialDDL() != nil {
 			if typ, val := tokenizer.Scan(); typ != 0 {
 				return nil, nil, fmt.Errorf("extra characters encountered after end of DDL: '%s'", string(val))
