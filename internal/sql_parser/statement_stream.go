@@ -58,8 +58,8 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 		case ';':
 			rawSql = text[stmtBegin : _tokenizer.GetPos()-1]
 			if !statementIsEmpty {
-				stmt := _tokenizer.GetPartialDDL()
-				processor(rawSql, stmt, _tokenizer.GetLastError())
+				stmt, err := Parse(rawSql, sql_dialect)
+				processor(rawSql, stmt, err)
 				statementIsEmpty = true
 			}
 			stmtBegin = _tokenizer.GetPos()

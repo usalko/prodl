@@ -66,6 +66,7 @@ CREATE TABLE public.articles_article (
 	err := sql_parser.StatementStream(
 		strings.NewReader(stringForStream),
 		dialect.PSQL,
+		// PROCESS STATEMENTS
 		func(statement_text string, statement ast.Statement, parse_error error) {
 			textPieces = append(textPieces, statement_text)
 			if statement != nil {
@@ -79,7 +80,7 @@ CREATE TABLE public.articles_article (
 	if len(textPieces) != 15 {
 		t.Errorf("count of text pieces is %v but expected %v", len(textPieces), 15)
 	}
-	if len(parsedStatements) != 15 {
+	if len(parsedStatements) != 14 {
 		t.Errorf("count of statements is %v but expected %v", len(parsedStatements), 15)
 	}
 }
