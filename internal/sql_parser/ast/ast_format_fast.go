@@ -256,7 +256,7 @@ func (node *Delete) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
-func (node *ColSet) formatFast(buf *TrackedBuffer) {
+func (node *Set) formatFast(buf *TrackedBuffer) {
 	buf.WriteString("set ")
 	node.Comments.formatFast(buf)
 	node.Exprs.formatFast(buf)
@@ -2099,7 +2099,7 @@ func (node *UpdateExpr) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
-func (node ColSetExprs) formatFast(buf *TrackedBuffer) {
+func (node SetExprs) formatFast(buf *TrackedBuffer) {
 	var prefix string
 	for _, n := range node {
 		buf.WriteString(prefix)
@@ -2109,7 +2109,7 @@ func (node ColSetExprs) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
-func (node *ColSetExpr) formatFast(buf *TrackedBuffer) {
+func (node *SetExpr) formatFast(buf *TrackedBuffer) {
 	if node.Scope != ImplicitScope {
 		buf.WriteString(node.Scope.ToString())
 		buf.WriteByte(' ')

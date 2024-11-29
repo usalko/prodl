@@ -6150,16 +6150,6 @@ func (st *mysqSymType) colNameUnion() *ast.ColName {
 	return v
 }
 
-func (st *mysqSymType) colSetExprUnion() *ast.ColSetExpr {
-	v, _ := st.union.(*ast.ColSetExpr)
-	return v
-}
-
-func (st *mysqSymType) colSetExprsUnion() ast.ColSetExprs {
-	v, _ := st.union.(ast.ColSetExprs)
-	return v
-}
-
 func (st *mysqSymType) colTupleUnion() ast.ColTuple {
 	v, _ := st.union.(ast.ColTuple)
 	return v
@@ -6522,6 +6512,16 @@ func (st *mysqSymType) selectExprsUnion() ast.SelectExprs {
 
 func (st *mysqSymType) selectIntoUnion() *ast.SelectInto {
 	v, _ := st.union.(*ast.SelectInto)
+	return v
+}
+
+func (st *mysqSymType) setExprUnion() *ast.SetExpr {
+	v, _ := st.union.(*ast.SetExpr)
+	return v
+}
+
+func (st *mysqSymType) setExprsUnion() ast.SetExprs {
+	v, _ := st.union.(ast.SetExprs)
 	return v
 }
 
@@ -8618,7 +8618,7 @@ mysqdefault:
 		var mysqLOCAL ast.Statement
 //line mysql.y:928
 		{
-			mysqLOCAL = &ast.ColSet{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Exprs: mysqDollar[3].colSetExprsUnion()}
+			mysqLOCAL = &ast.Set{Comments: ast.Comments(mysqDollar[2].strs).Parsed(), Exprs: mysqDollar[3].setExprsUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 100:
@@ -17227,58 +17227,58 @@ mysqdefault:
 		mysqVAL.union = mysqLOCAL
 	case 1247:
 		mysqDollar = mysqS[mysqpt-1 : mysqpt+1]
-		var mysqLOCAL ast.ColSetExprs
+		var mysqLOCAL ast.SetExprs
 //line mysql.y:6275
 		{
-			mysqLOCAL = ast.ColSetExprs{mysqDollar[1].colSetExprUnion()}
+			mysqLOCAL = ast.SetExprs{mysqDollar[1].setExprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1248:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
 //line mysql.y:6279
 		{
-			mysqSLICE := (*ast.ColSetExprs)(mysqIaddr(mysqVAL.union))
-			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].colSetExprUnion())
+			mysqSLICE := (*ast.SetExprs)(mysqIaddr(mysqVAL.union))
+			*mysqSLICE = append(*mysqSLICE, mysqDollar[3].setExprUnion())
 		}
 	case 1249:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-		var mysqLOCAL *ast.ColSetExpr
+		var mysqLOCAL *ast.SetExpr
 //line mysql.y:6285
 		{
-			mysqLOCAL = &ast.ColSetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
+			mysqLOCAL = &ast.SetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1250:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-		var mysqLOCAL *ast.ColSetExpr
+		var mysqLOCAL *ast.SetExpr
 //line mysql.y:6289
 		{
-			mysqLOCAL = &ast.ColSetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
+			mysqLOCAL = &ast.SetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1251:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-		var mysqLOCAL *ast.ColSetExpr
+		var mysqLOCAL *ast.SetExpr
 //line mysql.y:6293
 		{
-			mysqLOCAL = &ast.ColSetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: mysqDollar[3].exprUnion()}
+			mysqLOCAL = &ast.SetExpr{Name: mysqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: mysqDollar[3].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1252:
 		mysqDollar = mysqS[mysqpt-3 : mysqpt+1]
-		var mysqLOCAL *ast.ColSetExpr
+		var mysqLOCAL *ast.SetExpr
 //line mysql.y:6297
 		{
-			mysqLOCAL = &ast.ColSetExpr{Name: ast.NewColIdent(string(mysqDollar[1].str)), Scope: ast.ImplicitScope, Expr: mysqDollar[2].exprUnion()}
+			mysqLOCAL = &ast.SetExpr{Name: ast.NewColIdent(string(mysqDollar[1].str)), Scope: ast.ImplicitScope, Expr: mysqDollar[2].exprUnion()}
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1253:
 		mysqDollar = mysqS[mysqpt-2 : mysqpt+1]
-		var mysqLOCAL *ast.ColSetExpr
+		var mysqLOCAL *ast.SetExpr
 //line mysql.y:6301
 		{
-			mysqDollar[2].colSetExprUnion().Scope = mysqDollar[1].scopeUnion()
-			mysqLOCAL = mysqDollar[2].colSetExprUnion()
+			mysqDollar[2].setExprUnion().Scope = mysqDollar[1].scopeUnion()
+			mysqLOCAL = mysqDollar[2].setExprUnion()
 		}
 		mysqVAL.union = mysqLOCAL
 	case 1255:

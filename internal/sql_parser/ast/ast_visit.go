@@ -320,12 +320,12 @@ func VisitSQLNode(in SQLNode, f Visit) error {
 		return VisitSelectExprs(in, f)
 	case *SelectInto:
 		return VisitRefOfSelectInto(in, f)
-	case *ColSet:
+	case *Set:
 		return VisitRefOfSet(in, f)
-	case *ColSetExpr:
-		return VisitRefOfColSetExpr(in, f)
-	case ColSetExprs:
-		return VisitColSetExprs(in, f)
+	case *SetExpr:
+		return VisitRefOfSetExpr(in, f)
+	case SetExprs:
+		return VisitSetExprs(in, f)
 	case *SetTransaction:
 		return VisitRefOfSetTransaction(in, f)
 	case *Show:
@@ -2482,7 +2482,7 @@ func VisitRefOfSelectInto(in *SelectInto, f Visit) error {
 	}
 	return nil
 }
-func VisitRefOfSet(in *ColSet, f Visit) error {
+func VisitRefOfSet(in *Set, f Visit) error {
 	if in == nil {
 		return nil
 	}
@@ -2492,12 +2492,12 @@ func VisitRefOfSet(in *ColSet, f Visit) error {
 	if err := VisitRefOfParsedComments(in.Comments, f); err != nil {
 		return err
 	}
-	if err := VisitColSetExprs(in.Exprs, f); err != nil {
+	if err := VisitSetExprs(in.Exprs, f); err != nil {
 		return err
 	}
 	return nil
 }
-func VisitRefOfColSetExpr(in *ColSetExpr, f Visit) error {
+func VisitRefOfSetExpr(in *SetExpr, f Visit) error {
 	if in == nil {
 		return nil
 	}
@@ -2512,7 +2512,7 @@ func VisitRefOfColSetExpr(in *ColSetExpr, f Visit) error {
 	}
 	return nil
 }
-func VisitColSetExprs(in ColSetExprs, f Visit) error {
+func VisitSetExprs(in SetExprs, f Visit) error {
 	if in == nil {
 		return nil
 	}
@@ -2520,7 +2520,7 @@ func VisitColSetExprs(in ColSetExprs, f Visit) error {
 		return err
 	}
 	for _, el := range in {
-		if err := VisitRefOfColSetExpr(el, f); err != nil {
+		if err := VisitRefOfSetExpr(el, f); err != nil {
 			return err
 		}
 	}
@@ -3805,7 +3805,7 @@ func VisitStatement(in Statement, f Visit) error {
 		return VisitRefOfSavepoint(in, f)
 	case *Select:
 		return VisitRefOfSelect(in, f)
-	case *ColSet:
+	case *Set:
 		return VisitRefOfSet(in, f)
 	case *SetTransaction:
 		return VisitRefOfSetTransaction(in, f)

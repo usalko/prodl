@@ -359,10 +359,10 @@ type (
 		Limit      *Limit
 	}
 
-	// ColSet represents a SET statement in update clause.
-	ColSet struct {
+	// Set represents a SET statement.
+	Set struct {
 		Comments *ParsedComments
-		Exprs    ColSetExprs
+		Exprs    SetExprs
 	}
 
 	// SetTransaction represents a SET TRANSACTION statement.
@@ -689,7 +689,7 @@ func (*VStream) iStatement()           {}
 func (*Insert) iStatement()            {}
 func (*Update) iStatement()            {}
 func (*Delete) iStatement()            {}
-func (*ColSet) iStatement()            {}
+func (*Set) iStatement()               {}
 func (*SetTransaction) iStatement()    {}
 func (*DropDatabase) iStatement()      {}
 func (*Flush) iStatement()             {}
@@ -2706,11 +2706,11 @@ type UpdateExpr struct {
 	Expr Expr
 }
 
-// ColSetExprs represents a list of set expressions.
-type ColSetExprs []*ColSetExpr
+// SetExprs represents a list of set expressions.
+type SetExprs []*SetExpr
 
-// ColSetExpr represents a set expression.
-type ColSetExpr struct {
+// SetExpr represents a set expression.
+type SetExpr struct {
 	Scope Scope
 	Name  ColIdent
 	Expr  Expr

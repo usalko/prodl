@@ -920,24 +920,24 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfSelectInto(a, b)
-	case *ColSet:
-		b, ok := inB.(*ColSet)
+	case *Set:
+		b, ok := inB.(*Set)
 		if !ok {
 			return false
 		}
 		return EqualsRefOfSet(a, b)
-	case *ColSetExpr:
-		b, ok := inB.(*ColSetExpr)
+	case *SetExpr:
+		b, ok := inB.(*SetExpr)
 		if !ok {
 			return false
 		}
-		return EqualsRefOfColSetExpr(a, b)
-	case ColSetExprs:
-		b, ok := inB.(ColSetExprs)
+		return EqualsRefOfSetExpr(a, b)
+	case SetExprs:
+		b, ok := inB.(SetExprs)
 		if !ok {
 			return false
 		}
-		return EqualsColSetExprs(a, b)
+		return EqualsSetExprs(a, b)
 	case *SetTransaction:
 		b, ok := inB.(*SetTransaction)
 		if !ok {
@@ -3006,7 +3006,7 @@ func EqualsRefOfSelectInto(a, b *SelectInto) bool {
 }
 
 // EqualsRefOfSet does deep equals between the two objects.
-func EqualsRefOfSet(a, b *ColSet) bool {
+func EqualsRefOfSet(a, b *Set) bool {
 	if a == b {
 		return true
 	}
@@ -3014,11 +3014,11 @@ func EqualsRefOfSet(a, b *ColSet) bool {
 		return false
 	}
 	return EqualsRefOfParsedComments(a.Comments, b.Comments) &&
-		EqualsColSetExprs(a.Exprs, b.Exprs)
+		EqualsSetExprs(a.Exprs, b.Exprs)
 }
 
-// EqualsRefOfColSetExpr does deep equals between the two objects.
-func EqualsRefOfColSetExpr(a, b *ColSetExpr) bool {
+// EqualsRefOfSetExpr does deep equals between the two objects.
+func EqualsRefOfSetExpr(a, b *SetExpr) bool {
 	if a == b {
 		return true
 	}
@@ -3030,13 +3030,13 @@ func EqualsRefOfColSetExpr(a, b *ColSetExpr) bool {
 		EqualsExpr(a.Expr, b.Expr)
 }
 
-// EqualsColSetExprs does deep equals between the two objects.
-func EqualsColSetExprs(a, b ColSetExprs) bool {
+// EqualsSetExprs does deep equals between the two objects.
+func EqualsSetExprs(a, b SetExprs) bool {
 	if len(a) != len(b) {
 		return false
 	}
 	for i := 0; i < len(a); i++ {
-		if !EqualsRefOfColSetExpr(a[i], b[i]) {
+		if !EqualsRefOfSetExpr(a[i], b[i]) {
 			return false
 		}
 	}
@@ -5249,8 +5249,8 @@ func EqualsStatement(inA, inB Statement) bool {
 			return false
 		}
 		return EqualsRefOfSelect(a, b)
-	case *ColSet:
-		b, ok := inB.(*ColSet)
+	case *Set:
+		b, ok := inB.(*Set)
 		if !ok {
 			return false
 		}

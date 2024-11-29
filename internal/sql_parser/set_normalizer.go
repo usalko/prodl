@@ -23,15 +23,15 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
-type ColSetNormalizer struct {
+type SetNormalizer struct {
 	err error
 }
 
-func (n *ColSetNormalizer) rewriteSetComingUp(cursor *ast.Cursor) bool {
-	set, ok := cursor.Node().(*ast.ColSet)
+func (n *SetNormalizer) rewriteSetComingUp(cursor *ast.Cursor) bool {
+	set, ok := cursor.Node().(*ast.Set)
 	if ok {
 		for i, expr := range set.Exprs {
-			exp, err := n.NormalizeColSetExpr(expr)
+			exp, err := n.NormalizeSetExpr(expr)
 			if err != nil {
 				n.err = err
 				return false
@@ -42,7 +42,7 @@ func (n *ColSetNormalizer) rewriteSetComingUp(cursor *ast.Cursor) bool {
 	return true
 }
 
-func (n *ColSetNormalizer) NormalizeColSetExpr(in *ast.ColSetExpr) (*ast.ColSetExpr, error) {
+func (n *SetNormalizer) NormalizeSetExpr(in *ast.SetExpr) (*ast.SetExpr, error) {
 	switch in.Name.At { // using switch so we can use break
 	case ast.DoubleAt:
 		if in.Scope != ast.ImplicitScope {

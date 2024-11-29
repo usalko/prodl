@@ -70,7 +70,7 @@ func ASTToStatementType(stmt Statement) StatementType {
 		return StmtUpdate
 	case *Delete:
 		return StmtDelete
-	case *ColSet, *SetTransaction:
+	case *Set, *SetTransaction:
 		return StmtSet
 	case *Show:
 		return StmtShow
@@ -118,7 +118,7 @@ func ASTToStatementType(stmt Statement) StatementType {
 // CanNormalize takes Statement and returns if the statement can be normalized.
 func CanNormalize(stmt Statement) bool {
 	switch stmt.(type) {
-	case *Select, *Union, *Insert, *Update, *Delete, *ColSet, *CallProc, *Stream: // TODO: we could merge this logic into ASTrewriter
+	case *Select, *Union, *Insert, *Update, *Delete, *Set, *CallProc, *Stream: // TODO: we could merge this logic into ASTrewriter
 		return true
 	}
 	return false
@@ -147,7 +147,7 @@ func CachePlan(stmt Statement) bool {
 // MustRewriteAST takes Statement and returns true if RewriteAST must run on it for correct execution irrespective of user flags.
 func MustRewriteAST(stmt Statement, hasSelectLimit bool) bool {
 	switch node := stmt.(type) {
-	case *ColSet:
+	case *Set:
 		return true
 	case *Show:
 		switch node.Internal.(type) {

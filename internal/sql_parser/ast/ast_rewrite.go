@@ -320,12 +320,12 @@ func (a *application) rewriteSQLNode(parent SQLNode, node SQLNode, replacer repl
 		return a.rewriteSelectExprs(parent, node, replacer)
 	case *SelectInto:
 		return a.rewriteRefOfSelectInto(parent, node, replacer)
-	case *ColSet:
+	case *Set:
 		return a.rewriteRefOfSet(parent, node, replacer)
-	case *ColSetExpr:
-		return a.rewriteRefOfColSetExpr(parent, node, replacer)
-	case ColSetExprs:
-		return a.rewriteColSetExprs(parent, node, replacer)
+	case *SetExpr:
+		return a.rewriteRefOfSetExpr(parent, node, replacer)
+	case SetExprs:
+		return a.rewriteSetExprs(parent, node, replacer)
 	case *SetTransaction:
 		return a.rewriteRefOfSetTransaction(parent, node, replacer)
 	case *Show:
@@ -4948,7 +4948,7 @@ func (a *application) rewriteRefOfSelectInto(parent SQLNode, node *SelectInto, r
 	}
 	return true
 }
-func (a *application) rewriteRefOfSet(parent SQLNode, node *ColSet, replacer replacerFunc) bool {
+func (a *application) rewriteRefOfSet(parent SQLNode, node *Set, replacer replacerFunc) bool {
 	if node == nil {
 		return true
 	}
@@ -4961,12 +4961,12 @@ func (a *application) rewriteRefOfSet(parent SQLNode, node *ColSet, replacer rep
 		}
 	}
 	if !a.rewriteRefOfParsedComments(node, node.Comments, func(newNode, parent SQLNode) {
-		parent.(*ColSet).Comments = newNode.(*ParsedComments)
+		parent.(*Set).Comments = newNode.(*ParsedComments)
 	}) {
 		return false
 	}
-	if !a.rewriteColSetExprs(node, node.Exprs, func(newNode, parent SQLNode) {
-		parent.(*ColSet).Exprs = newNode.(ColSetExprs)
+	if !a.rewriteSetExprs(node, node.Exprs, func(newNode, parent SQLNode) {
+		parent.(*Set).Exprs = newNode.(SetExprs)
 	}) {
 		return false
 	}
@@ -4980,7 +4980,7 @@ func (a *application) rewriteRefOfSet(parent SQLNode, node *ColSet, replacer rep
 	}
 	return true
 }
-func (a *application) rewriteRefOfColSetExpr(parent SQLNode, node *ColSetExpr, replacer replacerFunc) bool {
+func (a *application) rewriteRefOfSetExpr(parent SQLNode, node *SetExpr, replacer replacerFunc) bool {
 	if node == nil {
 		return true
 	}
@@ -4993,12 +4993,12 @@ func (a *application) rewriteRefOfColSetExpr(parent SQLNode, node *ColSetExpr, r
 		}
 	}
 	if !a.rewriteColIdent(node, node.Name, func(newNode, parent SQLNode) {
-		parent.(*ColSetExpr).Name = newNode.(ColIdent)
+		parent.(*SetExpr).Name = newNode.(ColIdent)
 	}) {
 		return false
 	}
 	if !a.rewriteExpr(node, node.Expr, func(newNode, parent SQLNode) {
-		parent.(*ColSetExpr).Expr = newNode.(Expr)
+		parent.(*SetExpr).Expr = newNode.(Expr)
 	}) {
 		return false
 	}
@@ -5012,7 +5012,7 @@ func (a *application) rewriteRefOfColSetExpr(parent SQLNode, node *ColSetExpr, r
 	}
 	return true
 }
-func (a *application) rewriteColSetExprs(parent SQLNode, node ColSetExprs, replacer replacerFunc) bool {
+func (a *application) rewriteSetExprs(parent SQLNode, node SetExprs, replacer replacerFunc) bool {
 	if node == nil {
 		return true
 	}
@@ -5022,18 +5022,18 @@ func (a *application) rewriteColSetExprs(parent SQLNode, node ColSetExprs, repla
 		a.cur.node = node
 		kontinue := !a.pre(&a.cur)
 		if a.cur.revisit {
-			node = a.cur.node.(ColSetExprs)
+			node = a.cur.node.(SetExprs)
 			a.cur.revisit = false
-			return a.rewriteColSetExprs(parent, node, replacer)
+			return a.rewriteSetExprs(parent, node, replacer)
 		}
 		if kontinue {
 			return true
 		}
 	}
 	for x, el := range node {
-		if !a.rewriteRefOfColSetExpr(node, el, func(idx int) replacerFunc {
+		if !a.rewriteRefOfSetExpr(node, el, func(idx int) replacerFunc {
 			return func(newNode, parent SQLNode) {
-				parent.(ColSetExprs)[idx] = newNode.(*ColSetExpr)
+				parent.(SetExprs)[idx] = newNode.(*SetExpr)
 			}
 		}(x)) {
 			return false
@@ -7156,7 +7156,7 @@ func (a *application) rewriteStatement(parent SQLNode, node Statement, replacer 
 		return a.rewriteRefOfSavepoint(parent, node, replacer)
 	case *Select:
 		return a.rewriteRefOfSelect(parent, node, replacer)
-	case *ColSet:
+	case *Set:
 		return a.rewriteRefOfSet(parent, node, replacer)
 	case *SetTransaction:
 		return a.rewriteRefOfSetTransaction(parent, node, replacer)

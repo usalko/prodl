@@ -230,7 +230,7 @@ const (
 	AscScr  = "asc"
 	DescScr = "desc"
 
-	// ColSetExpr.Expr, for SET TRANSACTION ... or START TRANSACTION
+	// SetExpr.Expr, for SET TRANSACTION ... or START TRANSACTION
 	// TransactionStr is the Name for a SET TRANSACTION statement
 	TransactionStr = "transaction"
 

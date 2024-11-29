@@ -2562,7 +2562,7 @@ func (cached *SelectInto) CachedSize(alloc bool) int64 {
 	size += hack.RuntimeAllocSize(int64(len(cached.Overwrite)))
 	return size
 }
-func (cached *ColSet) CachedSize(alloc bool) int64 {
+func (cached *Set) CachedSize(alloc bool) int64 {
 	if cached == nil {
 		return int64(0)
 	}
@@ -2572,7 +2572,7 @@ func (cached *ColSet) CachedSize(alloc bool) int64 {
 	}
 	// field Comments *vitess.io/vitess/go/vt/sql_parser.ParsedComments
 	size += cached.Comments.CachedSize(true)
-	// field Exprs vitess.io/vitess/go/vt/sql_parser.ColSetExprs
+	// field Exprs vitess.io/vitess/go/vt/sql_parser.SetExprs
 	{
 		size += hack.RuntimeAllocSize(int64(cap(cached.Exprs)) * int64(8))
 		for _, elem := range cached.Exprs {
@@ -2581,7 +2581,7 @@ func (cached *ColSet) CachedSize(alloc bool) int64 {
 	}
 	return size
 }
-func (cached *ColSetExpr) CachedSize(alloc bool) int64 {
+func (cached *SetExpr) CachedSize(alloc bool) int64 {
 	if cached == nil {
 		return int64(0)
 	}

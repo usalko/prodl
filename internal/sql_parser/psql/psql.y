@@ -104,7 +104,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
   limit         *ast.Limit
 
   updateExpr    *ast.UpdateExpr
-  colSetExpr       *ast.ColSetExpr
+  setExpr       *ast.SetExpr
   convertType   *ast.ConvertType
   aliasedTableName *ast.AliasedTableExpr
   tableSpec  *ast.TableSpec
@@ -149,7 +149,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
   valTuple      ast.ValTuple
   orderBy       ast.OrderBy
   updateExprs   ast.UpdateExprs
-  colSetExprs      ast.ColSetExprs
+  setExprs      ast.SetExprs
   selectExprs   ast.SelectExprs
   tableOptions     ast.TableOptions
 
@@ -473,10 +473,10 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <columns> ins_column_list column_list at_id_list column_list_opt index_list execute_statement_list_opt
 %type <updateExprs> on_dup_opt
 %type <updateExprs> update_list
-%type <colSetExprs> col_set_list
+%type <setExprs> set_list
 %type <str> charset_or_character_set charset_or_character_set_or_names
 %type <updateExpr> update_expression
-%type <colSetExpr> col_set_expression
+%type <setExpr> set_expression
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
 %type <isolationLevel> isolation_level
@@ -917,9 +917,9 @@ delete_table_list:
   }
 
 set_statement:
-  SET comment_opt col_set_list
+  SET comment_opt set_list
   {
-    $$ = &ast.ColSet{Comments: ast.Comments($2).Parsed(), Exprs: $3}
+    $$ = &ast.Set{Comments: ast.Comments($2).Parsed(), Exprs: $3}
   }
 
 set_transaction_statement:
@@ -5509,34 +5509,34 @@ update_expression:
     $$ = &ast.UpdateExpr{Name: $1, Expr: $3}
   }
 
-col_set_list:
-  col_set_expression
+set_list:
+  set_expression
   {
-    $$ = ast.ColSetExprs{$1}
+    $$ = ast.SetExprs{$1}
   }
-| col_set_list ',' col_set_expression
+| set_list ',' set_expression
   {
     $$ = append($1, $3)
   }
 
-col_set_expression:
+set_expression:
   reserved_sql_id '=' ON
   {
-    $$ = &ast.ColSetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
   }
 | reserved_sql_id '=' OFF
   {
-    $$ = &ast.ColSetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
   }
 | reserved_sql_id '=' expression
   {
-    $$ = &ast.ColSetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: $3}
+    $$ = &ast.SetExpr{Name: $1, Scope: ast.ImplicitScope, Expr: $3}
   }
 | charset_or_character_set_or_names charset_value collate_opt
   {
-    $$ = &ast.ColSetExpr{Name: ast.NewColIdent(string($1)), Scope: ast.ImplicitScope, Expr: $2}
+    $$ = &ast.SetExpr{Name: ast.NewColIdent(string($1)), Scope: ast.ImplicitScope, Expr: $2}
   }
-|  set_session_or_global col_set_expression
+|  set_session_or_global set_expression
   {
     $2.Scope = $1
     $$ = $2

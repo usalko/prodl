@@ -79,7 +79,7 @@ CREATE TABLE public.articles_article (
 	if len(textPieces) != 15 {
 		t.Errorf("count of text pieces is %v but expected %v", len(textPieces), 15)
 	}
-	// if len(parsedStatements) != 15 {
-	// 	t.Errorf("count of statements is %v but expected %v", len(parsedStatements), 15)
-	// }
+	if len(parsedStatements) != 15 {
+		t.Errorf("count of statements is %v but expected %v", len(parsedStatements), 15)
+	}
 }

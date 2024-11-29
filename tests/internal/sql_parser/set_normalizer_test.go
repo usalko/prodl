@@ -25,7 +25,7 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
-func TestNormalizeColSetExpr(t *testing.T) {
+func TestNormalizeSetExpr(t *testing.T) {
 	tests := []struct {
 		in, expected, err string
 	}{{
@@ -80,8 +80,8 @@ func TestNormalizeColSetExpr(t *testing.T) {
 
 			statement, err := sql_parser.Parse("set "+tt.in, dialect.MYSQL)
 			require.NoError(t, err)
-			rewriter := sql_parser.ColSetNormalizer{}
-			out, err := rewriter.NormalizeColSetExpr(statement.(*ast.ColSet).Exprs[0])
+			rewriter := sql_parser.SetNormalizer{}
+			out, err := rewriter.NormalizeSetExpr(statement.(*ast.Set).Exprs[0])
 			if tt.err != "" {
 				require.EqualError(t, err, tt.err)
 			} else {
