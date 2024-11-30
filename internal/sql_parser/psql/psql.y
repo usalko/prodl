@@ -481,7 +481,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <str> charset_or_character_set charset_or_character_set_or_names
 %type <updateExpr> update_expression
 %type <setExpr> set_expression
-%type <commentExpr> comment_expression
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
 %type <isolationLevel> isolation_level
@@ -568,6 +567,10 @@ command:
   {
     $$ = $1
   }
+| comment_statement
+  {
+    $$ = $1
+  }
 | stream_statement
 | vstream_statement
 | insert_statement
@@ -592,7 +595,6 @@ command:
 | other_statement
 | flush_statement
 | do_statement
-| comment_statement
 | load_statement
 | lock_statement
 | unlock_statement
@@ -601,9 +603,9 @@ command:
 | execute_statement
 | deallocate_statement
 | /*empty*/
-{
-  setParseTree(psqlex, nil)
-}
+  {
+    setParseTree(psqlex, nil)
+  }
 
 id_or_var:
   ID
@@ -3634,15 +3636,11 @@ comment_statement:
   {
     setAllowComments(psqlex, true)
   }
-  comment_expression
-  {
-    setAllowComments(psqlex, false)
-  }
-
-comment_expression:
   COMMENT comment_list ON schema_name IS text_literal_or_arg
   {
-     $$ = &ast.CommentOnSchema{Comments: ast.Comments($2).Parsed(), Schema: $4.Name, Value: $6}
+    // Strange argumets shift
+    $$ = &ast.CommentOnSchema{Comments: ast.Comments{$2}.Parsed(), Schema: $5.Name, Value: $7}
+    setAllowComments(psqlex, false)
   }
 
 

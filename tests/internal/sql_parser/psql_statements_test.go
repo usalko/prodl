@@ -19,6 +19,10 @@ func TestCommentOnSchema(t *testing.T) {
 			// in: "SET a = '1'",
 			id: []int{psql.COMMENT, psql.ON, psql.SCHEMA, 0},
 		},
+		{
+			in: "-- comment\n\nSET statement_timeout = 0",
+			id: []int{psql.SET, 0},
+		},
 	}
 
 	for _, tcase := range testcases {

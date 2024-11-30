@@ -190,11 +190,9 @@ func (tkn *PsqlTokenizer) Lex(lval *psqSymType) int {
 		return tkn.skipStatement()
 	}
 
-	initialPosition := tkn.Pos
-
 	typ, val := tkn.Scan()
 	for typ == COMMENT {
-		if tkn.AllowComments || initialPosition == 0 {
+		if tkn.AllowComments || val == "COMMENT" {
 			break
 		}
 		typ, val = tkn.Scan()

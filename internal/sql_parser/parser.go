@@ -54,26 +54,27 @@ func Parse2(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, ast.Bind
 
 	if val, _ := parsePooled(tokenizer, sql_dialect); val != 0 {
 		if tokenizer.GetPartialDDL() != nil {
-			if typ, val := tokenizer.Scan(); typ != 0 {
-				return nil, nil, fmt.Errorf("extra characters encountered after end of DDL: '%s'", string(val))
-			}
-			switch x := tokenizer.GetPartialDDL().(type) {
-			case ast.DBDDLStatement:
-				x.SetFullyParsed(false)
-			case ast.DDLStatement:
-				x.SetFullyParsed(false)
-			}
-			tokenizer.SetParseTree(tokenizer.GetPartialDDL())
-			return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
+			return getPartialDDL(tokenizer)
 		}
 		return nil, nil, sql_parser_errors.NewError(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.GetLastError().Error())
-	}
-	if tokenizer.GetLastError() == nil {
-		return nil, nil, ErrEmpty
 	}
 	if tokenizer.GetParseTree() == nil {
 		return nil, nil, ErrEmpty
 	}
+	return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
+}
+
+func getPartialDDL(tokenizer tokenizer.Tokenizer) (ast.Statement, ast.BindVars, error) {
+	if typ, val := tokenizer.Scan(); typ != 0 {
+		return nil, nil, fmt.Errorf("extra characters encountered after end of DDL: '%s'", string(val))
+	}
+	switch x := tokenizer.GetPartialDDL().(type) {
+	case ast.DBDDLStatement:
+		x.SetFullyParsed(false)
+	case ast.DDLStatement:
+		x.SetFullyParsed(false)
+	}
+	tokenizer.SetParseTree(tokenizer.GetPartialDDL())
 	return tokenizer.GetParseTree(), tokenizer.GetBindVars(), nil
 }
 
