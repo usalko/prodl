@@ -28,7 +28,6 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/cache"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 	"github.com/usalko/prodl/internal/sql_parser/tokenizer"
-	"github.com/usalko/prodl/internal/sql_parser_errors"
 	"github.com/usalko/prodl/internal/sql_types"
 )
 
@@ -169,80 +168,19 @@ func Parse(lexer tokenizer.Tokenizer) int {
 	return psqParse(lexer.(psqLexer))
 }
 
-// MySQLServerVersion is what Vitess will present as it's version during the connection handshake,
+// PSQLServerVersion is what Vitess will present as it's version during the connection handshake,
 // and as the value to the @@version system variable. If nothing is provided, Vitess will report itself as
-// a specific MySQL version with the vitess version appended to it
-var MySQLServerVersion = flag.String("psql_server_version", "", "MySQL server version to advertise.")
-
-var versionFlagSync sync.Once
-
-// ConvertMySQLVersionToCommentVersion converts the MySQL version into comment version format.
-func ConvertMySQLVersionToCommentVersion(version string) (string, error) {
-	var res = make([]int, 3)
-	idx := 0
-	val := ""
-	for _, c := range version {
-		if c <= '9' && c >= '0' {
-			val += string(c)
-		} else if c == '.' {
-			v, err := strconv.Atoi(val)
-			if err != nil {
-				return "", err
-			}
-			val = ""
-			res[idx] = v
-			idx++
-			if idx == 3 {
-				break
-			}
-		} else {
-			break
-		}
-	}
-	if val != "" {
-		v, err := strconv.Atoi(val)
-		if err != nil {
-			return "", err
-		}
-		res[idx] = v
-		idx++
-	}
-	if idx == 0 {
-		return "", sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "MySQL version not correctly setup - %s.", version)
-	}
-
-	return fmt.Sprintf("%01d%02d%02d", res[0], res[1], res[2]), nil
-}
-
-func checkParserVersionFlag() {
-	if flag.Parsed() {
-		versionFlagSync.Do(func() {
-			if *MySQLServerVersion != "" {
-				convVersion, err := ConvertMySQLVersionToCommentVersion(*MySQLServerVersion)
-				if err == nil {
-					MySQLVersion = convVersion
-				}
-			}
-		})
-	}
-}
-
-// MySQLVersion is the version of MySQL that the parser would emulate
-var MySQLVersion = "50709" // default version if nothing else is stated
+// a specific PSQL version with the vitess version appended to it
+var PSQLServerVersion = flag.String("psql_server_version", "", "PSQL server version to advertise.")
 
 // NewPsqlStringTokenizer creates a new Tokenizer for the
 // sql string.
 func NewPsqlStringTokenizer(sql string) *PsqlTokenizer {
-	checkParserVersionFlag()
 
 	return &PsqlTokenizer{
 		buf:      sql,
 		BindVars: make(map[string]struct{}),
 	}
-}
-
-func IsMySQL80AndAbove() bool {
-	return MySQLVersion >= "80000"
 }
 
 // Lex returns the next token form the Tokenizer.
@@ -252,9 +190,11 @@ func (tkn *PsqlTokenizer) Lex(lval *psqSymType) int {
 		return tkn.skipStatement()
 	}
 
+	initialPosition := tkn.Pos
+
 	typ, val := tkn.Scan()
 	for typ == COMMENT {
-		if tkn.AllowComments {
+		if tkn.AllowComments || initialPosition == 0 {
 			break
 		}
 		typ, val = tkn.Scan()
@@ -298,7 +238,7 @@ func (tkn *PsqlTokenizer) Error(err string) {
 func (tkn *PsqlTokenizer) Scan() (int, string) {
 	if tkn.specialComment != nil {
 		// Enter specialComment scan mode.
-		// for scanning such kind of comment: /*! MySQL-specific code */
+		// for scanning such kind of comment: /*! PSQL-specific code */
 		specialComment := tkn.specialComment
 		tok, val := specialComment.Scan()
 		if tok != 0 {
@@ -407,7 +347,7 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 				tkn.Skip(1)
 				if tkn.Cur() == '!' && !tkn.SkipSpecialComments {
 					tkn.Skip(1)
-					return tkn.scanMySQLSpecificComment()
+					return tkn.scanPSQLSpecificComment()
 				}
 				return tkn.scanCommentType2()
 			default:
@@ -822,8 +762,8 @@ func (tkn *PsqlTokenizer) scanCommentType2() (int, string) {
 	return COMMENT, tkn.buf[start:tkn.Pos]
 }
 
-// scanMySQLSpecificComment scans a MySQL comment pragma, which always starts with '//*`
-func (tkn *PsqlTokenizer) scanMySQLSpecificComment() (int, string) {
+// scanPSQLSpecificComment scans a PSQL comment pragma, which always starts with '//*`
+func (tkn *PsqlTokenizer) scanPSQLSpecificComment() (int, string) {
 	start := tkn.Pos - 3
 	for {
 		if tkn.Cur() == '*' {
@@ -842,8 +782,8 @@ func (tkn *PsqlTokenizer) scanMySQLSpecificComment() (int, string) {
 
 	commentVersion, sql := ExtractPsqlComment(tkn.buf[start:tkn.Pos])
 
-	if MySQLVersion >= commentVersion {
-		// Only add the special comment to the tokenizer if the version of MySQL is higher or equal to the comment version
+	if "1" >= commentVersion {
+		// Only add the special comment to the tokenizer if the version of PSQL is higher or equal to the comment version
 		tkn.specialComment = NewPsqlStringTokenizer(sql)
 	}
 

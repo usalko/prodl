@@ -293,6 +293,8 @@ func CloneSQLNode(in SQLNode) SQLNode {
 		return ClonePartitions(in)
 	case *PrepareStmt:
 		return CloneRefOfPrepareStmt(in)
+	case *CommentOnSchema:
+		return CloneRefOfCommentOnSchema(in)
 	case ReferenceAction:
 		return in
 	case *ReferenceDefinition:
@@ -699,6 +701,11 @@ func CloneRefOfCollateExpr(n *CollateExpr) *CollateExpr {
 	out := *n
 	out.Expr = CloneExpr(n.Expr)
 	return &out
+}
+
+// CloneSchemaIdent creates a deep clone of the input.
+func CloneSchemaIdent(n SchemaIdent) SchemaIdent {
+	return *CloneRefOfSchemaIdent(&n)
 }
 
 // CloneRefOfColumnDefinition creates a deep clone of the input.
@@ -1808,6 +1815,18 @@ func CloneRefOfPrepareStmt(n *PrepareStmt) *PrepareStmt {
 	out := *n
 	out.Name = CloneColIdent(n.Name)
 	out.Statement = CloneExpr(n.Statement)
+	out.Comments = CloneRefOfParsedComments(n.Comments)
+	return &out
+}
+
+// CloneRefOfCommentOnSchema creates a deep clone of the input.
+func CloneRefOfCommentOnSchema(n *CommentOnSchema) *CommentOnSchema {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Schema = CloneSchemaIdent(n.Schema)
+	out.Value = CloneExpr(n.Value)
 	out.Comments = CloneRefOfParsedComments(n.Comments)
 	return &out
 }
@@ -3250,6 +3269,15 @@ func CloneSliceOfRefOfWhen(n []*When) []*When {
 
 // CloneRefOfColIdent creates a deep clone of the input.
 func CloneRefOfColIdent(n *ColIdent) *ColIdent {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	return &out
+}
+
+// CloneRefOfSchemaIdent creates a deep clone of the input.
+func CloneRefOfSchemaIdent(n *SchemaIdent) *SchemaIdent {
 	if n == nil {
 		return nil
 	}

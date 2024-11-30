@@ -680,6 +680,13 @@ type (
 	// It should be used only as an indicator. It does not contain
 	// the full AST for the statement.
 	OtherAdmin struct{}
+
+	// CommentOnSchema represents a schema comment setup
+	CommentOnSchema struct {
+		Schema   SchemaIdent
+		Value    Expr
+		Comments *ParsedComments
+	}
 )
 
 func (*Union) iStatement()             {}
@@ -729,6 +736,7 @@ func (*ExplainTab) iStatement()        {}
 func (*PrepareStmt) iStatement()       {}
 func (*ExecuteStmt) iStatement()       {}
 func (*DeallocateStmt) iStatement()    {}
+func (*CommentOnSchema) iStatement()   {}
 
 func (*CreateView) iDDLStatement()    {}
 func (*AlterView) iDDLStatement()     {}
@@ -2040,6 +2048,11 @@ type JoinCondition struct {
 	Using Columns
 }
 
+// TableName represents a schema  name.
+type SchemaName struct {
+	Name SchemaIdent
+}
+
 // IndexHint represents an index hint.
 // More information available on https://dev.mysql.com/doc/refman/8.0/en/index-hints.html
 type IndexHint struct {
@@ -2733,6 +2746,12 @@ type ColIdent struct {
 // TableIdent is a case sensitive SQL identifier. It will be escaped with
 // backquotes if necessary.
 type TableIdent struct {
+	V string
+}
+
+// SchemaIdent is a case sensitive SQL identifier. It will be escaped with
+// backquotes if necessary.
+type SchemaIdent struct {
 	V string
 }
 

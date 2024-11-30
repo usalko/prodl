@@ -612,6 +612,13 @@ func NewColName(str string) *ColName {
 	}
 }
 
+// NewSchemaIdent makes a new SchemaIdent.
+func NewSchemaIdent(str string) SchemaIdent {
+	return SchemaIdent{
+		V: str,
+	}
+}
+
 // NewColNameWithQualifier makes a new ColName pointing to a specific table
 func NewColNameWithQualifier(identifier string, table TableName) *ColName {
 	return &ColName{

@@ -1164,6 +1164,11 @@ func (node *JoinTableExpr) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
+func (node *CommentOnSchema) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "comment on schema %v is %v", node.Schema, node.Value)
+}
+
+// Format formats the node.
 func (node IndexHints) Format(buf *TrackedBuffer) {
 	for _, n := range node {
 		buf.astPrintf(node, "%v", n)

@@ -3358,7 +3358,8 @@ func $$Iaddr(v any) __yyunsafe__.Pointer {
 }
 
 var (
-	$$Debug        = 0
+	/* available values are: 0, 1, 2, 3, 4 */
+	$$Debug        = 3
 	$$ErrorVerbose = true
 )
 
@@ -3473,6 +3474,9 @@ func $$ErrorMessage(state, lookAhead int) string {
 func $$lex1(lex $$Lexer, lval *$$SymType) (char, token int) {
 	token = 0
 	char = lex.Lex(lval)
+	if $$Debug >= 4 {
+	    __yyfmt__.Printf("lval is %v => ", lval)
+	}
 	if char <= 0 {
 		token = $$Tok1[0]
 		goto out
@@ -3497,10 +3501,11 @@ func $$lex1(lex $$Lexer, lval *$$SymType) (char, token int) {
 
 out:
 	if token == 0 {
+		__yyfmt__.Printf("token zero")
 		token = $$Tok2[1] /* unknown char */
 	}
 	if $$Debug >= 3 {
-		__yyfmt__.Printf("lex %s(%d)\n", $$Tokname(token), uint(char))
+		__yyfmt__.Printf("lex %s(%d) token=%d\n", $$Tokname(token), uint(char), token)
 	}
 	return char, token
 }

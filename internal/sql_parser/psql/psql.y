@@ -75,6 +75,8 @@ func bindVariable(psqlex psqLexer, bvar string) {
   columnType    ast.ColumnType
   columnCharset ast.ColumnCharset
   jsonPathParam ast.JSONPathParam
+  schemaIdent   ast.SchemaIdent
+  schemaName    ast.SchemaName
 }
 
 %union {
@@ -105,6 +107,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 
   updateExpr    *ast.UpdateExpr
   setExpr       *ast.SetExpr
+  commentExpr   *ast.CommentOnSchema
   convertType   *ast.ConvertType
   aliasedTableName *ast.AliasedTableExpr
   tableSpec  *ast.TableSpec
@@ -202,7 +205,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token LEX_ERROR
 %left <str> UNION
 %token <str> SELECT STREAM VSTREAM INSERT UPDATE DELETE FROM WHERE GROUP HAVING ORDER BY LIMIT OFFSET FOR
-%token <str> ALL DISTINCT AS EXISTS ASC DESC INTO DUPLICATE DEFAULT SET LOCK UNLOCK KEYS DO CALL
+%token <str> ALL DISTINCT AS EXISTS ASC DESC INTO DUPLICATE DEFAULT SET LOCK UNLOCK KEYS DO CALL COMMENT
 %token <str> DISTINCTROW PARSER GENERATED ALWAYS
 // Not implemented:
 %token <str> ANY ASYMMETRIC AUTHORIZATION CONCURRENTLY CURRENT_CATALOG CURRENT_ROLE CURRENT_SCHEMA DEFERRABLE
@@ -264,7 +267,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %left <str> ON USING INPLACE COPY INSTANT ALGORITHM NONE SHARED EXCLUSIVE
 %left <str> SUBQUERY_AS_EXPR
 %left <str> '(' ',' ')'
-%token <str> ID AT_ID AT_AT_ID HEX STRING NCHAR_STRING INTEGRAL FLOAT DECIMAL HEXNUM VALUE_ARG LIST_ARG COMMENT COMMENT_KEYWORD BIT_LITERAL COMPRESSION
+%token <str> ID AT_ID AT_AT_ID HEX STRING NCHAR_STRING INTEGRAL FLOAT DECIMAL HEXNUM VALUE_ARG LIST_ARG COMMENT_KEYWORD BIT_LITERAL COMPRESSION
 %token <str> JSON_PRETTY JSON_STORAGE_SIZE JSON_STORAGE_FREE JSON_CONTAINS JSON_CONTAINS_PATH JSON_EXTRACT JSON_KEYS JSON_OVERLAPS JSON_SEARCH JSON_VALUE
 %token <str> EXTRACT
 %token <str> NULL TRUE FALSE OFF
@@ -396,10 +399,11 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <statement> prepare_statement
 %type <statement> execute_statement deallocate_statement
 %type <statement> stream_statement vstream_statement insert_statement update_statement delete_statement set_statement set_transaction_statement
-%type <statement> create_statement alter_statement rename_statement drop_statement truncate_statement flush_statement do_statement
+%type <statement> create_statement alter_statement rename_statement drop_statement truncate_statement flush_statement do_statement comment_statement
 %type <with> with_clause_opt with_clause
 %type <cte> common_table_expr
 %type <ctes> with_list
+%type <schemaName> schema_name
 %type <renameTablePairs> rename_list
 %type <createTable> create_table_prefix
 %type <alterTable> alter_table_prefix
@@ -477,6 +481,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <str> charset_or_character_set charset_or_character_set_or_names
 %type <updateExpr> update_expression
 %type <setExpr> set_expression
+%type <commentExpr> comment_expression
 %type <characteristic> transaction_char
 %type <characteristics> transaction_chars
 %type <isolationLevel> isolation_level
@@ -489,6 +494,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <empty> to_opt
 %type <str> reserved_keyword non_reserved_keyword non_reserved_keyword_sql2023
 %type <colIdent> sql_id reserved_sql_id col_alias as_ci_opt
+%type <schemaIdent> schema_id
 %type <expr> charset_value
 %type <tableIdent> table_id reserved_table_id table_alias as_opt_id table_id_opt from_database_opt
 %type <empty> as_opt work_opt savepoint_opt
@@ -586,6 +592,7 @@ command:
 | other_statement
 | flush_statement
 | do_statement
+| comment_statement
 | load_statement
 | lock_statement
 | unlock_statement
@@ -3623,6 +3630,22 @@ for_channel_opt:
     $$ = " " + string($1) + " " + string($2) + " " + $3.String()
   }
 
+comment_statement:
+  {
+    setAllowComments(psqlex, true)
+  }
+  comment_expression
+  {
+    setAllowComments(psqlex, false)
+  }
+
+comment_expression:
+  COMMENT comment_list ON schema_name IS text_literal_or_arg
+  {
+     $$ = &ast.CommentOnSchema{Comments: ast.Comments($2).Parsed(), Schema: $4.Name, Value: $6}
+  }
+
+
 comment_opt:
   {
     setAllowComments(psqlex, true)
@@ -3983,6 +4006,12 @@ on_expression_opt:
   { $$ = &ast.JoinCondition{} }
 | ON expression
   { $$ = &ast.JoinCondition{On: $2} }
+
+schema_name:
+  SCHEMA schema_id
+  {
+    $$ = ast.SchemaName{Name: $2}
+  }
 
 as_opt:
   { $$ = struct{}{} }
@@ -5645,6 +5674,12 @@ reserved_sql_id:
     $$ = ast.NewColIdent(string($1))
   }
 
+schema_id:
+  id_or_var
+  {
+    $$ = ast.NewSchemaIdent(string($1.String()))
+  }
+
 table_id:
   id_or_var
   {
@@ -5703,6 +5738,7 @@ reserved_keyword:
 | COLLATE
 | COLLATION
 | COLUMN
+| COMMENT
 | CONCURRENTLY
 | CONSTRAINT
 | CREATE
@@ -5839,7 +5875,6 @@ non_reserved_keyword:
 | CLUSTER
 | COALESCE
 | COLUMNS
-| COMMENT
 | COMMENTS
 | COMMIT
 | COMMITTED

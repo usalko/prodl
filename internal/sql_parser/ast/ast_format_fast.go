@@ -1447,6 +1447,14 @@ func (node Partitions) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
+func (node *CommentOnSchema) formatFast(buf *TrackedBuffer) {
+	buf.WriteString("comment on schema ")
+	node.Schema.formatFast(buf)
+	buf.WriteString(" is ")
+	node.Value.formatFast(buf)
+}
+
+// formatFast formats the node.
 func (node TableExprs) formatFast(buf *TrackedBuffer) {
 	var prefix string
 	for _, n := range node {
@@ -2181,6 +2189,10 @@ func (node AccessMode) formatFast(buf *TrackedBuffer) {
 	} else {
 		buf.WriteString(TxReadWrite)
 	}
+}
+
+func (node SchemaIdent) formatFast(buf *TrackedBuffer) {
+	buf.WriteString(node.V)
 }
 
 // formatFast formats the node.

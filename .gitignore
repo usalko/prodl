@@ -32,3 +32,6 @@ go.work.sum
 
 # yacc.go debug output
 y.output
+
+# debug compilations
+__debug_bin*

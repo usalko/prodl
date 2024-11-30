@@ -68,6 +68,9 @@ func Parse2(sql string, sql_dialect dialect.SqlDialect) (ast.Statement, ast.Bind
 		}
 		return nil, nil, sql_parser_errors.NewError(sql_parser_errors.Code_INVALID_ARGUMENT, tokenizer.GetLastError().Error())
 	}
+	if tokenizer.GetLastError() == nil {
+		return nil, nil, ErrEmpty
+	}
 	if tokenizer.GetParseTree() == nil {
 		return nil, nil, ErrEmpty
 	}
