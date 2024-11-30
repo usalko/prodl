@@ -148,7 +148,7 @@ var parserPool = sync.Pool{
 var zeroParser psqParserImpl
 
 // psqParsePooled is a wrapper around psqParse that pools the parser objects. There isn't a
-// particularly good reason to use yyParse directly, since it immediately discards its parser.
+// particularly good reason to use psqParse directly, since it immediately discards its parser.
 //
 // N.B: Parser pooling means that you CANNOT take references directly to parse stack variables (e.g.
 // $$ = &$4) in sql.y rules. You must instead add an intermediate reference like so:
