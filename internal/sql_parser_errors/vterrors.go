@@ -14,15 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package sql_parser_errors provides simple error handling primitives for Vitess
+// Package sql_parser_errors provides simple error handling primitives
 //
-// In all Vitess code, errors should be propagated using sql_parser_errors.Wrapf()
+// In code, errors should be propagated using sql_parser_errors.Wrapf()
 // and not fmt.Errorf(). This makes sure that stacktraces are kept and
 // propagated correctly.
 //
 // New errors should be created using sql_parser_errors.New or sql_parser_errors.Errorf
 //
-// Vitess uses canonical error codes for error reporting. This is based
+// This is canonical error codes for error reporting. This is based
 // on years of industry experience with error reporting. This idea is
 // that errors should be classified into a small set of errors (10 or so)
 // with very specific meaning. Each error has a code, and a message. When
