@@ -67,7 +67,7 @@ func TestNopProcessing(t *testing.T) {
 					}
 				})
 
-			expectedStatementsCount := 14
+			expectedStatementsCount := 15
 			if len(statements) != expectedStatementsCount {
 				t.Errorf("count of parsed statements is %v but expected %v", len(statements), expectedStatementsCount)
 			}

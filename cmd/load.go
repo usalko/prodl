@@ -4,6 +4,10 @@ import (
 	"database/sql"
 
 	"github.com/spf13/cobra"
+
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // loadCmd represents the load command
@@ -18,7 +22,7 @@ var loadCmd = &cobra.Command{
 
 		db, err := sql.Open("sqlite3", targetSqlUrl)
 		if err != nil {
-			rootCmd.PrintErrf("Connection to the dtabase %v fail with error %v", targetSqlUrl, err)
+			rootCmd.PrintErrf("Connection to the database %v fail with error %v", targetSqlUrl, err)
 			return
 		}
 		db.Exec("select 1")
