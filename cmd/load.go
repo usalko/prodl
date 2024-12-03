@@ -40,7 +40,7 @@ var loadCmd = &cobra.Command{
 
 		// 1. Test connection to the database
 		// 2. Open reader and do StatementStream
-		rootCmd.Printf("connection established")
+		rootCmd.Printf("connection established\n")
 	},
 }
 
