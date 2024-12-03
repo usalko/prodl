@@ -35,3 +35,6 @@ y.output
 
 # debug compilations
 __debug_bin*
+
+# tests output
+*.sqlite3
