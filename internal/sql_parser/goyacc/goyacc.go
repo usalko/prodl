@@ -2150,7 +2150,7 @@ func putitem(p Pitem, set Lkset) {
 	p.first = p.prod[p.off]
 
 	if pidebug != 0 && foutput != nil {
-		fmt.Fprintf(foutput, "putitem(%v), state %v\n", writem(p), nstate)
+		fmt.Fprintf(foutput, "putitem(%v), state-%v\n", writem(p), nstate)
 	}
 	j := pstate[nstate+1]
 	if j >= len(statemem) {
@@ -2495,7 +2495,7 @@ func wrstate(i int) {
 	if foutput == nil {
 		return
 	}
-	fmt.Fprintf(foutput, "\nstate %v\n", i)
+	fmt.Fprintf(foutput, "\nstate-%v\n", i)
 	qq = pstate[i+1]
 	for pp = pstate[i]; pp < qq; pp++ {
 		fmt.Fprintf(foutput, "\t%v\n", writem(statemem[pp].pitem))
@@ -2887,7 +2887,7 @@ nextn:
 					indgo[i] = n
 					if adb > 1 {
 						fmt.Fprintf(ftable, "State %v: entry at"+
-							"%v equals state %v\n",
+							"%v equals state-%v\n",
 							i, n, j)
 					}
 					return
@@ -2914,7 +2914,7 @@ nextn:
 		}
 		return
 	}
-	errorf("Error; failure to place state %v", i)
+	errorf("Error; failure to place state-%v", i)
 }
 
 // this version is for limbo
@@ -3634,7 +3634,7 @@ $$default:
 
 				/* the current p has no shift on "error", pop stack */
 				if $$Debug >= 2 {
-					__yyfmt__.Printf("error recovery pops state %d\n", $$S[$$p].yys)
+					__yyfmt__.Printf("error recovery pops state-%d\n", $$S[$$p].yys)
 				}
 				$$p--
 			}
