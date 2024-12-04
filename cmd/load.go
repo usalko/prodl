@@ -6,6 +6,8 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
+const MAX_COUNT_FOR_PROCESSING_FILES = 1024
+
 // loadCmd represents the load command
 var loadCmd = &cobra.Command{
 	Use:   "load",
@@ -13,6 +15,7 @@ var loadCmd = &cobra.Command{
 	Long: `The 'load' subcommand loads a sql dump to the database. For example:
 
 '<cmd> load --to sqlite3://./local.sqlite3 dump-file-name.tar.gz'.`,
+	Args: cobra.RangeArgs(1, MAX_COUNT_FOR_PROCESSING_FILES),
 	Run: func(cmd *cobra.Command, args []string) {
 		targetSqlUrl, _ := cmd.Flags().GetString("target-sql-connection")
 		sqlDialect, connectionOptions, err := (*dialect.SqlDialect).ParseUrl(nil, targetSqlUrl)
@@ -37,19 +40,24 @@ var loadCmd = &cobra.Command{
 			rootCmd.PrintErrf("check connection for target url %v fail with error: %v\n", targetSqlUrl, err)
 			return
 		}
+		rootCmd.Printf("connection established\n")
+		for _, fileName := range args {
+			rootCmd.Printf("process file %v\n", fileName)
+		}
 
 		// 1. Test connection to the database
 		// 2. Open reader and do StatementStream
-		rootCmd.Printf("connection established\n")
 	},
 }
 
 func init() {
 	loadCmd.Flags().StringP("target-sql-connection", "c", "sqlite3://./local.sqlite3", `
 Sql url for loading dump file. Examples:
-[MySQL, MariaDB, TiDB] 	mysql://user:password@/dbname
-[Sqlite3]				sqlite3://./local.sqlite3?cache=shared
-[PostgresQL]			pg://username:password@localhost:5432/database_name
+
+    mysql://user:password@/dbname            // [MySQL, MariaDB, TiDB]
+    sqlite3://./local.sqlite3?cache=shared   // [Sqlite3]
+    pg://username:password@localhost:5432/database_name    // [PostgresQL]
+
 `)
 	rootCmd.AddCommand(loadCmd)
 }
