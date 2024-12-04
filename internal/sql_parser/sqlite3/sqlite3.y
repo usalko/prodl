@@ -1,5 +1,4 @@
 /*
-
 Copyright 2024 Vanya Usalko <ivict@rambler.ru>.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +15,7 @@ limitations under the License.
 */
 
 %{
-package psql
+package sqlite3
 
 import (
     "github.com/usalko/prodl/internal/sql_parser/ast"
@@ -24,39 +23,39 @@ import (
     "github.com/usalko/prodl/internal/sql_types"
 )
 
-func setParseTree(psqlex psqLexer, stmt ast.Statement) {
-  psqlex.(tokenizer.Tokenizer).SetParseTree(stmt)
+func setParseTree(sqlite3lex sqlite3Lexer, stmt ast.Statement) {
+  sqlite3lex.(tokenizer.Tokenizer).SetParseTree(stmt)
 }
 
-func setAllowComments(psqlex psqLexer, allow bool) {
-  psqlex.(tokenizer.Tokenizer).SetAllowComments(allow)
+func setAllowComments(sqlite3lex sqlite3Lexer, allow bool) {
+  sqlite3lex.(tokenizer.Tokenizer).SetAllowComments(allow)
 }
 
-func setDDL(psqlex psqLexer, node ast.Statement) {
-  psqlex.(tokenizer.Tokenizer).SetPartialDDL(node)
+func setDDL(sqlite3lex sqlite3Lexer, node ast.Statement) {
+  sqlite3lex.(tokenizer.Tokenizer).SetPartialDDL(node)
 }
 
-func incNesting(psqlex psqLexer) bool {
-  psqlex.(tokenizer.Tokenizer).IncNesting()
-  if psqlex.(tokenizer.Tokenizer).GetNesting() == 200 {
+func incNesting(sqlite3lex sqlite3Lexer) bool {
+  sqlite3lex.(tokenizer.Tokenizer).IncNesting()
+  if sqlite3lex.(tokenizer.Tokenizer).GetNesting() == 200 {
     return true
   }
   return false
 }
 
-func decNesting(psqlex psqLexer) {
-  psqlex.(tokenizer.Tokenizer).DecNesting()
+func decNesting(sqlite3lex sqlite3Lexer) {
+  sqlite3lex.(tokenizer.Tokenizer).DecNesting()
 }
 
 // skipToEnd forces the lexer to end prematurely. Not all SQL statements
 // are supported by the Parser, thus calling skipToEnd will make the lexer
 // return EOF early.
-func skipToEnd(psqlex psqLexer) {
-  psqlex.(tokenizer.Tokenizer).SetSkipToEnd(true)
+func skipToEnd(sqlite3lex sqlite3Lexer) {
+  sqlite3lex.(tokenizer.Tokenizer).SetSkipToEnd(true)
 }
 
-func bindVariable(psqlex psqLexer, bvar string) {
-  psqlex.(tokenizer.Tokenizer).BindVar(bvar, struct{}{})
+func bindVariable(sqlite3lex sqlite3Lexer, bvar string) {
+  sqlite3lex.(tokenizer.Tokenizer).BindVar(bvar, struct{}{})
 }
 
 %}
@@ -279,7 +278,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %left EMPTY_FROM_CLAUSE
 %right INTO
 
-// Precedence dictated by psql. But the vitess grammar is simplified.
+// Precedence dictated by sqlite3. But the vitess grammar is simplified.
 // Some of these operators don\'t conflict in our situation. Nevertheless,
 // it\'s better to have these listed in the correct order. Also, we don\'t
 // support all operators yet.
@@ -325,6 +324,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> VINDEX VINDEXES DIRECTORY NAME UPGRADE
 %token <str> STATUS VARIABLES WARNINGS CASCADED DEFINER OPTION SQL UNDEFINED
 %token <str> SEQUENCE MERGE TEMPORARY TEMPTABLE INVOKER SECURITY FIRST AFTER LAST
+%token <str> FAIL GLOB INDEXED PRAGMA RAISE
 
 // Migration tokens
 %token <str> CANCEL RETRY COMPLETE CLEANUP THROTTLE UNTHROTTLE EXPIRE RATIO
@@ -343,7 +343,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> ASCII UNICODE // used in CONVERT/CAST types
 
 // Type Modifiers
-%token <str> NULLX AUTO_INCREMENT APPROXNUM SIGNED UNSIGNED ZEROFILL
+%token <str> NULLX AUTOINCREMENT APPROXNUM SIGNED UNSIGNED ZEROFILL
 
 // SHOW tokens
 %token <str> CODE COLLATION COLUMNS DATABASES ENGINES EVENT EXTENDED FIELDS FULL FUNCTION GTID_EXECUTED
@@ -492,7 +492,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <showFilter> like_or_where_opt
 %type <boolean> exists_opt not_exists_opt enforced enforced_opt temp_opt full_opt
 %type <empty> to_opt
-%type <str> reserved_keyword non_reserved_keyword non_reserved_keyword_sql2023
+%type <str> reserved_keyword non_reserved_keyword
 %type <colIdent> sql_id reserved_sql_id col_alias as_ci_opt
 %type <schemaIdent> schema_id
 %type <expr> charset_value
@@ -556,7 +556,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 any_command:
   command semicolon_opt
   {
-    setParseTree(psqlex, $1)
+    setParseTree(sqlite3lex, $1)
   }
 
 semicolon_opt:
@@ -605,7 +605,7 @@ command:
 | deallocate_statement
 | /*empty*/
   {
-    setParseTree(psqlex, nil)
+    setParseTree(sqlite3lex, nil)
   }
 
 id_or_var:
@@ -1108,50 +1108,50 @@ create_table_prefix:
   CREATE comment_opt temp_opt TABLE not_exists_opt table_name
   {
     $$ = &ast.CreateTable{Comments: ast.Comments($2).Parsed(), Table: $6, IfNotExists: $5, Temp: $3}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 
 alter_table_prefix:
   ALTER comment_opt TABLE table_name
   {
     $$ = &ast.AlterTable{Comments: ast.Comments($2).Parsed(), Table: $4}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 
 create_index_prefix:
   CREATE comment_opt INDEX id_or_var using_opt ON table_name
   {
     $$ = &ast.AlterTable{Table: $7, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$4, Type:string($3)}, Options:$5}}}}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 | CREATE comment_opt FULLTEXT INDEX id_or_var using_opt ON table_name
   {
     $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Fulltext:true}, Options:$6}}}}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 | CREATE comment_opt SPATIAL INDEX id_or_var using_opt ON table_name
   {
     $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Spatial:true}, Options:$6}}}}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 | CREATE comment_opt UNIQUE INDEX id_or_var using_opt ON table_name
   {
     $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Unique:true}, Options:$6}}}}
-    setDDL(psqlex, $$)
+    setDDL(sqlite3lex, $$)
   }
 
 create_database_prefix:
   CREATE comment_opt database_or_schema comment_opt not_exists_opt table_id
   {
     $$ = &ast.CreateDatabase{Comments: ast.Comments($4).Parsed(), DBName: $6, IfNotExists: $5}
-    setDDL(psqlex,$$)
+    setDDL(sqlite3lex,$$)
   }
 
 alter_database_prefix:
   ALTER comment_opt database_or_schema
   {
     $$ = &ast.AlterDatabase{}
-    setDDL(psqlex,$$)
+    setDDL(sqlite3lex,$$)
   }
 
 database_or_schema:
@@ -1361,7 +1361,7 @@ column_attribute_list_opt:
     $1.OnUpdate = $4
     $$ = $1
   }
-| column_attribute_list_opt AUTO_INCREMENT
+| column_attribute_list_opt AUTOINCREMENT
   {
     $1.Autoincrement = true
     $$ = $1
@@ -1554,7 +1554,7 @@ text_literal
 | VALUE_ARG
   {
     $$ = ast.NewArgument($1[1:])
-    bindVariable(psqlex, $1[1:])
+    bindVariable(sqlite3lex, $1[1:])
   }
 | underscore_charsets  BIT_LITERAL %prec UNARY
   {
@@ -1574,7 +1574,7 @@ text_literal
   }
 | underscore_charsets VALUE_ARG %prec UNARY
   {
-    bindVariable(psqlex, $2[1:])
+    bindVariable(sqlite3lex, $2[1:])
     $$ = &ast.IntroducerExpr{CharacterSet: $1, Expr: ast.NewArgument($2[1:])}
   }
 
@@ -1788,7 +1788,7 @@ text_literal_or_arg:
 | VALUE_ARG
   {
     $$ = ast.NewArgument($1[1:])
-    bindVariable(psqlex, $1[1:])
+    bindVariable(sqlite3lex, $1[1:])
   }
 
 keys:
@@ -1931,7 +1931,7 @@ char_type:
 | CHAR length_opt BYTE
   {
     // CHAR BYTE is an alias for binary. See also:
-    // https://dev.psql.com/doc/refman/8.0/en/string-type-syntax.html
+    // https://dev.sqlite3.com/doc/refman/8.0/en/string-type-syntax.html
     $$ = ast.ColumnType{Type: "binary", Length: $2}
   }
 | VARCHAR length_opt charset_opt
@@ -2917,7 +2917,7 @@ alter_statement:
   {
     $$ = &ast.AlterVschema{Action: ast.AddSequenceDDLAction, Table: $6}
   }
-| ALTER comment_opt VSCHEMA ON table_name ADD AUTO_INCREMENT sql_id USING table_name
+| ALTER comment_opt VSCHEMA ON table_name ADD AUTOINCREMENT sql_id USING table_name
   {
     $$ = &ast.AlterVschema{
         Action: ast.AddAutoIncDDLAction,
@@ -3635,24 +3635,24 @@ for_channel_opt:
 
 comment_statement:
   {
-    setAllowComments(psqlex, true)
+    setAllowComments(sqlite3lex, true)
   }
   COMMENT comment_list ON schema_name IS text_literal_or_arg
   {
     // Strange argumets shift
     $$ = &ast.CommentOnSchema{Comments: ast.Comments{$2}.Parsed(), Schema: $5.Name, Value: $7}
-    setAllowComments(psqlex, false)
+    setAllowComments(sqlite3lex, false)
   }
 
 
 comment_opt:
   {
-    setAllowComments(psqlex, true)
+    setAllowComments(sqlite3lex, true)
   }
   comment_list
   {
     $$ = $2
-    setAllowComments(psqlex, false)
+    setAllowComments(sqlite3lex, false)
   }
 
 comment_list:
@@ -4404,7 +4404,7 @@ function_call_keyword
   }
 | BINARY simple_expr %prec UNARY
   {
-    // From: https://dev.psql.com/doc/refman/8.0/en/cast-functions.html#operator_binary
+    // From: https://dev.sqlite3.com/doc/refman/8.0/en/cast-functions.html#operator_binary
     // To convert a string expression to a binary string, these constructs are equivalent:
     //    CAST(expr AS BINARY)
     //    BINARY expr
@@ -4526,7 +4526,7 @@ col_tuple:
 | LIST_ARG
   {
     $$ = ast.ListArg($1[2:])
-    bindVariable(psqlex, $1[2:])
+    bindVariable(sqlite3lex, $1[2:])
   }
 
 subquery:
@@ -4955,7 +4955,7 @@ func_datetime_precision:
 | openb VALUE_ARG closeb
   {
     $$ = ast.NewArgument($2[1:])
-    bindVariable(psqlex, $2[1:])
+    bindVariable(sqlite3lex, $2[1:])
   }
 
 /*
@@ -5153,7 +5153,7 @@ num_val:
   {
     // TODO(sougou): ast.Deprecate this construct.
     if $1.Lowered() != "value" {
-      psqlex.Error("expecting value after next")
+      sqlite3lex.Error("expecting value after next")
       return 1
     }
     $$ = ast.NewIntLiteral("1")
@@ -5161,7 +5161,7 @@ num_val:
 | VALUE_ARG VALUES
   {
     $$ = ast.NewArgument($1[1:])
-    bindVariable(psqlex, $1[1:])
+    bindVariable(sqlite3lex, $1[1:])
   }
 
 group_by_opt:
@@ -5661,10 +5661,6 @@ sql_id:
   {
     $$ = ast.NewColIdent(string($1))
   }
-| non_reserved_keyword_sql2023
-  {
-    $$ = ast.NewColIdent(string($1))
-  }
 
 reserved_sql_id:
   sql_id
@@ -5685,10 +5681,6 @@ table_id:
     $$ = ast.NewTableIdent(string($1.String()))
   }
 | non_reserved_keyword
-  {
-    $$ = ast.NewTableIdent(string($1))
-  }
-| non_reserved_keyword_sql2023
   {
     $$ = ast.NewTableIdent(string($1))
   }
@@ -5719,108 +5711,130 @@ reserved_table_id:
   Sorted alphabetically
 */
 reserved_keyword:
-  ALL
-| ANALYSE
+  ABORT
+| ACTION
+| ADD
+| AFTER
+| ALL
+| ALTER
 | ANALYZE
 | AND
-| ANY
-| ARRAY
 | AS
 | ASC
-| ASYMMETRIC
-| AUTHORIZATION
-| BINARY
-| BOTH
+| ATTACH
+| AUTOINCREMENT
+| BEFORE
+| BEGIN
+| BETWEEN
+| BY
+| CASCADE
 | CASE
 | CAST
 | CHECK
 | COLLATE
-| COLLATION
 | COLUMN
-| COMMENT
-| CONCURRENTLY
+| COMMIT
+| CONFLICT
 | CONSTRAINT
 | CREATE
 | CROSS
-| CURRENT_CATALOG
 | CURRENT_DATE
-| CURRENT_ROLE
-| CURRENT_SCHEMA
 | CURRENT_TIME
 | CURRENT_TIMESTAMP
-| CURRENT_USER
+| DATABASE
 | DEFAULT
 | DEFERRABLE
+| DEFERRED
+| DELETE
 | DESC
+| DETACH
 | DISTINCT
-| DO
+| DROP
+| EACH
 | ELSE
 | END
+| ESCAPE
 | EXCEPT
-| FALSE
-| FETCH
+| EXCLUSIVE
+| EXISTS
+| EXPLAIN
+| FAIL
 | FOR
 | FOREIGN
-| FREEZE
 | FROM
 | FULL
-| GRANT
+| GLOB
 | GROUP
 | HAVING
-| ILIKE
+| IF
+| IGNORE
+| IMMEDIATE
 | IN
+| INDEX
+| INDEXED
 | INITIALLY
 | INNER
+| INSERT
+| INSTEAD
 | INTERSECT
 | INTO
 | IS
 | ISNULL
 | JOIN
-| LATERAL
-| LEADING
+| KEY
 | LEFT
 | LIKE
 | LIMIT
-| LOCALTIME
-| LOCALTIMESTAMP
+| MATCH
 | NATURAL
+| NO
 | NOT
 | NOTNULL
 | NULL
+| OF
 | OFFSET
 | ON
-| ONLY
 | OR
 | ORDER
 | OUTER
-| OVERLAPS
-| PLACING
+| PLAN
+| PRAGMA
 | PRIMARY
+| QUERY
+| RAISE
+| RECURSIVE
 | REFERENCES
-| RETURNING
+| REGEXP
+| REINDEX
+| RELEASE
+| RENAME
+| REPLACE
+| RESTRICT
 | RIGHT
+| ROLLBACK
+| ROW
+| SAVEPOINT
 | SELECT
-| SESSION_USER
-| SIMILAR
-| SOME
-| SYMMETRIC
-| SYSTEM_USER
+| SET
 | TABLE
-| TABLESAMPLE
+| TEMP
+| TEMPORARY
 | THEN
 | TO
-| TRAILING
-| TRUE
+| TRANSACTION
+| TRIGGER
 | UNION
 | UNIQUE
-| USER
+| UPDATE
 | USING
-| VARIADIC
-| VERBOSE
+| VACUUM
+| VALUES
+| VIEW
+| VIRTUAL
 | WHEN
 | WHERE
-| WINDOW
 | WITH
+| WITHOUT
 
 /*
   These are non-reserved, because they don\'t cause conflicts in the grammar.
@@ -5830,430 +5844,35 @@ reserved_keyword:
   Sorted alphabetically
 */
 non_reserved_keyword:
-  ABORT
-| ABSENT
-| ABSOLUTE
-| ACCESS
-| ACTION
-| ADD
-| ADMIN
-| AFTER
-| AGGREGATE
-| ALSO
-| ALTER
-| ALWAYS
-| ASENSITIVE
-| ASSERTION
-| ASSIGNMENT
-| AT
-| ATOMIC
-| ATTACH
-| ATTRIBUTE
-| BACKWARD
-| BEFORE
-| BEGIN
-| BETWEEN
-| BIGINT
-| BIT
-| BOOLEAN
-| BREADTH
-| BY
-| CACHE
-| CALL
-| CALLED
-| CASCADE
-| CASCADED
-| CATALOG
-| CHAIN
-| CHAR
-| CHARACTER
-| CHARACTERISTICS
-| CHECKPOINT
-| CLASS
-| CLOSE
-| CLUSTER
-| COALESCE
-| COLUMNS
-| COMMENTS
-| COMMIT
-| COMMITTED
-| COMPRESSION
-| CONDITIONAL
-| CONFIGURATION
-| CONFLICT
-| CONNECTION
-| CONSTRAINTS
-| CONTENT
-| CONTINUE
-| CONVERSION
-| COPY
-| COST
-| CSV
-| CUBE
+  ALWAYS
 | CURRENT
-| CURSOR
-| CYCLE
-| DATA
-| DATABASE
-| DAY
-| DEALLOCATE
-| DEC
-| DECIMAL
-| DECLARE
-| DEFAULTS
-| DEFERRED
-| DEFINER
-| DELETE
-| DELIMITER
-| DELIMITERS
-| DEPENDS
-| DEPTH
-| DETACH
-| DICTIONARY
-| DISABLE
-| DISCARD
-| DOCUMENT
-| DOMAIN
-| DOUBLE
-| DROP
-| EACH
-| EMPTY
-| ENABLE
-| ENCODING
-| ENCRYPTED
-| ENUM
-| ERROR
-| ESCAPE
-| EVENT
+| DO
 | EXCLUDE
-| EXCLUDING
-| EXCLUSIVE
-| EXECUTE
-| EXISTS
-| EXPLAIN
-| EXPRESSION
-| EXTENSION
-| EXTERNAL
-| EXTRACT
-| FAMILY
 | FILTER
-| FINALIZE
 | FIRST
-| FLOAT
 | FOLLOWING
-| FORCE
-| FORMAT
-| FORWARD
-| FUNCTION
-| FUNCTIONS
 | GENERATED
-| GLOBAL
-| GRANTED
-| GREATEST
-| GROUPING
 | GROUPS
-| HANDLER
-| HEADER
-| HOLD
-| HOUR
-| IDENTITY
-| IF
-| IMMEDIATE
-| IMMUTABLE
-| IMPLICIT
-| IMPORT
-| INCLUDE
-| INCLUDING
-| INCREMENT
-| INDENT
-| INDEX
-| INDEXES
-| INHERIT
-| INHERITS
-| INLINE
-| INOUT
-| INPUT
-| INSENSITIVE
-| INSERT
-| INSTEAD
-| INT
-| INTEGER
-| INTERVAL
-| INVOKER
-| ISOLATION
-| JSON
-| JSON_ARRAY
-| JSON_ARRAYAGG
-| JSON_EXISTS
-| JSON_OBJECT
-| JSON_OBJECTAGG
-| JSON_QUERY
-| JSON_SCALAR
-| JSON_SERIALIZE
-| JSON_TABLE
-| JSON_VALUE
-| KEEP
-| KEY
-| KEYS
-| LABEL
-| LANGUAGE
-| LARGE
 | LAST
-| LEAKPROOF
-| LEAST
-| LEVEL
-| LISTEN
-| LOAD
-| LOCAL
-| LOCATION
-| LOCK
-| LOCKED
-| LOGGED
-| MAPPING
-| MATCH
-| MATCHED
 | MATERIALIZED
-| MAXVALUE
-| MERGE
-| MERGE_ACTION
-| METHOD
-| MINUTE
-| MINVALUE
-| MODE
-| MONTH
-| MOVE
-| NAME
-| NAMES
-| NATIONAL
-| NCHAR
-| NESTED
-| NEW
-| NEXT
-| NFC
-| NFD
-| NFKC
-| NFKD
-| NO
-| NONE
-| NORMALIZE
-| NORMALIZED
 | NOTHING
-| NOTIFY
-| NOWAIT
-| NULLIF
 | NULLS
-| NUMERIC
-| OBJECT
-| OF
-| OFF
-| OIDS
-| OLD
-| OMIT
-| OPERATOR
-| OPTION
-| OPTIONS
-| ORDINALITY
 | OTHERS
-| OUT
 | OVER
-| OVERLAY
-| OVERRIDING
-| OWNED
-| OWNER
-| PARALLEL
-| PARAMETER
-| PARSER
-| PARTIAL
 | PARTITION
-| PASSING
-| PASSWORD
-| PATH
-| PLAN
-| PLANS
-| POLICY
-| POSITION
 | PRECEDING
-| PRECISION
-| PREPARE
-| PREPARED
-| PRESERVE
-| PRIOR
-| PRIVILEGES
-| PROCEDURAL
-| PROCEDURE
-| PROCEDURES
-| PROGRAM
-| PUBLICATION
-| QUOTE
-| QUOTES
 | RANGE
-| READ
-| REAL
-| REASSIGN
-| RECHECK
-| RECURSIVE
-| REF
-| REFERENCING
-| REFRESH
-| REINDEX
-| RELATIVE
-| RELEASE
-| RENAME
-| REPEATABLE
-| REPLACE
-| REPLICA
-| RESET
-| RESTART
-| RESTRICT
-| RETURN
-| RETURNS
-| REVOKE
-| ROLE
-| ROLLBACK
-| ROLLUP
-| ROUTINE
-| ROUTINES
-| ROW
+| RETURNING
 | ROWS
-| RULE
-| SAVEPOINT
-| SCALAR
-| SCHEMA
-| SCHEMAS
-| SCROLL
-| SEARCH
-| SECOND
-| SECURITY
-| SEQUENCE
-| SEQUENCES
-| SERIALIZABLE
-| SERVER
-| SESSION
-| SET
-| SETOF
-| SETS
-| SHARE
-| SHOW
-| SIMPLE
-| SKIP
-| SMALLINT
-| SNAPSHOT
-| SOURCE
-| SQL
-| STABLE
-| STANDALONE
-| START
-| STATEMENT
-| STATISTICS
-| STDIN
-| STDOUT
-| STORAGE
-| STORED
-| STRICT
-| STRING
-| STRIP
-| SUBSCRIPTION
-| SUBSTRING
-| SUPPORT
-| SYSID
-| SYSTEM
-| TABLES
-| TABLESPACE
-| TARGET
-| TEMP
-| TEMPLATE
-| TEMPORARY
-| TEXT
 | TIES
-| TIME
-| TIMESTAMP
-| TRANSACTION
-| TRANSFORM
-| TREAT
-| TRIGGER
-| TRIM
-| TRUNCATE
-| TRUSTED
-| TYPE
-| TYPES
-| UESCAPE
 | UNBOUNDED
-| UNCOMMITTED
-| UNCONDITIONAL
-| UNENCRYPTED
-| UNKNOWN
-| UNLISTEN
-| UNLOGGED
-| UNTIL
-| UPDATE
-| VACUUM
-| VALID
-| VALIDATE
-| VALIDATOR
-| VALUE
-| VALUES
-| VARCHAR
-| VARYING
-| VERSION
-| VIEW
-| VIEWS
-| VOLATILE
-| WHITESPACE
-| WITHIN
-| WITHOUT
-| WORK
-| WRAPPER
-| WRITE
-| XML
-| XMLATTRIBUTES
-| XMLCONCAT
-| XMLELEMENT
-| XMLEXISTS
-| XMLFOREST
-| XMLNAMESPACES
-| XMLPARSE
-| XMLPI
-| XMLROOT
-| XMLSERIALIZE
-| XMLTABLE
-| YEAR
-| YES
-| ZONE
-
-
-/*
-  These are non-reserved, in PostgresQL, but reserved in sql2023. The good news is we use \" quote them
-  when we rewrite the query, so no issue should arise.
-
-  Sorted alphabetically
-*/
-non_reserved_keyword_sql2023:
-  ARRAY_MAX_CARDINALITY
-| CHARACTER_SET_CATALOG
-| COMMAND_FUNCTION_CODE
-| CURRENT_DEFAULT_TRANSFORM_GROUP
-| CURRENT_TRANSFORM_GROUP_FOR_TYPE
-| DATETIME_INTERVAL_CODE
-| DATETIME_INTERVAL_PRECISION
-| DYNAMIC_FUNCTION_CODE
-| END_EXEC
-| PARAMETER_ORDINAL_POSITION
-| PARAMETER_SPECIFIC_CATALOG
-| PARAMETER_SPECIFIC_NAME
-| PARAMETER_SPECIFIC_SCHEMA
-| RETURNED_OCTET_LENGTH 
-| TRANSACTIONS_COMMITTED
-| TRANSACTIONS_ROLLED_BACK
-| USER_DEFINED_TYPE_CATALOG
-| USER_DEFINED_TYPE_CODE
-| USER_DEFINED_TYPE_NAME
-| USER_DEFINED_TYPE_SCHEMA
+| WINDOW
 
 openb:
   '('
   {
-    if incNesting(psqlex) {
-      psqlex.Error("max nesting level reached")
+    if incNesting(sqlite3lex) {
+      sqlite3lex.Error("max nesting level reached")
       return 1
     }
   }
@@ -6261,23 +5880,23 @@ openb:
 closeb:
   ')'
   {
-    decNesting(psqlex)
+    decNesting(sqlite3lex)
   }
 
 skip_to_end:
 {
-  skipToEnd(psqlex)
+  skipToEnd(sqlite3lex)
 }
 
 ddl_skip_to_end:
   {
-    skipToEnd(psqlex)
+    skipToEnd(sqlite3lex)
   }
 | openb
   {
-    skipToEnd(psqlex)
+    skipToEnd(sqlite3lex)
   }
 | reserved_sql_id
   {
-    skipToEnd(psqlex)
+    skipToEnd(sqlite3lex)
   }
