@@ -1,0 +1,11 @@
+11881.58 user
+1008.04 system
+3:20:46 elapsed
+107%CPU
+( 0 avgtext+0avgdata
+ 397728 maxresident ) k
+1044760 inputs
+82136 outputs
+ (30 major
+ +416688309 minor) pagefaults
+ 0 swaps
