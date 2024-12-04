@@ -23,11 +23,11 @@ var (
 type StatementProcessor func(statementText string, statement ast.Statement, parseError error)
 
 // Process text and return tail not processed (incomplete sql sentence)
-func processText(text string, sql_dialect dialect.SqlDialect, processor StatementProcessor) (string, error) {
+func processText(text string, sqlDialect dialect.SqlDialect, processor StatementProcessor) (string, error) {
 	var rawSql string = text
 	switch strings.IndexByte(text, ';') {
 	case -1: // if there is no semicolon, return blob as a whole
-		stmt, err := Parse(text, sql_dialect)
+		stmt, err := Parse(text, sqlDialect)
 		if stmt == nil {
 			return text, ErrIncompleteStatement
 		}
@@ -35,7 +35,7 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 		return "", nil
 	case len(text) - 1: // if there's a single semicolon and it's the last character, return blob without it
 		rawSql = text[:len(text)-1]
-		stmt, err := Parse(rawSql, sql_dialect)
+		stmt, err := Parse(rawSql, sqlDialect)
 		if stmt == nil {
 			return text, ErrIncompleteStatement
 		}
@@ -43,7 +43,7 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 		return "", nil
 	}
 
-	_tokenizer, err := NewStringTokenizer(text, sql_dialect)
+	_tokenizer, err := NewStringTokenizer(text, sqlDialect)
 	if err != nil {
 		processor(text, nil, err)
 		return "", nil
@@ -58,7 +58,7 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 		case ';':
 			rawSql = text[stmtBegin : _tokenizer.GetPos()-1]
 			if !statementIsEmpty {
-				stmt, err := Parse(rawSql, sql_dialect)
+				stmt, err := Parse(rawSql, sqlDialect)
 				processor(rawSql, stmt, err)
 				statementIsEmpty = true
 			}
@@ -72,7 +72,7 @@ func processText(text string, sql_dialect dialect.SqlDialect, processor Statemen
 }
 
 // StatementStream split input stream into statements and call processor for every statement
-func StatementStream(blob io.Reader, sql_dialect dialect.SqlDialect, processor StatementProcessor) error {
+func StatementStream(blob io.Reader, sqlDialect dialect.SqlDialect, processor StatementProcessor) error {
 	if blob == nil {
 		return fmt.Errorf("blob undefined (nil)")
 	}
@@ -82,11 +82,11 @@ func StatementStream(blob io.Reader, sql_dialect dialect.SqlDialect, processor S
 		n, err := blob.Read(page)
 		if n < PAGE_SIZE || err == io.EOF {
 			statementBuffer.Write(page[:n])
-			processText(statementBuffer.String(), sql_dialect, processor)
+			processText(statementBuffer.String(), sqlDialect, processor)
 			return nil
 		}
 		statementBuffer.Write(page)
-		buffTail, err := processText(statementBuffer.String(), sql_dialect, processor)
+		buffTail, err := processText(statementBuffer.String(), sqlDialect, processor)
 		if err == ErrIncompleteStatement {
 			statementBuffer.Reset()
 			statementBuffer.WriteString(buffTail)

@@ -6,22 +6,22 @@ import (
 
 	"github.com/usalko/prodl/internal/sql_parser"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
-	"github.com/usalko/prodl/internal/sql_parser/psql"
+	"github.com/usalko/prodl/internal/sql_parser/sqlite3"
 )
 
-func TestPsqlStatements(t *testing.T) {
+func TestSqlite3Statements(t *testing.T) {
 	testcases := []struct {
 		in string
 		id []int
 	}{
 		{
-			in: "-- comment\nCOMMENT ON SCHEMA public IS '1'",
+			in: "SELECT * FROM my_table",
 			// in: "SET a = '1'",
-			id: []int{psql.COMMENT, psql.ON, psql.SCHEMA, 0},
+			id: []int{sqlite3.SELECT, 0},
 		},
 		{
-			in: "-- comment\n\nSET statement_timeout = 0",
-			id: []int{psql.SET, 0},
+			in: "SELECT column2, column1 FROM my_table",
+			id: []int{sqlite3.SELECT, 0},
 		},
 	}
 
