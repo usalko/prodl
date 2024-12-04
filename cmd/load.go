@@ -1,8 +1,15 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
+	"os"
+
 	"github.com/spf13/cobra"
+	"github.com/usalko/prodl/internal/archive_stream"
 	"github.com/usalko/prodl/internal/sql_connection"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
@@ -35,18 +42,26 @@ var loadCmd = &cobra.Command{
 			return
 		}
 
+		// Test connection to the database
 		err = connection.Execute("select 1")
 		if err != nil {
 			rootCmd.PrintErrf("check connection for target url %v fail with error: %v\n", targetSqlUrl, err)
 			return
 		}
 		rootCmd.Printf("connection established\n")
+		// Open reader and do StatementStream
 		for _, fileName := range args {
-			rootCmd.Printf("process file %v\n", fileName)
+			rootCmd.Printf("process file %v", fileName)
+			err := processFile(fileName, sqlDialect, connection)
+			if err != nil {
+				rootCmd.Println(" - fail")
+				rootCmd.Println()
+				rootCmd.PrintErrf("Error is %v", err)
+				rootCmd.PrintErrln()
+			} else {
+				rootCmd.Println(" - ok")
+			}
 		}
-
-		// 1. Test connection to the database
-		// 2. Open reader and do StatementStream
 	},
 }
 
@@ -60,4 +75,52 @@ Sql url for loading dump file. Examples:
 
 `)
 	rootCmd.AddCommand(loadCmd)
+}
+
+func processFile(fileName string, sqlDialect dialect.SqlDialect, connection sql_connection.SqlConnection) error {
+	respBody, err := os.Open(fileName)
+	if err != nil {
+		return fmt.Errorf("file %s open error (%v)", fileName, err)
+	}
+	defer respBody.Close()
+
+	reader := archive_stream.NewReader(respBody)
+
+	for {
+		entry, err := reader.GetNextEntry()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("unable to get next entry (%v)", err)
+		}
+
+		if !entry.IsDir() {
+			rc, err := entry.Open()
+			defer func() {
+				if err := rc.Close(); err != nil {
+					rootCmd.PrintErrf("close entry reader fail: %s", err)
+				}
+			}()
+
+			if err != nil {
+				return fmt.Errorf("unable to open file: %s", err)
+			}
+			statements := make([]ast.Statement, 0)
+			sql_parser.StatementStream(rc, sqlDialect,
+				func(statementText string, statement ast.Statement, parseError error) {
+					if statement != nil {
+						statements = append(statements, statement)
+					}
+					if parseError != nil {
+						rootCmd.PrintErrf("parse sql statement:\n %s \n\nfail: %s\n", statementText, parseError)
+					}
+					executionError := connection.Execute(statementText)
+					if executionError != nil {
+						rootCmd.PrintErrf("execute sql statement:\n %s \n\nfail: %s\n", statementText, executionError)
+					}
+				})
+		}
+	}
+	return nil
 }
