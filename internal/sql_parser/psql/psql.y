@@ -78,6 +78,8 @@ func bindVariable(psqlex psqLexer, bvar string) {
   jsonPathParam ast.JSONPathParam
   schemaIdent   ast.SchemaIdent
   schemaName    ast.SchemaName
+  sequenceIdent ast.SequenceIdent
+  sequenceName  ast.SequenceName
 }
 
 %union {
@@ -111,12 +113,13 @@ func bindVariable(psqlex psqLexer, bvar string) {
   commentExpr   *ast.CommentOnSchema
   convertType   *ast.ConvertType
   aliasedTableName *ast.AliasedTableExpr
-  tableSpec  *ast.TableSpec
+  tableSpec     *ast.TableSpec
   columnDefinition *ast.ColumnDefinition
   indexDefinition *ast.IndexDefinition
   indexInfo     *ast.IndexInfo
   indexOption   *ast.IndexOption
   indexColumn   *ast.IndexColumn
+  sequenceSpec  *ast.SequenceSpec
   showFilter    *ast.ShowFilter
   optLike       *ast.OptLike
   selectInto	  *ast.SelectInto
@@ -127,6 +130,8 @@ func bindVariable(psqlex psqLexer, bvar string) {
   alterTable       *ast.AlterTable
   tableOption      *ast.TableOption
   columnTypeOptions *ast.ColumnTypeOptions
+  createSequence    *ast.CreateSequence
+  alterSequence     *ast.AlterSequence
   constraintDefinition *ast.ConstraintDefinition
   revertMigration   *ast.RevertMigration
   alterMigration    *ast.AlterMigration
@@ -407,8 +412,11 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <ctes> with_list
 %type <schemaName> schema_name
 %type <alterSchema> alter_schema_prefix
+%type <createSequence> create_sequence_prefix
+%type <alterSequence> alter_sequence_prefix
 %type <renameTablePairs> rename_list
 %type <alterOptions> alter_schema_commands_list
+%type <sequenceName> sequence_name
 %type <createTable> create_table_prefix
 %type <alterTable> alter_table_prefix
 %type <alterOption> alter_option alter_commands_modifier
@@ -498,11 +506,13 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <str> reserved_keyword non_reserved_keyword non_reserved_keyword_sql2023
 %type <colIdent> sql_id reserved_sql_id col_alias as_ci_opt
 %type <schemaIdent> schema_id
+%type <sequenceIdent> sequence_id
 %type <expr> charset_value
 %type <tableIdent> table_id reserved_table_id table_alias as_opt_id table_id_opt from_database_opt
 %type <empty> as_opt work_opt savepoint_opt
 %type <empty> skip_to_end ddl_skip_to_end
 %type <str> charset
+%type <sequenceIdent> reserved_sequence_id
 %type <scope> set_session_or_global
 %type <convertType> convert_type returning_type_opt convert_type_weight_string
 %type <columnType> column_type
@@ -534,6 +544,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <indexOptions> index_option_list index_option_list_opt using_opt
 %type <constraintInfo> constraint_info check_constraint_info
 %type <vindexParam> vindex_param
+%type <sequenceSpec> sequence_spec
 %type <vindexParams> vindex_param_list vindex_params_opt
 %type <jsonPathParam> json_path_param
 %type <jsonPathParams> json_path_param_list json_path_param_list_opt
@@ -1029,6 +1040,12 @@ create_statement:
     $1.CreateOptions = $2
     $$ = $1
   }
+| create_sequence_prefix sequence_spec
+  {
+    $1.SequenceSpec = $2
+    $1.FullyParsed = true
+    $$ = $1
+  }
 
 replace_opt:
   {
@@ -1146,6 +1163,20 @@ create_index_prefix:
 | CREATE comment_opt UNIQUE INDEX id_or_var using_opt ON table_name
   {
     $$ = &ast.AlterTable{Table: $8, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition:&ast.IndexDefinition{Info: &ast.IndexInfo{Name:$5, Type:string($3)+" "+string($4), Unique:true}, Options:$6}}}}
+    setDDL(psqlex, $$)
+  }
+
+create_sequence_prefix:
+  CREATE comment_opt sequence_name
+  {
+    $$ = &ast.CreateSequence{Comments: ast.Comments($2).Parsed(), Sequence: $3}
+    setDDL(psqlex, $$)
+  }
+
+alter_sequence_prefix:
+  ALTER comment_opt sequence_name
+  {
+    $$ = &ast.AlterSequence{Comments: ast.Comments($2).Parsed(), Sequence: $3}
     setDDL(psqlex, $$)
   }
 
@@ -1512,6 +1543,11 @@ CURRENT_TIMESTAMP func_datetime_precision
     $$ = &ast.CurTimeFuncExpr{Name:ast.NewColIdent("now"), Fsp: $2}
   }
 
+sequence_spec:
+  START WITH INTEGRAL INCREMENT BY INTEGRAL NO MINVALUE NO MAXVALUE CACHE INTEGRAL
+  {
+    $$ = &ast.SequenceSpec{StartWith: ast.IntRef($3), IncrementBy: ast.IntRef($6)}
+  }
 
 signed_literal_or_null:
 signed_literal
@@ -2847,6 +2883,12 @@ alter_statement:
     $1.AlterOptions = $2
     $$ = $1
   }
+| alter_sequence_prefix sequence_spec
+  {
+    $1.SequenceSpec = $2
+    $1.FullyParsed = true
+    $$ = $1
+  }
 | ALTER comment_opt definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
   {
     $$ = &ast.AlterView{ViewName: $6.ToViewName(), Comments: ast.Comments($2).Parsed(), Definer: $3 ,Security:$4, Columns:$7, Select: $9, CheckOption: $10 }
@@ -4171,6 +4213,16 @@ index_hint_for_opt:
 | FOR GROUP BY
   {
     $$ = ast.GroupByForType
+  }
+
+sequence_name:
+  SEQUENCE sequence_id
+  {
+    $$ = ast.SequenceName{Name: $2}
+  }
+| SEQUENCE sequence_id '.' reserved_sequence_id
+  {
+    $$ = ast.SequenceName{Qualifier: $2, Name: $4}
   }
 
 
@@ -5608,6 +5660,12 @@ schema_id:
     $$ = ast.NewSchemaIdent(string($1.String()))
   }
 
+sequence_id:
+  id_or_var
+  {
+    $$ = ast.NewSequenceIdent(string($1.String()))
+  }
+
 table_id:
   id_or_var
   {
@@ -5638,6 +5696,14 @@ reserved_table_id:
   {
     $$ = ast.NewTableIdent(string($1))
   }
+
+reserved_sequence_id:
+  sequence_id
+| reserved_keyword
+  {
+    $$ = ast.NewSequenceIdent(string($1))
+  }
+
 /*
   These are not all necessarily reserved in PostgresQL, but some are.
 

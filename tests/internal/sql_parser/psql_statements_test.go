@@ -26,6 +26,14 @@ func TestPsqlStatements(t *testing.T) {
 			in: "\n\n--\n-- Name: public; Type: SCHEMA; Schema: -; Owner: phytonyms.dev\n--\n\n-- *not* creating schema, since initdb creates it\n\n\nALTER SCHEMA public OWNER TO \"phytonyms.dev\"",
 			id: []int{psql.ALTER, 0},
 		},
+		{
+			in: "\n\n--\n-- Name: articles_article_id_seq; Type: SEQUENCE; Schema: public; Owner: phytonyms.dev\n--\n\nCREATE SEQUENCE public.articles_article_id_seq\n    START WITH 1\n    INCREMENT BY 1\n    NO MINVALUE\n    NO MAXVALUE\n    CACHE 1",
+			id: []int{psql.CREATE, 0},
+		},
+		{
+			in: "ALTER SEQUENCE serial RESTART WITH 105",
+			id: []int{psql.ALTER, 0},
+		},
 	}
 
 	for _, tcase := range testcases {

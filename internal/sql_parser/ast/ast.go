@@ -529,6 +529,29 @@ type (
 		Comments   *ParsedComments
 	}
 
+	// DropSequence represents a DROP sequence statement.
+	DropSequence struct {
+		FromTables SequenceNames
+		IfExists   bool
+		Comments   *ParsedComments
+	}
+
+	// CreateSequence represents a CREATE SEQUENCE query
+	CreateSequence struct {
+		Sequence     SequenceName
+		Comments     *ParsedComments
+		SequenceSpec *SequenceSpec
+		FullyParsed  bool
+	}
+
+	// AlterSequence represents a ALTER SEQUENCE query
+	AlterSequence struct {
+		Sequence     SequenceName
+		Comments     *ParsedComments
+		SequenceSpec *SequenceSpec
+		FullyParsed  bool
+	}
+
 	// CreateTable represents a CREATE TABLE statement.
 	CreateTable struct {
 		Temp        bool
@@ -731,6 +754,9 @@ func (*AlterDatabase) iStatement()     {}
 func (*CreateTable) iStatement()       {}
 func (*CreateView) iStatement()        {}
 func (*AlterView) iStatement()         {}
+func (*CreateSequence) iStatement()    {}
+func (*AlterSequence) iStatement()     {}
+func (*DropSequence) iStatement()      {}
 func (*LockTables) iStatement()        {}
 func (*UnlockTables) iStatement()      {}
 func (*AlterTable) iStatement()        {}
@@ -833,6 +859,26 @@ func (node *AlterTable) SetFullyParsed(fullyParsed bool) {
 }
 
 // IsFullyParsed implements the DDLStatement interface
+func (node *CreateSequence) IsFullyParsed() bool {
+	return node.FullyParsed
+}
+
+// SetFullyParsed implements the DDLStatement interface
+func (node *CreateSequence) SetFullyParsed(fullyParsed bool) {
+	node.FullyParsed = fullyParsed
+}
+
+// IsFullyParsed implements the DDLStatement interface
+func (node *AlterSequence) IsFullyParsed() bool {
+	return node.FullyParsed
+}
+
+// SetFullyParsed implements the DDLStatement interface
+func (node *AlterSequence) SetFullyParsed(fullyParsed bool) {
+	node.FullyParsed = fullyParsed
+}
+
+// IsFullyParsed implements the DDLStatement interface
 func (node *CreateView) IsFullyParsed() bool {
 	return true
 }
@@ -890,6 +936,11 @@ func (node *AlterTable) IsTemporary() bool {
 }
 
 // IsTemporary implements the DDLStatement interface
+func (node *DropTable) IsTemporary() bool {
+	return node.Temp
+}
+
+// IsTemporary implements the DDLStatement interface
 func (node *CreateView) IsTemporary() bool {
 	return false
 }
@@ -900,12 +951,22 @@ func (node *DropView) IsTemporary() bool {
 }
 
 // IsTemporary implements the DDLStatement interface
-func (node *DropTable) IsTemporary() bool {
-	return node.Temp
+func (node *AlterView) IsTemporary() bool {
+	return false
 }
 
 // IsTemporary implements the DDLStatement interface
-func (node *AlterView) IsTemporary() bool {
+func (node *CreateSequence) IsTemporary() bool {
+	return false
+}
+
+// IsTemporary implements the DDLStatement interface
+func (node *DropSequence) IsTemporary() bool {
+	return false
+}
+
+// IsTemporary implements the DDLStatement interface
+func (node *AlterSequence) IsTemporary() bool {
 	return false
 }
 
@@ -1897,6 +1958,15 @@ type ConstraintDefinition struct {
 	Details ConstraintInfo
 }
 
+// SequenceSpec describes the sequence parameters from a CREATE SEQUENCE statement
+type SequenceSpec struct {
+	StartWith   *int
+	IncrementBy *int
+	NoMinValue  bool
+	NoMaxValue  bool
+	Cache       *int
+}
+
 type (
 	// ConstraintInfo details a constraint in a CREATE TABLE statement
 	ConstraintInfo interface {
@@ -2056,11 +2126,25 @@ type (
 	}
 )
 
+type (
+	// SequenceName represents a name. of sequence
+	// Qualifier, if specified, represents a database or schema namespace.
+	// SequenceName is a value struct whose fields are case sensitive.
+	// This means two SequenceName vars can be compared for equality
+	// and a SequenceName can also be used as key in a map.
+	SequenceName struct {
+		Name, Qualifier SequenceIdent
+	}
+)
+
 func (TableName) iSimpleTableExpr()     {}
 func (*DerivedTable) iSimpleTableExpr() {}
 
 // TableNames is a list of TableName.
 type TableNames []TableName
+
+// SequenceNames is a list of SequenceName.
+type SequenceNames []SequenceName
 
 // JoinCondition represents the join conditions (either a ON or USING clause)
 // of a JoinTableExpr.
@@ -2770,8 +2854,14 @@ type ColIdent struct {
 }
 
 // TableIdent is a case sensitive SQL identifier. It will be escaped with
-// backquotes if necessary.
+// dialect specific quotes if necessary.
 type TableIdent struct {
+	V string
+}
+
+// TableIdent is a case sensitive SQL identifier. It will be escaped with
+// dialect specific quotes if necessary.
+type SequenceIdent struct {
 	V string
 }
 

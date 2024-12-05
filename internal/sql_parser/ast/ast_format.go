@@ -926,6 +926,25 @@ func (c *CheckConstraintDefinition) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
+func (ts *SequenceSpec) Format(buf *TrackedBuffer) {
+	if ts.StartWith != nil {
+		buf.astPrintf(ts, "start with %d ", *ts.StartWith)
+	}
+	if ts.IncrementBy != nil {
+		buf.astPrintf(ts, "increment by %d ", *ts.IncrementBy)
+	}
+	if ts.NoMinValue {
+		buf.astPrintf(ts, "no minvalue ")
+	}
+	if ts.NoMaxValue {
+		buf.astPrintf(ts, "no maxvalue")
+	}
+	if ts.Cache != nil {
+		buf.astPrintf(ts, "cache %d ", *ts.Cache)
+	}
+}
+
+// Format formats the node.
 func (node *Show) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "%v", node.Internal)
 }
@@ -1658,6 +1677,11 @@ func (node TableIdent) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
+func (node SequenceIdent) Format(buf *TrackedBuffer) {
+	formatID(buf, node.V, NoAt)
+}
+
+// Format formats the node.
 func (node IsolationLevel) Format(buf *TrackedBuffer) {
 	buf.literal("isolation level ")
 	switch node {
@@ -1807,6 +1831,18 @@ func (node *CreateView) Format(buf *TrackedBuffer) {
 	if node.CheckOption != "" {
 		buf.astPrintf(node, " with %s check option", node.CheckOption)
 	}
+}
+
+// Format formats the node.
+func (node *CreateSequence) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "create %v", node.Comments)
+	buf.astPrintf(node, "sequence %v", node.Sequence)
+}
+
+// Format formats the node.
+func (node *AlterSequence) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "alter %v", node.Comments)
+	buf.astPrintf(node, "sequence %v", node.Sequence)
 }
 
 // Format formats the LockTables node.

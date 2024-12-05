@@ -1264,6 +1264,25 @@ func (node *ShowFilter) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
+func (ss *SequenceSpec) formatFast(buf *TrackedBuffer) {
+	if ss.StartWith != nil {
+		buf.WriteString(fmt.Sprintf("start with %d ", *ss.StartWith))
+	}
+	if ss.IncrementBy != nil {
+		buf.WriteString(fmt.Sprintf("increment by %d ", *ss.IncrementBy))
+	}
+	if ss.NoMinValue {
+		buf.WriteString("no minvalue ")
+	}
+	if ss.NoMaxValue {
+		buf.WriteString("no maxvalue")
+	}
+	if ss.Cache != nil {
+		buf.WriteString(fmt.Sprintf("cache %d ", *ss.Cache))
+	}
+}
+
+// formatFast formats the node.
 func (node *Use) formatFast(buf *TrackedBuffer) {
 	if node.DBName.V != "" {
 		buf.WriteString("use ")
@@ -2185,6 +2204,11 @@ func (node TableIdent) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
+func (node SequenceIdent) formatFast(buf *TrackedBuffer) {
+	formatID(buf, node.V, NoAt)
+}
+
+// formatFast formats the node.
 func (node IsolationLevel) formatFast(buf *TrackedBuffer) {
 	buf.WriteString("isolation level ")
 	switch node {
@@ -2370,6 +2394,33 @@ func (node *CreateView) formatFast(buf *TrackedBuffer) {
 		buf.WriteString(node.CheckOption)
 		buf.WriteString(" check option")
 	}
+}
+
+// formatFast formats the node.
+func (node *CreateSequence) formatFast(buf *TrackedBuffer) {
+	buf.WriteString("create ")
+	node.Comments.formatFast(buf)
+	buf.WriteString("sequence ")
+	node.Sequence.formatFast(buf)
+	node.SequenceSpec.formatFast(buf)
+}
+
+// formatFast formats the node.
+func (node *SequenceName) formatFast(buf *TrackedBuffer) {
+	if !node.Qualifier.IsEmpty() {
+		node.Qualifier.formatFast(buf)
+		buf.WriteByte('.')
+	}
+	node.Name.formatFast(buf)
+}
+
+// formatFast formats the node.
+func (node *AlterSequence) formatFast(buf *TrackedBuffer) {
+	buf.WriteString("alter ")
+	node.Comments.formatFast(buf)
+	buf.WriteString("sequence ")
+	node.Sequence.formatFast(buf)
+	node.SequenceSpec.formatFast(buf)
 }
 
 // formatFast formats the LockTables node.

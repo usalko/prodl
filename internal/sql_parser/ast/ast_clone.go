@@ -113,6 +113,8 @@ func CloneSQLNode(in SQLNode) SQLNode {
 		return CloneRefOfCreateTable(in)
 	case *CreateView:
 		return CloneRefOfCreateView(in)
+	case *CreateSequence:
+		return CloneRefOfCreateSequence(in)
 	case *CurTimeFuncExpr:
 		return CloneRefOfCurTimeFuncExpr(in)
 	case *DeallocateStmt:
@@ -379,6 +381,8 @@ func CloneSQLNode(in SQLNode) SQLNode {
 		return CloneRefOfTableSpec(in)
 	case *TablespaceOperation:
 		return CloneRefOfTablespaceOperation(in)
+	case *SequenceSpec:
+		return CloneRefOfSequenceSpec(in)
 	case *TimestampFuncExpr:
 		return CloneRefOfTimestampFuncExpr(in)
 	case *TrimFuncExpr:
@@ -887,6 +891,18 @@ func CloneRefOfCreateView(n *CreateView) *CreateView {
 	out.Columns = CloneColumns(n.Columns)
 	out.Select = CloneSelectStatement(n.Select)
 	out.Comments = CloneRefOfParsedComments(n.Comments)
+	return &out
+}
+
+// CloneRefOfCreateSequence creates a deep clone of the input.
+func CloneRefOfCreateSequence(n *CreateSequence) *CreateSequence {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Sequence = CloneSequenceName(n.Sequence)
+	out.Comments = CloneRefOfParsedComments(n.Comments)
+	out.SequenceSpec = CloneRefOfSequenceSpec(n.SequenceSpec)
 	return &out
 }
 
@@ -2220,6 +2236,11 @@ func CloneTableExprs(n TableExprs) TableExprs {
 	return res
 }
 
+// CloneSequenceIdent creates a deep clone of the input.
+func CloneSequenceIdent(n SequenceIdent) SequenceIdent {
+	return *CloneRefOfSequenceIdent(&n)
+}
+
 // CloneTableIdent creates a deep clone of the input.
 func CloneTableIdent(n TableIdent) TableIdent {
 	return *CloneRefOfTableIdent(&n)
@@ -2233,6 +2254,11 @@ func CloneSchemaName(n SchemaName) SchemaName {
 // CloneTableName creates a deep clone of the input.
 func CloneTableName(n TableName) TableName {
 	return *CloneRefOfTableName(&n)
+}
+
+// CloneSequenceName creates a deep clone of the input.
+func CloneSequenceName(n SequenceName) SequenceName {
+	return *CloneRefOfSequenceName(&n)
 }
 
 // CloneTableNames creates a deep clone of the input.
@@ -2279,6 +2305,20 @@ func CloneRefOfTablespaceOperation(n *TablespaceOperation) *TablespaceOperation 
 		return nil
 	}
 	out := *n
+	return &out
+}
+
+// CloneRefOfTableSpec creates a deep clone of the input.
+func CloneRefOfSequenceSpec(n *SequenceSpec) *SequenceSpec {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.StartWith = CloneIntReference(n.StartWith)
+	out.IncrementBy = CloneIntReference(n.IncrementBy)
+	out.Cache = CloneIntReference(n.Cache)
+	out.NoMinValue = n.NoMinValue
+	out.NoMaxValue = n.NoMaxValue
 	return &out
 }
 
@@ -3555,6 +3595,15 @@ func CloneSliceOfCharacteristic(n []Characteristic) []Characteristic {
 	return res
 }
 
+// CloneRefOfSequenceIdent creates a deep clone of the input.
+func CloneRefOfSequenceIdent(n *SequenceIdent) *SequenceIdent {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	return &out
+}
+
 // CloneRefOfTableIdent creates a deep clone of the input.
 func CloneRefOfTableIdent(n *TableIdent) *TableIdent {
 	if n == nil {
@@ -3571,6 +3620,17 @@ func CloneRefOfSchemaName(n *SchemaName) *SchemaName {
 	}
 	out := *n
 	out.Name = CloneSchemaIdent(n.Name)
+	return &out
+}
+
+// CloneRefOfSequenceName creates a deep clone of the input.
+func CloneRefOfSequenceName(n *SequenceName) *SequenceName {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Name = CloneSequenceIdent(n.Name)
+	out.Qualifier = CloneSequenceIdent(n.Qualifier)
 	return &out
 }
 
@@ -3594,6 +3654,26 @@ func CloneRefOfTableOption(n *TableOption) *TableOption {
 	out.Value = CloneRefOfLiteral(n.Value)
 	out.Tables = CloneTableNames(n.Tables)
 	return &out
+}
+
+// CloneIntReference creates a deep clone of the input.
+func CloneIntReference(n *int) *int {
+	if n == nil {
+		return nil
+	}
+	res := new(int)
+	*res = *n
+	return res
+}
+
+// CloneIntReference creates a deep clone of the input.
+func CloneBoolReference(n *bool) *bool {
+	if n == nil {
+		return nil
+	}
+	res := new(bool)
+	*res = *n
+	return res
 }
 
 // CloneSliceOfRefOfIndexDefinition creates a deep clone of the input.
