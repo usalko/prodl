@@ -510,6 +510,7 @@ type (
 		PartitionSpec   *PartitionSpec
 		PartitionOption *PartitionOption
 		Comments        *ParsedComments
+		Only            bool
 		FullyParsed     bool
 	}
 

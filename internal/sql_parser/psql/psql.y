@@ -439,7 +439,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <intervalType> interval_time_stamp interval
 %type <str> cache_opt separator_opt flush_option for_channel_opt
 %type <matchExprOption> match_option
-%type <boolean> distinct_opt union_op replace_opt local_opt
+%type <boolean> distinct_opt union_op replace_opt local_opt only_opt
 %type <selectExprs> select_expression_list select_expression_list_opt
 %type <selectExpr> select_expression
 %type <strs> select_options flush_option_list
@@ -1138,9 +1138,9 @@ create_table_prefix:
   }
 
 alter_table_prefix:
-  ALTER comment_opt TABLE table_name
+  ALTER comment_opt TABLE only_opt table_name
   {
-    $$ = &ast.AlterTable{Comments: ast.Comments($2).Parsed(), Table: $4}
+    $$ = &ast.AlterTable{Comments: ast.Comments($2).Parsed(), Only: $4, Table: $5}
     setDDL(psqlex, $$)
   }
 
@@ -3708,6 +3708,15 @@ comment_list:
 | comment_list COMMENT
   {
     $$ = append($1, $2)
+  }
+
+only_opt:
+  {
+    $$ = false
+  }
+| ONLY
+  {
+    $$ = true
   }
 
 union_op:

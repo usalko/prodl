@@ -34,6 +34,10 @@ func TestPsqlStatements(t *testing.T) {
 			in: "ALTER SEQUENCE serial RESTART WITH 105",
 			id: []int{psql.ALTER, 0},
 		},
+		{
+			in: "ALTER TABLE ONLY public.articles_article ALTER COLUMN id SET DEFAULT nextval('public.articles_article_id_seq'::regclass)",
+			id: []int{psql.ALTER, 0},
+		},
 	}
 
 	for _, tcase := range testcases {
