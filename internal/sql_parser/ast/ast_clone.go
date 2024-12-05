@@ -49,6 +49,10 @@ func CloneSQLNode(in SQLNode) SQLNode {
 		return CloneRefOfAlterIndex(in)
 	case *AlterMigration:
 		return CloneRefOfAlterMigration(in)
+	case *AlterSchema:
+		return CloneRefOfAlterSchema(in)
+	case *AlterOwner:
+		return CloneRefOfAlterOwner(in)
 	case *AlterTable:
 		return CloneRefOfAlterTable(in)
 	case *AlterView:
@@ -500,6 +504,16 @@ func CloneRefOfAlterCheck(n *AlterCheck) *AlterCheck {
 	return &out
 }
 
+// CloneRefOfAlterOwner creates a deep clone of the input.
+func CloneRefOfAlterOwner(n *AlterOwner) *AlterOwner {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Owner = CloneRefOfRoleName(n.Owner)
+	return &out
+}
+
 // CloneRefOfAlterColumn creates a deep clone of the input.
 func CloneRefOfAlterColumn(n *AlterColumn) *AlterColumn {
 	if n == nil {
@@ -540,6 +554,17 @@ func CloneRefOfAlterMigration(n *AlterMigration) *AlterMigration {
 	}
 	out := *n
 	out.Ratio = CloneRefOfLiteral(n.Ratio)
+	return &out
+}
+
+// CloneRefOfAlterSchema creates a deep clone of the input.
+func CloneRefOfAlterSchema(n *AlterSchema) *AlterSchema {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Schema = CloneSchemaName(n.Schema)
+	out.AlterOptions = CloneSliceOfAlterOption(n.AlterOptions)
 	return &out
 }
 
@@ -690,6 +715,10 @@ func CloneColIdent(n ColIdent) ColIdent {
 
 // CloneRefOfColName creates a deep clone of the input.
 func CloneRefOfColName(n *ColName) *ColName {
+	return n
+}
+
+func CloneRefOfRoleName(n *RoleName) * RoleName {
 	return n
 }
 
@@ -2196,6 +2225,11 @@ func CloneTableIdent(n TableIdent) TableIdent {
 	return *CloneRefOfTableIdent(&n)
 }
 
+// CloneSchemaName creates a deep clone of the input.
+func CloneSchemaName(n SchemaName) SchemaName {
+	return *CloneRefOfSchemaName(&n)
+}
+
 // CloneTableName creates a deep clone of the input.
 func CloneTableName(n TableName) TableName {
 	return *CloneRefOfTableName(&n)
@@ -3527,6 +3561,16 @@ func CloneRefOfTableIdent(n *TableIdent) *TableIdent {
 		return nil
 	}
 	out := *n
+	return &out
+}
+
+// CloneRefOfTableName creates a deep clone of the input.
+func CloneRefOfSchemaName(n *SchemaName) *SchemaName {
+	if n == nil {
+		return nil
+	}
+	out := *n
+	out.Name = CloneSchemaIdent(n.Name)
 	return &out
 }
 

@@ -445,6 +445,20 @@ func (node *PartitionSpec) Format(buf *TrackedBuffer) {
 	}
 }
 
+// Format formats the node.
+func (node *AlterSchema) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "alter schema")
+	buf.WriteByte(' ')
+	node.Schema.Format(buf)
+	for i, option := range node.AlterOptions {
+		if i != 0 {
+			buf.WriteByte(',')
+		}
+		buf.WriteByte(' ')
+		option.Format(buf)
+	}
+}
+
 // Format formats the node
 func (node *PartitionDefinition) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "partition %v", node.Name)
@@ -1926,6 +1940,11 @@ func (node AlgorithmValue) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node
+func (node *AlterOwner) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "owner to %v", node.Owner)
+}
+
+// Format formats the node
 func (node *AlterColumn) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "alter column %v", node.Column)
 	if node.DropDefault {
@@ -2037,6 +2056,11 @@ func (node *OrderByOption) Format(buf *TrackedBuffer) {
 // Format formats the node
 func (node *RenameTableName) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "rename %v", node.Table)
+}
+
+// Format formats the node
+func (node *SchemaName) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "%v", node.Name.V)
 }
 
 // Format formats the node

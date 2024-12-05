@@ -86,6 +86,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfAlterColumn(a, b)
+	case *AlterOwner:
+		b, ok := inB.(*AlterOwner)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfAlterOwner(a, b)
 	case *AlterDatabase:
 		b, ok := inB.(*AlterDatabase)
 		if !ok {
@@ -104,6 +110,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfAlterMigration(a, b)
+	case *AlterSchema:
+		b, ok := inB.(*AlterSchema)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfAlterSchema(a, b)
 	case *AlterTable:
 		b, ok := inB.(*AlterTable)
 		if !ok {
@@ -1301,6 +1313,17 @@ func EqualsRefOfAlterCheck(a, b *AlterCheck) bool {
 }
 
 // EqualsRefOfAlterColumn does deep equals between the two objects.
+func EqualsRefOfAlterOwner(a, b *AlterOwner) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsRefOfRoleName(a.Owner, b.Owner)
+}
+
+// EqualsRefOfAlterColumn does deep equals between the two objects.
 func EqualsRefOfAlterColumn(a, b *AlterColumn) bool {
 	if a == b {
 		return true
@@ -1352,6 +1375,19 @@ func EqualsRefOfAlterMigration(a, b *AlterMigration) bool {
 		a.Expire == b.Expire &&
 		a.Type == b.Type &&
 		EqualsRefOfLiteral(a.Ratio, b.Ratio)
+}
+
+// EqualsRefOfAlterSchema does deep equals between the two objects.
+func EqualsRefOfAlterSchema(a, b *AlterSchema) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsSchemaName(a.Schema, b.Schema) &&
+		EqualsSliceOfAlterOption(a.AlterOptions, b.AlterOptions) &&
+		EqualsRefOfParsedComments(a.Comments, b.Comments)
 }
 
 // EqualsRefOfAlterTable does deep equals between the two objects.
@@ -1533,6 +1569,17 @@ func EqualsRefOfColName(a, b *ColName) bool {
 	}
 	return EqualsColIdent(a.Name, b.Name) &&
 		EqualsTableName(a.Qualifier, b.Qualifier)
+}
+
+// EqualsRefOfColName does deep equals between the two objects.
+func EqualsRefOfRoleName(a, b *RoleName) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsRoleName(a.Name, b.Name)
 }
 
 // EqualsRefOfCollateExpr does deep equals between the two objects.
@@ -3258,6 +3305,21 @@ func EqualsTableExprs(a, b TableExprs) bool {
 		}
 	}
 	return true
+}
+
+// EqualsSchemaName does deep equals between the two objects.
+func EqualsSchemaName(a, b SchemaName) bool {
+	return EqualsSchemaIdent(a.Name, b.Name)
+}
+
+// EqualsSchemaIdent does deep equals between the two objects.
+func EqualsSchemaIdent(a, b SchemaIdent) bool {
+	return a.V == b.V
+}
+
+// EqualsRoleName does deep equals between the two objects.
+func EqualsRoleName(a, b RoleIdent) bool {
+	return a.V == b.V
 }
 
 // EqualsTableIdent does deep equals between the two objects.

@@ -222,7 +222,7 @@ func init() {
 		keywordStrings[kw.Id] = kw.Name
 	}
 
-	cache.KeywordLookupTables[dialect.PSQL] = buildCaseInsensitiveTable(keywords)
+	cache.KeywordLookupTables[dialect.SQLITE3] = buildCaseInsensitiveTable(keywords)
 }
 
 // KeywordString returns the string corresponding to the given keyword

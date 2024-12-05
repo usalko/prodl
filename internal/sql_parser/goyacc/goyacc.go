@@ -3359,7 +3359,7 @@ func $$Iaddr(v any) __yyunsafe__.Pointer {
 
 var (
 	/* available values are: 0, 1, 2, 3, 4 */
-	$$Debug        = 0
+	$$Debug        = 4
 	$$ErrorVerbose = true
 )
 

@@ -612,6 +612,20 @@ func (node *PartitionSpec) formatFast(buf *TrackedBuffer) {
 	}
 }
 
+// formatFast formats the node.
+func (node *AlterSchema) formatFast(buf *TrackedBuffer) {
+	buf.WriteString("alter schema")
+	buf.WriteByte(' ')
+	node.Schema.formatFast(buf)
+	for i, option := range node.AlterOptions {
+		if i != 0 {
+			buf.WriteByte(',')
+		}
+		buf.WriteByte(' ')
+		option.formatFast(buf)
+	}
+}
+
 // formatFast formats the node
 func (node *PartitionDefinition) formatFast(buf *TrackedBuffer) {
 	buf.WriteString("partition ")
@@ -1696,6 +1710,11 @@ func (node BoolVal) formatFast(buf *TrackedBuffer) {
 }
 
 // formatFast formats the node.
+func (node *RoleName) formatFast(buf *TrackedBuffer) {
+	buf.WriteString(node.Name.V)
+}
+
+// formatFast formats the node.
 func (node *ColName) formatFast(buf *TrackedBuffer) {
 	if !node.Qualifier.IsEmpty() {
 		node.Qualifier.formatFast(buf)
@@ -2191,8 +2210,12 @@ func (node AccessMode) formatFast(buf *TrackedBuffer) {
 	}
 }
 
-func (node SchemaIdent) formatFast(buf *TrackedBuffer) {
+func (node *SchemaIdent) formatFast(buf *TrackedBuffer) {
 	buf.WriteString(node.V)
+}
+
+func (node *SchemaName) formatFast(buf *TrackedBuffer) {
+	node.Name.formatFast(buf)
 }
 
 // formatFast formats the node.
@@ -2526,6 +2549,12 @@ func (node *AddColumns) formatFast(buf *TrackedBuffer) {
 func (node AlgorithmValue) formatFast(buf *TrackedBuffer) {
 	buf.WriteString("algorithm = ")
 	buf.WriteString(string(node))
+}
+
+// formatFast formats the node
+func (node *AlterOwner) formatFast(buf *TrackedBuffer) {
+	buf.WriteString("owner to ")
+	node.Owner.formatFast(buf)
 }
 
 // formatFast formats the node

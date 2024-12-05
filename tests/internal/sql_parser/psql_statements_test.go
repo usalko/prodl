@@ -16,12 +16,15 @@ func TestPsqlStatements(t *testing.T) {
 	}{
 		{
 			in: "-- comment\nCOMMENT ON SCHEMA public IS '1'",
-			// in: "SET a = '1'",
 			id: []int{psql.COMMENT, psql.ON, psql.SCHEMA, 0},
 		},
 		{
 			in: "-- comment\n\nSET statement_timeout = 0",
 			id: []int{psql.SET, 0},
+		},
+		{
+			in: "\n\n--\n-- Name: public; Type: SCHEMA; Schema: -; Owner: phytonyms.dev\n--\n\n-- *not* creating schema, since initdb creates it\n\n\nALTER SCHEMA public OWNER TO \"phytonyms.dev\"",
+			id: []int{psql.ALTER, 0},
 		},
 	}
 

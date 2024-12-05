@@ -128,9 +128,10 @@ func bindVariable(psqlex psqLexer, bvar string) {
   tableOption      *ast.TableOption
   columnTypeOptions *ast.ColumnTypeOptions
   constraintDefinition *ast.ConstraintDefinition
-  revertMigration *ast.RevertMigration
-  alterMigration  *ast.AlterMigration
-  trimType        ast.TrimType
+  revertMigration   *ast.RevertMigration
+  alterMigration    *ast.AlterMigration
+  alterSchema       *ast.AlterSchema
+  trimType          ast.TrimType
 
   whens         []*ast.When
   columnDefinitions []*ast.ColumnDefinition
@@ -265,7 +266,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> NEXT VALUE SHARE MODE
 %token <str> SQL_NO_CACHE SQL_CACHE SQL_CALC_FOUND_ROWS
 %left <str> JOIN STRAIGHT_JOIN LEFT RIGHT INNER OUTER CROSS NATURAL USE FORCE
-%left <str> ON USING INPLACE COPY INSTANT ALGORITHM NONE SHARED EXCLUSIVE
+%left <str> ON USING INPLACE COPY INSTANT NONE SHARED EXCLUSIVE
 %left <str> SUBQUERY_AS_EXPR
 %left <str> '(' ',' ')'
 %token <str> ID AT_ID AT_AT_ID HEX STRING NCHAR_STRING INTEGRAL FLOAT DECIMAL HEXNUM VALUE_ARG LIST_ARG COMMENT_KEYWORD BIT_LITERAL COMPRESSION
@@ -405,11 +406,13 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <cte> common_table_expr
 %type <ctes> with_list
 %type <schemaName> schema_name
+%type <alterSchema> alter_schema_prefix
 %type <renameTablePairs> rename_list
+%type <alterOptions> alter_schema_commands_list
 %type <createTable> create_table_prefix
 %type <alterTable> alter_table_prefix
-%type <alterOption> alter_option alter_commands_modifier lock_index algorithm_index
-%type <alterOptions> alter_options alter_commands_list alter_commands_modifier_list algorithm_lock_opt
+%type <alterOption> alter_option alter_commands_modifier
+%type <alterOptions> alter_options alter_commands_list alter_commands_modifier_list
 %type <alterTable> create_index_prefix
 %type <createDatabase> create_database_prefix
 %type <alterDatabase> alter_database_prefix
@@ -432,7 +435,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <selectExprs> select_expression_list select_expression_list_opt
 %type <selectExpr> select_expression
 %type <strs> select_options flush_option_list
-%type <str> select_option algorithm_view security_view security_view_opt
+%type <str> select_option security_view security_view_opt
 %type <str> generated_always_opt user_username address_opt
 %type <definer> definer_opt user
 %type <expr> expression signed_literal signed_literal_or_null null_as_literal now_or_signed_literal signed_literal bit_expr simple_expr literal NUM_literal text_literal text_literal_or_arg bool_pri literal_or_null now predicate tuple_expression
@@ -537,7 +540,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <jsonObjectParam> json_object_param
 %type <jsonObjectParams> json_object_param_list json_object_param_opt
 %type <colIdent> id_or_var vindex_type vindex_type_opt id_or_var_opt
-%type <str> database_or_schema column_opt insert_method_options row_format_options
+%type <str> database column_opt insert_method_options row_format_options
 %type <referenceAction> fk_reference_action fk_on_delete fk_on_update
 %type <matchAction> fk_match fk_match_opt fk_match_action
 %type <tableAndLockTypes> lock_table_list
@@ -1008,18 +1011,17 @@ create_statement:
     $1.FullyParsed = true
     $$ = $1
   }
-| create_index_prefix '(' index_column_list ')' index_option_list_opt algorithm_lock_opt
+| create_index_prefix '(' index_column_list ')' index_option_list_opt
   {
     indexDef := $1.AlterOptions[0].(*ast.AddIndexDefinition).IndexDefinition
     indexDef.Columns = $3
     indexDef.Options = append(indexDef.Options,$5...)
-    $1.AlterOptions = append($1.AlterOptions,$6...)
     $1.FullyParsed = true
     $$ = $1
   }
-| CREATE comment_opt replace_opt algorithm_view definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
+| CREATE comment_opt replace_opt definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
   {
-    $$ = &ast.CreateView{ViewName: $8.ToViewName(), Comments: ast.Comments($2).Parsed(), IsReplace:$3, Algorithm:$4, Definer: $5 ,Security:$6, Columns:$9, Select: $11, CheckOption: $12 }
+    $$ = &ast.CreateView{ViewName: $7.ToViewName(), Comments: ast.Comments($2).Parsed(), IsReplace:$3, Definer: $4 ,Security:$5, Columns:$8, Select: $10, CheckOption: $11 }
   }
 | create_database_prefix create_options_opt
   {
@@ -1104,6 +1106,13 @@ json_object_param:
     $$ = &ast.JSONObjectParam{Key:$1, Value:$3}
   }
 
+alter_schema_prefix:
+  ALTER comment_opt schema_name
+  {
+    $$ = &ast.AlterSchema{Comments: ast.Comments($2).Parsed(), Schema: $3}
+    setDDL(psqlex, $$)
+  }
+
 create_table_prefix:
   CREATE comment_opt temp_opt TABLE not_exists_opt table_name
   {
@@ -1141,22 +1150,21 @@ create_index_prefix:
   }
 
 create_database_prefix:
-  CREATE comment_opt database_or_schema comment_opt not_exists_opt table_id
+  CREATE comment_opt database comment_opt not_exists_opt table_id
   {
     $$ = &ast.CreateDatabase{Comments: ast.Comments($4).Parsed(), DBName: $6, IfNotExists: $5}
     setDDL(psqlex,$$)
   }
 
 alter_database_prefix:
-  ALTER comment_opt database_or_schema
+  ALTER comment_opt database
   {
     $$ = &ast.AlterDatabase{}
     setDDL(psqlex,$$)
   }
 
-database_or_schema:
+database:
   DATABASE
-| SCHEMA
 
 table_spec:
   '(' table_column_list ')' table_option_list_opt
@@ -2621,6 +2629,12 @@ after_opt:
     $$ = $2
   }
 
+alter_schema_commands_list:
+  OWNER TO ID
+  {
+    $$ = []ast.AlterOption{&ast.AlterOwner{Owner: &ast.RoleName{Name: ast.RoleIdent{V: $3}}}}
+  }
+
 alter_commands_list:
   {
     $$ = nil
@@ -2795,23 +2809,7 @@ alter_commands_modifier_list:
   }
 
 alter_commands_modifier:
-  ALGORITHM equal_opt DEFAULT
-    {
-      $$ = ast.AlgorithmValue(string($3))
-    }
-  | ALGORITHM equal_opt INPLACE
-    {
-      $$ = ast.AlgorithmValue(string($3))
-    }
-  | ALGORITHM equal_opt COPY
-    {
-      $$ = ast.AlgorithmValue(string($3))
-    }
-  | ALGORITHM equal_opt INSTANT
-    {
-      $$ = ast.AlgorithmValue(string($3))
-    }
-  | LOCK equal_opt DEFAULT
+  LOCK equal_opt DEFAULT
     {
       $$ = &ast.LockOption{Type: ast.DefaultType}
     }
@@ -2843,9 +2841,15 @@ alter_statement:
     $1.AlterOptions = $2
     $$ = $1
   }
-| ALTER comment_opt algorithm_view definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
+| alter_schema_prefix alter_schema_commands_list
   {
-    $$ = &ast.AlterView{ViewName: $7.ToViewName(), Comments: ast.Comments($2).Parsed(), Algorithm:$3, Definer: $4 ,Security:$5, Columns:$8, Select: $10, CheckOption: $11 }
+    $1.FullyParsed = true
+    $1.AlterOptions = $2
+    $$ = $1
+  }
+| ALTER comment_opt definer_opt security_view_opt VIEW table_name column_list_opt AS select_statement check_option_opt
+  {
+    $$ = &ast.AlterView{ViewName: $6.ToViewName(), Comments: ast.Comments($2).Parsed(), Definer: $3 ,Security:$4, Columns:$7, Select: $9, CheckOption: $10 }
   }
 // The syntax here causes a shift / reduce issue, because ENCRYPTION is a non reserved keyword
 // and the database identifier is optional. When no identifier is given, the current database
@@ -3050,20 +3054,20 @@ drop_statement:
   {
     $$ = &ast.DropTable{FromTables: $6, IfExists: $5, Comments: ast.Comments($2).Parsed(), Temp: $3}
   }
-| DROP comment_opt INDEX id_or_var ON table_name algorithm_lock_opt
+| DROP comment_opt INDEX id_or_var ON table_name
   {
     // Change this to an alter statement
     if $4.Lowered() == "primary" {
-      $$ = &ast.AlterTable{FullyParsed:true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.PrimaryKeyType}},$7...)}
+      $$ = &ast.AlterTable{FullyParsed:true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.PrimaryKeyType}})}
     } else {
-      $$ = &ast.AlterTable{FullyParsed: true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.NormalKeyType, Name:$4}},$7...)}
+      $$ = &ast.AlterTable{FullyParsed: true, Table: $6,AlterOptions: append([]ast.AlterOption{&ast.DropKey{Type: ast.NormalKeyType, Name:$4}})}
     }
   }
 | DROP comment_opt VIEW exists_opt view_name_list restrict_or_cascade_opt
   {
     $$ = &ast.DropView{FromTables: $5, Comments: ast.Comments($2).Parsed(), IfExists: $4}
   }
-| DROP comment_opt database_or_schema exists_opt table_id
+| DROP comment_opt database exists_opt table_id
   {
     $$ = &ast.DropDatabase{Comments: ast.Comments($2).Parsed(), DBName: $5, IfExists: $4}
   }
@@ -5247,81 +5251,6 @@ LIMIT expression
 | LIMIT expression OFFSET expression
   {
     $$ = &ast.Limit{Offset: $4, Rowcount: $2}
-  }
-
-algorithm_lock_opt:
-  {
-    $$ = nil
-  }
-| lock_index algorithm_index
-  {
-     $$ = []ast.AlterOption{$1,$2}
-  }
-| algorithm_index lock_index
-  {
-     $$ = []ast.AlterOption{$1,$2}
-  }
-| algorithm_index
-  {
-     $$ = []ast.AlterOption{$1}
-  }
-| lock_index
-  {
-     $$ = []ast.AlterOption{$1}
-  }
-
-
-lock_index:
-  LOCK equal_opt DEFAULT
-  {
-    $$ = &ast.LockOption{Type: ast.DefaultType}
-  }
-| LOCK equal_opt NONE
-  {
-    $$ = &ast.LockOption{Type: ast.NoneType}
-  }
-| LOCK equal_opt SHARED
-  {
-    $$ = &ast.LockOption{Type: ast.SharedType}
-  }
-| LOCK equal_opt EXCLUSIVE
-  {
-    $$ = &ast.LockOption{Type: ast.ExclusiveType}
-  }
-
-algorithm_index:
-  ALGORITHM equal_opt DEFAULT
-  {
-    $$ = ast.AlgorithmValue($3)
-  }
-| ALGORITHM equal_opt INPLACE
-  {
-    $$ = ast.AlgorithmValue($3)
-  }
-| ALGORITHM equal_opt COPY
-  {
-    $$ = ast.AlgorithmValue($3)
-  }
-| ALGORITHM equal_opt INSTANT
-  {
-    $$ = ast.AlgorithmValue($3)
-  }
-
-algorithm_view:
-  {
-    $$ = ""
-  }
-| ALGORITHM '=' UNDEFINED
-  {
-    $$ = string($3)
-  }
-| ALGORITHM '=' MERGE
-  {
-    $$ = string($3)
-  }
-| ALGORITHM '=' TEMPTABLE
-  {
-    $$ = string($3)
   }
 
 security_view_opt:

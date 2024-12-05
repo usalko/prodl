@@ -141,6 +141,11 @@ type (
 		Invisible   *bool
 	}
 
+	// AlterColumn is used to add or drop defaults & visibility to columns in alter table command
+	AlterOwner struct {
+		Owner *RoleName
+	}
+
 	// With contains the lists of common table expression and specifies if it is recursive or not
 	With struct {
 		Ctes      []*CommonTableExpr
@@ -490,6 +495,14 @@ type (
 		Ratio  *Literal
 	}
 
+	// AlterSchema represents a ALTER SCHEMA statement
+	AlterSchema struct {
+		Schema       SchemaName
+		AlterOptions []AlterOption
+		Comments     *ParsedComments
+		FullyParsed  bool
+	}
+
 	// AlterTable represents a ALTER TABLE statement.
 	AlterTable struct {
 		Table           TableName
@@ -723,6 +736,7 @@ func (*UnlockTables) iStatement()      {}
 func (*AlterTable) iStatement()        {}
 func (*AlterVschema) iStatement()      {}
 func (*AlterMigration) iStatement()    {}
+func (*AlterSchema) iStatement()       {}
 func (*RevertMigration) iStatement()   {}
 func (*ShowMigrationLogs) iStatement() {}
 func (*ShowThrottledApps) iStatement() {}
@@ -746,12 +760,14 @@ func (*DropView) iDDLStatement()      {}
 func (*AlterTable) iDDLStatement()    {}
 func (*TruncateTable) iDDLStatement() {}
 func (*RenameTable) iDDLStatement()   {}
+func (*AlterSchema) iDDLStatement()   {}
 
 func (*AddConstraintDefinition) iAlterOption() {}
 func (*AddIndexDefinition) iAlterOption()      {}
 func (*AddColumns) iAlterOption()              {}
 func (AlgorithmValue) iAlterOption()           {}
 func (*AlterColumn) iAlterOption()             {}
+func (*AlterOwner) iAlterOption()              {}
 func (*AlterCheck) iAlterOption()              {}
 func (*AlterIndex) iAlterOption()              {}
 func (*ChangeColumn) iAlterOption()            {}
@@ -847,6 +863,11 @@ func (node *AlterView) IsFullyParsed() bool {
 
 // SetFullyParsed implements the DDLStatement interface
 func (node *AlterView) SetFullyParsed(fullyParsed bool) {}
+
+// IsTemporary implements the DDLStatement interface
+func (node *AlterSchema) IsTemporary() bool {
+	return false
+}
 
 // IsTemporary implements the DDLStatement interface
 func (*TruncateTable) IsTemporary() bool {
@@ -2177,6 +2198,11 @@ type (
 	// BoolVal is true or false.
 	BoolVal bool
 
+	// RoleName represents a role name.
+	RoleName struct {
+		Name RoleIdent
+	}
+
 	// ColName represents a column name.
 	ColName struct {
 		// Metadata is not populated by the parser.
@@ -2750,8 +2776,14 @@ type TableIdent struct {
 }
 
 // SchemaIdent is a case sensitive SQL identifier. It will be escaped with
-// backquotes if necessary.
+// quotes if necessary.
 type SchemaIdent struct {
+	V string
+}
+
+// RoleIdent is a case sensitive SQL identifier. It will be escaped with
+// quotes if necessary.
+type RoleIdent struct {
 	V string
 }
 
