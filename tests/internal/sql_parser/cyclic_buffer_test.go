@@ -8,7 +8,7 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/tokenizer"
 )
 
-func TestCyclicBuffer(t *testing.T) {
+func TestCyclicBufferCase1(t *testing.T) {
 	fmt.Printf("%T\n", 'w')
 	fmt.Println(reflect.TypeOf('w').String())
 	var r rune = 'w'
@@ -23,6 +23,14 @@ func TestCyclicBuffer(t *testing.T) {
 
 	cBuf := tokenizer.NewCyclicBuffer(5)
 	cBuf.Put('a', 'b', 'c', 'd', 'e', 'f', 'g')
+	if !cBuf.Has("cd", "fg") {
+		t.Errorf("wrong buffer content %s", cBuf)
+	}
+}
+
+func TestCyclicBufferCase2(t *testing.T) {
+	cBuf := tokenizer.NewCyclicBuffer(5)
+	cBuf.Put('a', 'b', 'c', 'd', 'e', 'f', 'g', 'a', 'b', 'c', 'd', 'e', 'f', 'g')
 	if !cBuf.Has("cd", "fg") {
 		t.Errorf("wrong buffer content %s", cBuf)
 	}

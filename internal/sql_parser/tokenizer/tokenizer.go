@@ -51,7 +51,7 @@ type Tokenizer interface {
 
 	GetLastError() error
 
-	Cur() uint16
+	Cur() rune
 	Skip(count int)
 	SkipBlank()
 	Reset()

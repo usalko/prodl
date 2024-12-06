@@ -708,7 +708,7 @@ exit:
 // either single or double quotes. Assumes that the given delimiter has just
 // been scanned. If the skin contains any escape sequences, this function
 // will fall back to scanStringSlow
-func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
+func (tkn *MysqlTokenizer) scanString(delim rune, typ int) (int, string) {
 	start := tkn.Pos
 
 	for {
@@ -736,7 +736,7 @@ func (tkn *MysqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 // scanString scans a string surrounded by the given `delim` and containing escape
 // sequencse. The given `buffer` contains the contents of the string that have
 // been scanned so far.
-func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
+func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim rune, typ int) (int, string) {
 	for {
 		ch := tkn.Cur()
 		if ch == tokenizer.EofChar {
@@ -748,7 +748,7 @@ func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16,
 			// Scan ahead to the next interesting character.
 			start := tkn.Pos
 			for ; tkn.Pos < len(tkn.buf); tkn.Pos++ {
-				ch = uint16(tkn.buf[tkn.Pos])
+				ch = rune(tkn.buf[tkn.Pos])
 				if ch == delim || ch == '\\' {
 					break
 				}
@@ -772,7 +772,7 @@ func (tkn *MysqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16,
 			if decodedChar := sql_types.SQLDecodeMap[byte(tkn.Cur())]; decodedChar == sql_types.DontEscape {
 				ch = tkn.Cur()
 			} else {
-				ch = uint16(decodedChar)
+				ch = rune(decodedChar)
 			}
 		} else if ch == delim && tkn.Cur() != delim {
 			// Correctly terminated string, which is not a double delim.
@@ -850,7 +850,7 @@ func (tkn *MysqlTokenizer) scanMySQLSpecificComment() (int, string) {
 	return tkn.Scan()
 }
 
-func (tkn *MysqlTokenizer) Cur() uint16 {
+func (tkn *MysqlTokenizer) Cur() rune {
 	return tkn.Peek(0)
 }
 
@@ -858,11 +858,11 @@ func (tkn *MysqlTokenizer) Skip(dist int) {
 	tkn.Pos += dist
 }
 
-func (tkn *MysqlTokenizer) Peek(dist int) uint16 {
+func (tkn *MysqlTokenizer) Peek(dist int) rune {
 	if tkn.Pos+dist >= len(tkn.buf) {
 		return tokenizer.EofChar
 	}
-	return uint16(tkn.buf[tkn.Pos+dist])
+	return rune(tkn.buf[tkn.Pos+dist])
 }
 
 // Reset clears any internal state.
@@ -875,15 +875,15 @@ func (tkn *MysqlTokenizer) Reset() {
 	tkn.SkipToEnd = false
 }
 
-func isLetter(ch uint16) bool {
+func isLetter(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '$'
 }
 
-func isCarat(ch uint16) bool {
+func isCarat(ch rune) bool {
 	return ch == '.' || ch == '\'' || ch == '"' || ch == '`'
 }
 
-func digitVal(ch uint16) int {
+func digitVal(ch rune) int {
 	switch {
 	case '0' <= ch && ch <= '9':
 		return int(ch) - '0'
@@ -895,7 +895,7 @@ func digitVal(ch uint16) int {
 	return 16 // larger than any legal digit val
 }
 
-func isDigit(ch uint16) bool {
+func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 

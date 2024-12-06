@@ -30,16 +30,17 @@ func (c *CyclicBuffer) String() string {
 	return content
 }
 
-func (c *CyclicBuffer) Put(data ...rune) {
+func (c *CyclicBuffer) Put(data ...rune) rune {
 	for _, r := range data {
 		c.push(r)
 	}
+	return data[0]
 }
 
 func (c *CyclicBuffer) push(data rune) {
 	if c.count == c.size {
 		c.readPointer = (c.readPointer + 1) % c.size
-	} else {
+	} else if c.count < c.size {
 		c.count++
 	}
 	c.buffer[c.writePointer] = data

@@ -179,8 +179,9 @@ var PSQLServerVersion = flag.String("psql_server_version", "", "PSQL server vers
 func NewPsqlStringTokenizer(sql string) *PsqlTokenizer {
 
 	return &PsqlTokenizer{
-		buf:      sql,
-		BindVars: make(map[string]struct{}),
+		buf:         sql,
+		BindVars:    make(map[string]struct{}),
+		leftContext: *tokenizer.NewCyclicBuffer(10),
 	}
 }
 
@@ -254,7 +255,7 @@ func (tzr *PsqlTokenizer) Scan() (int, string) {
 	}
 
 	tzr.SkipBlank()
-	switch ch := tzr.Cur(); {
+	switch ch := tzr.leftContext.Put(rune(tzr.Cur())); {
 	case ch == '@':
 		tokenID := AT_ID
 		tzr.Skip(1)
@@ -308,6 +309,10 @@ func (tzr *PsqlTokenizer) Scan() (int, string) {
 			// Repeated calls to Scan will keep returning 0 until ParseNext
 			// forces the advance.
 			return 0, ""
+		}
+		if tzr.leftContext.Has("stdin") {
+			tzr.scanEndDataMark()
+			return ';', ""
 		}
 		tzr.Skip(1)
 		return ';', ""
@@ -449,7 +454,7 @@ func (tzr *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 	tzr.Skip(1)
 
 	for {
-		ch := tzr.Cur()
+		ch := tzr.leftContext.Put(rune(tzr.Cur()))
 		if !isLetter(ch) && !isDigit(ch) && !(isVariable && isCarat(ch)) {
 			break
 		}
@@ -578,6 +583,28 @@ func (tzr *PsqlTokenizer) scanBindVar() (int, string) {
 	return token, tzr.buf[start:tzr.Pos]
 }
 
+// scanEndDataMark scans a mark for end input data "\\."
+func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
+
+	tzr.Skip(1)
+	start := tzr.Pos
+	for {
+		ch := tzr.Cur()
+		if ch == '\\' {
+			tzr.Skip(1)
+			if tzr.Cur() == '.' {
+				tzr.Skip(1)
+				break
+			}
+		}
+		if ch == tokenizer.EofChar {
+			break
+		}
+		tzr.Skip(1)
+	}
+	return '.', tzr.buf[start : tzr.Pos-1]
+}
+
 // scanMantissa scans a sequence of numeric characters with the same base.
 // This is a helper function only called from the numeric scanners
 func (tzr *PsqlTokenizer) scanMantissa(base int) {
@@ -652,7 +679,7 @@ exit:
 // either single or double quotes. Assumes that the given delimiter has just
 // been scanned. If the skin contains any escape sequences, this function
 // will fall back to scanStringSlow
-func (tzr *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
+func (tzr *PsqlTokenizer) scanString(delim rune, typ int) (int, string) {
 	start := tzr.Pos
 
 	for {
@@ -680,7 +707,7 @@ func (tzr *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
 // scanString scans a string surrounded by the given `delim` and containing escape
 // sequencse. The given `buffer` contains the contents of the string that have
 // been scanned so far.
-func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
+func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim rune, typ int) (int, string) {
 	for {
 		ch := tzr.Cur()
 		if ch == tokenizer.EofChar {
@@ -692,7 +719,7 @@ func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 			// Scan ahead to the next interesting character.
 			start := tzr.Pos
 			for ; tzr.Pos < len(tzr.buf); tzr.Pos++ {
-				ch = uint16(tzr.buf[tzr.Pos])
+				ch = rune(tzr.buf[tzr.Pos])
 				if ch == delim || ch == '\\' {
 					break
 				}
@@ -716,7 +743,7 @@ func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 			if decodedChar := sql_types.SQLDecodeMap[byte(tzr.Cur())]; decodedChar == sql_types.DontEscape {
 				ch = tzr.Cur()
 			} else {
-				ch = uint16(decodedChar)
+				ch = rune(decodedChar)
 			}
 		} else if ch == delim && tzr.Cur() != delim {
 			// Correctly terminated string, which is not a double delim.
@@ -794,7 +821,7 @@ func (tzr *PsqlTokenizer) scanPSQLSpecificComment() (int, string) {
 	return tzr.Scan()
 }
 
-func (tzr *PsqlTokenizer) Cur() uint16 {
+func (tzr *PsqlTokenizer) Cur() rune {
 	return tzr.Peek(0)
 }
 
@@ -802,11 +829,11 @@ func (tzr *PsqlTokenizer) Skip(dist int) {
 	tzr.Pos += dist
 }
 
-func (tzr *PsqlTokenizer) Peek(dist int) uint16 {
+func (tzr *PsqlTokenizer) Peek(dist int) rune {
 	if tzr.Pos+dist >= len(tzr.buf) {
 		return tokenizer.EofChar
 	}
-	return uint16(tzr.buf[tzr.Pos+dist])
+	return rune(tzr.buf[tzr.Pos+dist])
 }
 
 // Reset clears any internal state.
@@ -819,15 +846,15 @@ func (tzr *PsqlTokenizer) Reset() {
 	tzr.SkipToEnd = false
 }
 
-func isLetter(ch uint16) bool {
+func isLetter(ch rune) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_' || ch == '$'
 }
 
-func isCarat(ch uint16) bool {
+func isCarat(ch rune) bool {
 	return ch == '.' || ch == '\'' || ch == '"' || ch == '`'
 }
 
-func digitVal(ch uint16) int {
+func digitVal(ch rune) int {
 	switch {
 	case '0' <= ch && ch <= '9':
 		return int(ch) - '0'
@@ -839,7 +866,7 @@ func digitVal(ch uint16) int {
 	return 16 // larger than any legal digit val
 }
 
-func isDigit(ch uint16) bool {
+func isDigit(ch rune) bool {
 	return '0' <= ch && ch <= '9'
 }
 
