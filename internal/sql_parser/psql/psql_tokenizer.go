@@ -47,6 +47,7 @@ type PsqlTokenizer struct {
 	nesting        int
 	multi          bool
 	specialComment *PsqlTokenizer
+	leftContext    tokenizer.CyclicBuffer
 
 	Pos int
 	buf string
@@ -197,6 +198,7 @@ func (tzr *PsqlTokenizer) Lex(lval *psqSymType) int {
 		}
 		typ, val = tzr.Scan()
 	}
+	// COPY command omit rest of DATA from stdin
 	if typ == ';' && lval.str == "stdin" {
 		tzr.SkipToEnd = true
 		return 0
