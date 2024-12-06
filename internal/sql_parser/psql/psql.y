@@ -80,6 +80,10 @@ func bindVariable(psqlex psqLexer, bvar string) {
   schemaName    ast.SchemaName
   sequenceIdent ast.SequenceIdent
   sequenceName  ast.SequenceName
+  copyFromSource ast.CopyFromSource
+  copyToTarget   ast.CopyToTarget
+  copyOptions    ast.CopyOptions
+  copyOption     ast.CopyOption
 }
 
 %union {
@@ -258,7 +262,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> VALIDATOR VARYING VERSION VIEWS VOLATILE WHITESPACE
 %token <str> WITHIN WRAPPER XML XMLATTRIBUTES XMLCONCAT XMLELEMENT XMLEXISTS
 %token <str> XMLFOREST XMLNAMESPACES XMLPARSE XMLPI XMLROOT XMLSERIALIZE XMLTABLE YES
-%token <str> ZONE
+%token <str> ZONE STOP LOG_VERBOSITY ON_ERROR FORCE_NULL FORCE_NOT_NULL FORCE_QUOTE
 // Non reserved but sql2023
 %token <str> ARRAY_MAX_CARDINALITY CHARACTER_SET_CATALOG COMMAND_FUNCTION_CODE CURRENT_DEFAULT_TRANSFORM_GROUP
 %token <str> CURRENT_TRANSFORM_GROUP_FOR_TYPE DATETIME_INTERVAL_CODE DATETIME_INTERVAL_PRECISION
@@ -407,6 +411,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <statement> execute_statement deallocate_statement
 %type <statement> stream_statement vstream_statement insert_statement update_statement delete_statement set_statement set_transaction_statement
 %type <statement> create_statement alter_statement rename_statement drop_statement truncate_statement flush_statement do_statement comment_statement
+%type <statement> copy_statement
 %type <with> with_clause_opt with_clause
 %type <cte> common_table_expr
 %type <ctes> with_list
@@ -563,6 +568,11 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <colKeyOpt> keys
 %type <referenceDefinition> reference_definition reference_definition_opt
 %type <str> underscore_charsets
+%type <copyFromSource> copy_from
+%type <copyToTarget> copy_to
+%type <copyOptions> copy_option_list copy_option_list_opt
+%type <copyOption> copy_option
+%type <str> error_action
 %start any_command
 
 %%
@@ -617,6 +627,7 @@ command:
 | prepare_statement
 | execute_statement
 | deallocate_statement
+| copy_statement
 | /*empty*/
   {
     setParseTree(psqlex, nil)
@@ -743,20 +754,20 @@ query_expression:
   }
 | with_clause query_expression_body order_by_opt limit_opt
   {
-  		$2.SetWith($1)
+  	$2.SetWith($1)
 		$2.SetOrderBy($3)
 		$2.SetLimit($4)
 		$$ = $2
   }
 | with_clause query_expression_parens limit_clause
   {
-  		$2.SetWith($1)
+  	$2.SetWith($1)
 		$2.SetLimit($3)
 		$$ = $2
   }
 | with_clause query_expression_parens order_by_clause limit_opt
   {
-  		$2.SetWith($1)
+  	$2.SetWith($1)
 		$2.SetOrderBy($3)
 		$2.SetLimit($4)
 		$$ = $2
@@ -847,7 +858,145 @@ query_primary:
     $$ = ast.NewSelect(ast.Comments($2), $4/*SelectExprs*/, $3/*options*/, nil, $5/*from*/, ast.NewWhere(ast.WhereClause, $6), ast.GroupBy($7), ast.NewWhere(ast.HavingClause, $8))
   }
 
+copy_statement:
+  COPY comment_opt table_name column_list_opt FROM copy_from copy_option_list_opt where_expression_opt
+  {
+    $$ = &ast.CopyFrom{Comments: ast.Comments($2).Parsed(), Table: $3, Columns: $4, From: $6, With: $7, Where: $8}
+  }
+| COPY comment_opt table_name column_list_opt TO copy_to copy_option_list_opt
+  {
+    $$ = &ast.CopyTo{Comments: ast.Comments($2).Parsed(), Table: $3, Columns: $4, To: $6, With: $7}
+  }
+| COPY comment_opt query_expression TO copy_to copy_option_list_opt
+  {
+    $$ = &ast.CopyTo{Comments: ast.Comments($2).Parsed(), Query: $3, To: $5, With: $6}
+  }
 
+copy_from:
+  STRING
+  {
+    $$ = ast.CopyFromSource{Type: ast.CopyFromFile, V: $1}
+  }
+| PROGRAM STRING
+  {
+    $$ = ast.CopyFromSource{Type: ast.CopyFromProgram, V: $1}
+  }
+| STDIN
+  {
+    $$ = ast.CopyFromSource{Type: ast.CopyFromStdin}
+  }
+
+copy_to:
+  STRING
+  {
+    $$ = ast.CopyToTarget{Type: ast.CopyToFile, V: $1}
+  }
+| PROGRAM STRING
+  {
+    $$ = ast.CopyToTarget{Type: ast.CopyToProgram, V: $1}
+  }
+| STDOUT
+  {
+    $$ = ast.CopyToTarget{Type: ast.CopyToStdout}
+  }
+
+copy_option_list_opt:
+  {
+    $$ = nil
+  }
+| WITH '(' copy_option_list ')'
+  {
+    $$ = $3
+  }
+| '(' copy_option_list ')'
+  {
+    $$ = $2
+  }
+
+copy_option_list:
+  copy_option
+  {
+    $$ = []ast.CopyOption{$1}
+  }
+| copy_option_list ',' copy_option
+  {
+    $$ = append($$, $3)
+  }
+
+copy_option:
+  FORMAT ID
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionFormat, Value: $2}
+  }
+| FREEZE boolean_value
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionFreeze, Value: $2.String()}
+  }
+| DELIMITER STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionDelimiter, Value: $2}
+  }
+| NULL STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionNull, Value: $2}
+  }
+| DEFAULT STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionDefault, Value: $2}
+  }
+| HEADER boolean_value
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionHeader, Value: $2.String()}
+  }
+| HEADER MATCH
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionHeaderMatch}
+  }
+| QUOTE STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionQuote, Value: $2}
+  }
+| ESCAPE STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionEscape, Value: $2}
+  }
+| FORCE_QUOTE column_list_opt
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionForceQuote}
+  }
+| FORCE_NOT_NULL column_list_opt
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionForceNotNull}
+  }
+| FORCE_NULL column_list_opt
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionForceNull}
+  }
+| ON_ERROR error_action
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionOnError, Value: $2}
+  }
+| ENCODING STRING
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionEncoding, Value: $2}
+  }
+| LOG_VERBOSITY INTEGRAL
+  {
+    $$ = ast.CopyOption{Type: ast.CopyOptionHeaderLogVerbosity, Value: $2}
+  }
+
+error_action:
+  {
+    $$ = "stop"
+  }
+| STOP
+  {
+    $$ = "stop"
+  }
+| IGNORE
+  {
+    $$ = "ignore"
+  }
 
 insert_statement:
   insert_or_replace comment_opt ignore_opt into_table_name insert_data on_dup_opt
@@ -3979,6 +4128,10 @@ column_list_opt:
   {
     $$ = $2
   }
+| '*'
+  {
+    $$ = nil
+  }
 
 column_list:
   sql_id
@@ -5763,7 +5916,9 @@ reserved_keyword:
 | EXCEPT
 | FALSE
 | FETCH
-| FOR
+| FORCE_QUOTE
+| FORCE_NOT_NULL
+| FORCE_NULL
 | FOREIGN
 | FREEZE
 | FROM
@@ -5787,12 +5942,14 @@ reserved_keyword:
 | LIMIT
 | LOCALTIME
 | LOCALTIMESTAMP
+| LOG_VERBOSITY
 | NATURAL
 | NOT
 | NOTNULL
 | NULL
 | OFFSET
 | ON
+| ON_ERROR
 | ONLY
 | OR
 | ORDER
@@ -5807,6 +5964,7 @@ reserved_keyword:
 | SESSION_USER
 | SIMILAR
 | SOME
+| STOP
 | SYMMETRIC
 | SYSTEM_USER
 | TABLE

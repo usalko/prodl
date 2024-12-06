@@ -2407,3 +2407,13 @@ func (node *JSONUnquoteExpr) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "json_unquote(%v", node.JSONValue)
 	buf.WriteString(")")
 }
+
+// Format formats the node.
+func (node *CopyFrom) Format(buf *TrackedBuffer) {
+	node.formatFast(buf)
+}
+
+// Format formats the node
+func (node *CopyTo) Format(buf *TrackedBuffer) {
+	node.formatFast(buf)
+}

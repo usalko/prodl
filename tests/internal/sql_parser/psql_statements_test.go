@@ -38,6 +38,10 @@ func TestPsqlStatements(t *testing.T) {
 			in: "ALTER TABLE ONLY public.articles_article ALTER COLUMN id SET DEFAULT nextval('public.articles_article_id_seq'::regclass)",
 			id: []int{psql.ALTER, 0},
 		},
+		{
+			in: "COPY public.articles_article (id, title) FROM stdin;\n11\tArticle 1\n12\tArticle 2\n\\.",
+			id: []int{psql.COPY, 0},
+		},
 	}
 
 	for _, tcase := range testcases {

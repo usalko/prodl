@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -677,18 +678,6 @@ func NewColIdentWithAt(str string, at AtCount) ColIdent {
 // IsEmpty returns true if the name is empty.
 func (node ColIdent) IsEmpty() bool {
 	return node.Val == ""
-}
-
-// String returns the unescaped column name. It must
-// not be used for SQL generation. Use sql_parser.String
-// instead. The Stringer conformance is for usage
-// in templates.
-func (node ColIdent) String() string {
-	atStr := ""
-	for i := NoAt; i < node.At; i++ {
-		atStr += "@"
-	}
-	return atStr + node.Val
 }
 
 // CompliantName returns a compliant id name
@@ -1520,6 +1509,34 @@ func (ty IntervalTypes) ToString() string {
 }
 
 // ToString returns the type as a string
+func (sel CopyFromType) ToString() string {
+	switch sel {
+	case CopyFromFile:
+		return CopyFromFileStr
+	case CopyFromProgram:
+		return CopyFromProgramStr
+	case CopyFromStdin:
+		return CopyFromStdinStr
+	default:
+		return "Unknown Copy From Type"
+	}
+}
+
+// ToString returns the type as a string
+func (sel CopyToType) ToString() string {
+	switch sel {
+	case CopyToFile:
+		return CopyToFileStr
+	case CopyToProgram:
+		return CopyToProgramStr
+	case CopyToStdout:
+		return CopyToStdoutStr
+	default:
+		return "Unknown Copy To Type"
+	}
+}
+
+// ToString returns the type as a string
 func (sel SelectIntoType) ToString() string {
 	switch sel {
 	case IntoOutfile:
@@ -1543,7 +1560,45 @@ func (node DatabaseOptionType) ToString() string {
 	case EncryptionType:
 		return EncryptionStr
 	default:
-		return "Unknown DatabaseOptionType Type"
+		return "Unknown Database Option Type"
+	}
+}
+
+// ToString returns the type as a string
+func (node CopyOptionType) ToString() string {
+	switch node {
+	case CopyOptionFormat:
+		return "format"
+	case CopyOptionFreeze:
+		return "freeze"
+	case CopyOptionDelimiter:
+		return "delimiter"
+	case CopyOptionNull:
+		return "null"
+	case CopyOptionDefault:
+		return "default"
+	case CopyOptionHeader:
+		return "header"
+	case CopyOptionHeaderMatch:
+		return "header match"
+	case CopyOptionQuote:
+		return "quote"
+	case CopyOptionEscape:
+		return "escape"
+	case CopyOptionForceQuote:
+		return "force_quote"
+	case CopyOptionForceNotNull:
+		return "force_not_null"
+	case CopyOptionForceNull:
+		return "force_null"
+	case CopyOptionOnError:
+		return "on_error"
+	case CopyOptionEncoding:
+		return "encoding"
+	case CopyOptionHeaderLogVerbosity:
+		return "log_verbosity"
+	default:
+		return "Unknown Copy Option Type"
 	}
 }
 
@@ -1957,4 +2012,20 @@ func IntRef(number string) *int {
 		return nil
 	}
 	return &res
+}
+
+func Map[T, U any](seq []T, mapFunc func(T) U) []U {
+	return slices.Collect(func(yield func(U) bool) {
+		for _, a := range seq {
+			if !yield(mapFunc(a)) {
+				return
+			}
+		}
+	})
+}
+
+func ForEvery[T any](seq []T, execFunc func(T)) {
+	for _, a := range seq {
+		execFunc(a)
+	}
 }

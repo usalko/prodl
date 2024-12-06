@@ -53,88 +53,88 @@ type PsqlTokenizer struct {
 }
 
 // SetSkipSpecialComments implements tokenizer.Tokenizer.
-func (tkn *PsqlTokenizer) SetSkipSpecialComments(skip bool) {
-	tkn.SkipSpecialComments = skip
+func (tzr *PsqlTokenizer) SetSkipSpecialComments(skip bool) {
+	tzr.SkipSpecialComments = skip
 }
 
 // GetBindVars implements tokenizer.Tokenizer.
-func (tkn *PsqlTokenizer) GetBindVars() ast.BindVars {
-	return tkn.BindVars
+func (tzr *PsqlTokenizer) GetBindVars() ast.BindVars {
+	return tzr.BindVars
 }
 
 // GetLastError implements tokenizer.Tokenizer.
-func (tkn *PsqlTokenizer) GetLastError() error {
-	return tkn.LastError
+func (tzr *PsqlTokenizer) GetLastError() error {
+	return tzr.LastError
 }
 
 // GetPos implements tokenizer.Tokenizer.
-func (tkn *PsqlTokenizer) GetPos() int {
-	return tkn.Pos
+func (tzr *PsqlTokenizer) GetPos() int {
+	return tzr.Pos
 }
 
 // SetMulti implements tokenizer.Tokenizer.
-func (tkn *PsqlTokenizer) SetMulti(multi bool) {
-	tkn.multi = multi
+func (tzr *PsqlTokenizer) SetMulti(multi bool) {
+	tzr.multi = multi
 }
 
 // GetIdToken implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) GetIdToken() int {
+func (tzr *PsqlTokenizer) GetIdToken() int {
 	return ID
 }
 
 // GetKeywordString implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) GetKeywordString(token int) string {
+func (tzr *PsqlTokenizer) GetKeywordString(token int) string {
 	return KeywordString(token)
 }
 
 // GetParseTree implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) GetParseTree() ast.Statement {
-	return tkn.ParseTree
+func (tzr *PsqlTokenizer) GetParseTree() ast.Statement {
+	return tzr.ParseTree
 }
 
 // GetPartialDDL implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) GetPartialDDL() ast.Statement {
-	return tkn.partialDDL
+func (tzr *PsqlTokenizer) GetPartialDDL() ast.Statement {
+	return tzr.partialDDL
 }
 
 // BindVar implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) BindVar(bvar string, value struct{}) {
-	tkn.BindVars[bvar] = value
+func (tzr *PsqlTokenizer) BindVar(bvar string, value struct{}) {
+	tzr.BindVars[bvar] = value
 }
 
 // DecNesting implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) DecNesting() {
-	tkn.nesting--
+func (tzr *PsqlTokenizer) DecNesting() {
+	tzr.nesting--
 }
 
 // GetNesting implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) GetNesting() int {
-	return tkn.nesting
+func (tzr *PsqlTokenizer) GetNesting() int {
+	return tzr.nesting
 }
 
 // IncNesting implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) IncNesting() {
-	tkn.nesting++
+func (tzr *PsqlTokenizer) IncNesting() {
+	tzr.nesting++
 }
 
 // SetAllowComments implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) SetAllowComments(allow bool) {
-	tkn.AllowComments = allow
+func (tzr *PsqlTokenizer) SetAllowComments(allow bool) {
+	tzr.AllowComments = allow
 }
 
 // SetParseTree implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) SetParseTree(stmt ast.Statement) {
-	tkn.ParseTree = stmt
+func (tzr *PsqlTokenizer) SetParseTree(stmt ast.Statement) {
+	tzr.ParseTree = stmt
 }
 
 // SetPartialDDL implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) SetPartialDDL(node ast.Statement) {
-	tkn.partialDDL = node
+func (tzr *PsqlTokenizer) SetPartialDDL(node ast.Statement) {
+	tzr.partialDDL = node
 }
 
 // SetSkipToEnd implements sql_parser.Tokenizer.
-func (tkn *PsqlTokenizer) SetSkipToEnd(skip bool) {
-	tkn.SkipToEnd = skip
+func (tzr *PsqlTokenizer) SetSkipToEnd(skip bool) {
+	tzr.SkipToEnd = skip
 }
 
 // parserPool is a pool for parser objects.
@@ -185,27 +185,31 @@ func NewPsqlStringTokenizer(sql string) *PsqlTokenizer {
 
 // Lex returns the next token form the Tokenizer.
 // This function is used by go yacc.
-func (tkn *PsqlTokenizer) Lex(lval *psqSymType) int {
-	if tkn.SkipToEnd {
-		return tkn.skipStatement()
+func (tzr *PsqlTokenizer) Lex(lval *psqSymType) int {
+	if tzr.SkipToEnd {
+		return tzr.skipStatement()
 	}
 
-	typ, val := tkn.Scan()
+	typ, val := tzr.Scan()
 	for typ == COMMENT {
-		if tkn.AllowComments || val == "COMMENT" {
+		if tzr.AllowComments || val == "COMMENT" {
 			break
 		}
-		typ, val = tkn.Scan()
+		typ, val = tzr.Scan()
+	}
+	if typ == ';' && lval.str == "stdin" {
+		tzr.SkipToEnd = true
+		return 0
 	}
 	if typ == 0 || typ == ';' || typ == LEX_ERROR {
 		// If encounter end of statement or invalid token,
 		// we should not accept partially parsed DDLs. They
 		// should instead result in parser errors. See the
 		// Parse function to see how this is handled.
-		tkn.partialDDL = nil
+		tzr.partialDDL = nil
 	}
 	lval.str = val
-	tkn.lastToken = val
+	tzr.lastToken = val
 	return typ
 }
 
@@ -224,47 +228,47 @@ func (p PositionedErr) Error() string {
 }
 
 // Error is called by go yacc if there's a parsing error.
-func (tkn *PsqlTokenizer) Error(err string) {
-	tkn.LastError = PositionedErr{Err: err, Pos: tkn.Pos + 1, Near: tkn.lastToken}
+func (tzr *PsqlTokenizer) Error(err string) {
+	tzr.LastError = PositionedErr{Err: err, Pos: tzr.Pos + 1, Near: tzr.lastToken}
 
 	// Try and re-sync to the next statement
-	tkn.skipStatement()
+	tzr.skipStatement()
 }
 
 // Scan scans the tokenizer for the next token and returns
 // the token type and an optional value.
-func (tkn *PsqlTokenizer) Scan() (int, string) {
-	if tkn.specialComment != nil {
+func (tzr *PsqlTokenizer) Scan() (int, string) {
+	if tzr.specialComment != nil {
 		// Enter specialComment scan mode.
 		// for scanning such kind of comment: /*! PSQL-specific code */
-		specialComment := tkn.specialComment
+		specialComment := tzr.specialComment
 		tok, val := specialComment.Scan()
 		if tok != 0 {
 			// return the specialComment scan result as the result
 			return tok, val
 		}
 		// leave specialComment scan mode after all stream consumed.
-		tkn.specialComment = nil
+		tzr.specialComment = nil
 	}
 
-	tkn.SkipBlank()
-	switch ch := tkn.Cur(); {
+	tzr.SkipBlank()
+	switch ch := tzr.Cur(); {
 	case ch == '@':
 		tokenID := AT_ID
-		tkn.Skip(1)
-		if tkn.Cur() == '@' {
+		tzr.Skip(1)
+		if tzr.Cur() == '@' {
 			tokenID = AT_AT_ID
-			tkn.Skip(1)
+			tzr.Skip(1)
 		}
 		var tID int
 		var tBytes string
-		if tkn.Cur() == '`' {
-			tkn.Skip(1)
-			tID, tBytes = tkn.scanLiteralIdentifier()
-		} else if tkn.Cur() == tokenizer.EofChar {
+		if tzr.Cur() == '`' {
+			tzr.Skip(1)
+			tID, tBytes = tzr.scanLiteralIdentifier()
+		} else if tzr.Cur() == tokenizer.EofChar {
 			return LEX_ERROR, ""
 		} else {
-			tID, tBytes = tkn.scanIdentifier(true)
+			tID, tBytes = tzr.scanIdentifier(true)
 		}
 		if tID == LEX_ERROR {
 			return tID, ""
@@ -272,117 +276,117 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 		return tokenID, tBytes
 	case isLetter(ch):
 		if ch == 'X' || ch == 'x' {
-			if tkn.Peek(1) == '\'' {
-				tkn.Skip(2)
-				return tkn.scanHex()
+			if tzr.Peek(1) == '\'' {
+				tzr.Skip(2)
+				return tzr.scanHex()
 			}
 		}
 		if ch == 'B' || ch == 'b' {
-			if tkn.Peek(1) == '\'' {
-				tkn.Skip(2)
-				return tkn.scanBitLiteral()
+			if tzr.Peek(1) == '\'' {
+				tzr.Skip(2)
+				return tzr.scanBitLiteral()
 			}
 		}
 		// N\'literal' is used to create a string in the national character set
 		if ch == 'N' || ch == 'n' {
-			nxt := tkn.Peek(1)
+			nxt := tzr.Peek(1)
 			if nxt == '\'' || nxt == '"' {
-				tkn.Skip(2)
-				return tkn.scanString(nxt, NCHAR_STRING)
+				tzr.Skip(2)
+				return tzr.scanString(nxt, NCHAR_STRING)
 			}
 		}
-		return tkn.scanIdentifier(false)
+		return tzr.scanIdentifier(false)
 	case isDigit(ch):
-		return tkn.scanNumber()
+		return tzr.scanNumber()
 	case ch == ':':
-		return tkn.scanBindVar()
+		return tzr.scanBindVar()
 	case ch == ';':
-		if tkn.multi {
+		if tzr.multi {
 			// In multi mode, ';' is treated as EOF. So, we don't advance.
 			// Repeated calls to Scan will keep returning 0 until ParseNext
 			// forces the advance.
 			return 0, ""
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 		return ';', ""
 	case ch == tokenizer.EofChar:
 		return 0, ""
 	default:
-		if ch == '.' && isDigit(tkn.Peek(1)) {
-			return tkn.scanNumber()
+		if ch == '.' && isDigit(tzr.Peek(1)) {
+			return tzr.scanNumber()
 		}
 
-		tkn.Skip(1)
+		tzr.Skip(1)
 		switch ch {
 		case '=', ',', '(', ')', '+', '*', '%', '^', '~':
 			return int(ch), ""
 		case '&':
-			if tkn.Cur() == '&' {
-				tkn.Skip(1)
+			if tzr.Cur() == '&' {
+				tzr.Skip(1)
 				return AND, ""
 			}
 			return int(ch), ""
 		case '|':
-			if tkn.Cur() == '|' {
-				tkn.Skip(1)
+			if tzr.Cur() == '|' {
+				tzr.Skip(1)
 				return OR, ""
 			}
 			return int(ch), ""
 		case '?':
-			tkn.posVarIndex++
+			tzr.posVarIndex++
 			buf := make([]byte, 0, 8)
 			buf = append(buf, ":v"...)
-			buf = strconv.AppendInt(buf, int64(tkn.posVarIndex), 10)
+			buf = strconv.AppendInt(buf, int64(tzr.posVarIndex), 10)
 			return VALUE_ARG, string(buf)
 		case '.':
 			return int(ch), ""
 		case '/':
-			switch tkn.Cur() {
+			switch tzr.Cur() {
 			case '/':
-				tkn.Skip(1)
-				return tkn.scanCommentType1(2)
+				tzr.Skip(1)
+				return tzr.scanCommentType1(2)
 			case '*':
-				tkn.Skip(1)
-				if tkn.Cur() == '!' && !tkn.SkipSpecialComments {
-					tkn.Skip(1)
-					return tkn.scanPSQLSpecificComment()
+				tzr.Skip(1)
+				if tzr.Cur() == '!' && !tzr.SkipSpecialComments {
+					tzr.Skip(1)
+					return tzr.scanPSQLSpecificComment()
 				}
-				return tkn.scanCommentType2()
+				return tzr.scanCommentType2()
 			default:
 				return int(ch), ""
 			}
 		case '#':
-			return tkn.scanCommentType1(1)
+			return tzr.scanCommentType1(1)
 		case '-':
-			switch tkn.Cur() {
+			switch tzr.Cur() {
 			case '-':
-				nextChar := tkn.Peek(1)
+				nextChar := tzr.Peek(1)
 				if nextChar == ' ' || nextChar == '\n' || nextChar == '\t' || nextChar == '\r' || nextChar == tokenizer.EofChar {
-					tkn.Skip(1)
-					return tkn.scanCommentType1(2)
+					tzr.Skip(1)
+					return tzr.scanCommentType1(2)
 				}
 			case '>':
-				tkn.Skip(1)
-				if tkn.Cur() == '>' {
-					tkn.Skip(1)
+				tzr.Skip(1)
+				if tzr.Cur() == '>' {
+					tzr.Skip(1)
 					return JSON_UNQUOTE_EXTRACT_OP, ""
 				}
 				return JSON_EXTRACT_OP, ""
 			}
 			return int(ch), ""
 		case '<':
-			switch tkn.Cur() {
+			switch tzr.Cur() {
 			case '>':
-				tkn.Skip(1)
+				tzr.Skip(1)
 				return NE, ""
 			case '<':
-				tkn.Skip(1)
+				tzr.Skip(1)
 				return SHIFT_LEFT, ""
 			case '=':
-				tkn.Skip(1)
-				switch tkn.Cur() {
+				tzr.Skip(1)
+				switch tzr.Cur() {
 				case '>':
-					tkn.Skip(1)
+					tzr.Skip(1)
 					return NULL_SAFE_EQUAL, ""
 				default:
 					return LE, ""
@@ -391,26 +395,26 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 				return int(ch), ""
 			}
 		case '>':
-			switch tkn.Cur() {
+			switch tzr.Cur() {
 			case '=':
-				tkn.Skip(1)
+				tzr.Skip(1)
 				return GE, ""
 			case '>':
-				tkn.Skip(1)
+				tzr.Skip(1)
 				return SHIFT_RIGHT, ""
 			default:
 				return int(ch), ""
 			}
 		case '!':
-			if tkn.Cur() == '=' {
-				tkn.Skip(1)
+			if tzr.Cur() == '=' {
+				tzr.Skip(1)
 				return NE, ""
 			}
 			return int(ch), ""
 		case '\'', '"':
-			return tkn.scanString(ch, STRING)
+			return tzr.scanString(ch, STRING)
 		case '`':
-			return tkn.scanLiteralIdentifier()
+			return tzr.scanLiteralIdentifier()
 		default:
 			return LEX_ERROR, string(byte(ch))
 		}
@@ -418,10 +422,10 @@ func (tkn *PsqlTokenizer) Scan() (int, string) {
 }
 
 // skipStatement scans until end of statement.
-func (tkn *PsqlTokenizer) skipStatement() int {
-	tkn.SkipToEnd = false
+func (tzr *PsqlTokenizer) skipStatement() int {
+	tzr.SkipToEnd = false
 	for {
-		typ, _ := tkn.Scan()
+		typ, _ := tzr.Scan()
 		if typ == 0 || typ == ';' || typ == LEX_ERROR {
 			return typ
 		}
@@ -429,27 +433,27 @@ func (tkn *PsqlTokenizer) skipStatement() int {
 }
 
 // SkipBlank skips the cursor while it finds whitespace
-func (tkn *PsqlTokenizer) SkipBlank() {
-	ch := tkn.Cur()
+func (tzr *PsqlTokenizer) SkipBlank() {
+	ch := tzr.Cur()
 	for ch == ' ' || ch == '\n' || ch == '\r' || ch == '\t' {
-		tkn.Skip(1)
-		ch = tkn.Cur()
+		tzr.Skip(1)
+		ch = tzr.Cur()
 	}
 }
 
 // scanIdentifier scans a language keyword or @-encased variable
-func (tkn *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
-	start := tkn.Pos
-	tkn.Skip(1)
+func (tzr *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
+	start := tzr.Pos
+	tzr.Skip(1)
 
 	for {
-		ch := tkn.Cur()
+		ch := tzr.Cur()
 		if !isLetter(ch) && !isDigit(ch) && !(isVariable && isCarat(ch)) {
 			break
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
-	keywordName := tkn.buf[start:tkn.Pos]
+	keywordName := tzr.buf[start:tzr.Pos]
 	if keywordID, found := cache.KeywordLookup(keywordName, dialect.PSQL); found {
 		return keywordID, keywordName
 	}
@@ -461,14 +465,14 @@ func (tkn *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 }
 
 // scanHex scans a hex numeral; assumes x' or X' has already been scanned
-func (tkn *PsqlTokenizer) scanHex() (int, string) {
-	start := tkn.Pos
-	tkn.scanMantissa(16)
-	hex := tkn.buf[start:tkn.Pos]
-	if tkn.Cur() != '\'' {
+func (tzr *PsqlTokenizer) scanHex() (int, string) {
+	start := tzr.Pos
+	tzr.scanMantissa(16)
+	hex := tzr.buf[start:tzr.Pos]
+	if tzr.Cur() != '\'' {
 		return LEX_ERROR, hex
 	}
-	tkn.Skip(1)
+	tzr.Skip(1)
 	if len(hex)%2 != 0 {
 		return LEX_ERROR, hex
 	}
@@ -476,14 +480,14 @@ func (tkn *PsqlTokenizer) scanHex() (int, string) {
 }
 
 // scanBitLiteral scans a binary numeric literal; assumes b' or B' has already been scanned
-func (tkn *PsqlTokenizer) scanBitLiteral() (int, string) {
-	start := tkn.Pos
-	tkn.scanMantissa(2)
-	bit := tkn.buf[start:tkn.Pos]
-	if tkn.Cur() != '\'' {
+func (tzr *PsqlTokenizer) scanBitLiteral() (int, string) {
+	start := tzr.Pos
+	tzr.scanMantissa(2)
+	bit := tzr.buf[start:tzr.Pos]
+	if tzr.Cur() != '\'' {
 		return LEX_ERROR, bit
 	}
-	tkn.Skip(1)
+	tzr.Skip(1)
 	return BIT_LITERAL, bit
 }
 
@@ -492,30 +496,30 @@ func (tkn *PsqlTokenizer) scanBitLiteral() (int, string) {
 // scanLiteralIdentifier once the first escape sequence is found in the identifier.
 // The provided `buf` contains the contents of the identifier that have been scanned
 // so far.
-func (tkn *PsqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, string) {
+func (tzr *PsqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, string) {
 	backTickSeen := true
 	for {
 		if backTickSeen {
-			if tkn.Cur() != '`' {
+			if tzr.Cur() != '`' {
 				break
 			}
 			backTickSeen = false
 			buf.WriteByte('`')
-			tkn.Skip(1)
+			tzr.Skip(1)
 			continue
 		}
 		// The previous char was not a backtick.
-		switch tkn.Cur() {
+		switch tzr.Cur() {
 		case '`':
 			backTickSeen = true
 		case tokenizer.EofChar:
 			// Premature EOF.
 			return LEX_ERROR, buf.String()
 		default:
-			buf.WriteByte(byte(tkn.Cur()))
+			buf.WriteByte(byte(tzr.Cur()))
 			// keep scanning
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
 	return ID, buf.String()
 }
@@ -523,160 +527,160 @@ func (tkn *PsqlTokenizer) scanLiteralIdentifierSlow(buf *strings.Builder) (int, 
 // scanLiteralIdentifier scans an identifier enclosed by backticks. If the identifier
 // is a simple literal, it'll be returned as a slice of the input buffer. If the identifier
 // contains escape sequences, this function will fall back to scanLiteralIdentifierSlow
-func (tkn *PsqlTokenizer) scanLiteralIdentifier() (int, string) {
-	start := tkn.Pos
+func (tzr *PsqlTokenizer) scanLiteralIdentifier() (int, string) {
+	start := tzr.Pos
 	for {
-		switch tkn.Cur() {
+		switch tzr.Cur() {
 		case '`':
-			if tkn.Peek(1) != '`' {
-				if tkn.Pos == start {
+			if tzr.Peek(1) != '`' {
+				if tzr.Pos == start {
 					return LEX_ERROR, ""
 				}
-				tkn.Skip(1)
-				return ID, tkn.buf[start : tkn.Pos-1]
+				tzr.Skip(1)
+				return ID, tzr.buf[start : tzr.Pos-1]
 			}
 
 			var buf strings.Builder
-			buf.WriteString(tkn.buf[start:tkn.Pos])
-			tkn.Skip(1)
-			return tkn.scanLiteralIdentifierSlow(&buf)
+			buf.WriteString(tzr.buf[start:tzr.Pos])
+			tzr.Skip(1)
+			return tzr.scanLiteralIdentifierSlow(&buf)
 		case tokenizer.EofChar:
 			// Premature EOF.
-			return LEX_ERROR, tkn.buf[start:tkn.Pos]
+			return LEX_ERROR, tzr.buf[start:tzr.Pos]
 		default:
-			tkn.Skip(1)
+			tzr.Skip(1)
 		}
 	}
 }
 
 // scanBindVar scans a bind variable; assumes a ':' has been scanned right before
-func (tkn *PsqlTokenizer) scanBindVar() (int, string) {
-	start := tkn.Pos
+func (tzr *PsqlTokenizer) scanBindVar() (int, string) {
+	start := tzr.Pos
 	token := VALUE_ARG
 
-	tkn.Skip(1)
-	if tkn.Cur() == ':' {
+	tzr.Skip(1)
+	if tzr.Cur() == ':' {
 		token = LIST_ARG
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
-	if !isLetter(tkn.Cur()) {
-		return LEX_ERROR, tkn.buf[start:tkn.Pos]
+	if !isLetter(tzr.Cur()) {
+		return LEX_ERROR, tzr.buf[start:tzr.Pos]
 	}
 	for {
-		ch := tkn.Cur()
+		ch := tzr.Cur()
 		if !isLetter(ch) && !isDigit(ch) && ch != '.' {
 			break
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
-	return token, tkn.buf[start:tkn.Pos]
+	return token, tzr.buf[start:tzr.Pos]
 }
 
 // scanMantissa scans a sequence of numeric characters with the same base.
 // This is a helper function only called from the numeric scanners
-func (tkn *PsqlTokenizer) scanMantissa(base int) {
-	for digitVal(tkn.Cur()) < base {
-		tkn.Skip(1)
+func (tzr *PsqlTokenizer) scanMantissa(base int) {
+	for digitVal(tzr.Cur()) < base {
+		tzr.Skip(1)
 	}
 }
 
 // scanNumber scans any SQL numeric literal, either floating point or integer
-func (tkn *PsqlTokenizer) scanNumber() (int, string) {
-	start := tkn.Pos
+func (tzr *PsqlTokenizer) scanNumber() (int, string) {
+	start := tzr.Pos
 	token := INTEGRAL
 
-	if tkn.Cur() == '.' {
+	if tzr.Cur() == '.' {
 		token = DECIMAL
-		tkn.Skip(1)
-		tkn.scanMantissa(10)
+		tzr.Skip(1)
+		tzr.scanMantissa(10)
 		goto exponent
 	}
 
 	// 0x construct.
-	if tkn.Cur() == '0' {
-		tkn.Skip(1)
-		if tkn.Cur() == 'x' || tkn.Cur() == 'X' {
+	if tzr.Cur() == '0' {
+		tzr.Skip(1)
+		if tzr.Cur() == 'x' || tzr.Cur() == 'X' {
 			token = HEXNUM
-			tkn.Skip(1)
-			tkn.scanMantissa(16)
+			tzr.Skip(1)
+			tzr.scanMantissa(16)
 			goto exit
 		}
 	}
 
-	tkn.scanMantissa(10)
+	tzr.scanMantissa(10)
 
-	if tkn.Cur() == '.' {
+	if tzr.Cur() == '.' {
 		token = DECIMAL
-		tkn.Skip(1)
-		tkn.scanMantissa(10)
+		tzr.Skip(1)
+		tzr.scanMantissa(10)
 	}
 
 exponent:
-	if tkn.Cur() == 'e' || tkn.Cur() == 'E' {
+	if tzr.Cur() == 'e' || tzr.Cur() == 'E' {
 		token = FLOAT
-		tkn.Skip(1)
-		if tkn.Cur() == '+' || tkn.Cur() == '-' {
-			tkn.Skip(1)
+		tzr.Skip(1)
+		if tzr.Cur() == '+' || tzr.Cur() == '-' {
+			tzr.Skip(1)
 		}
-		tkn.scanMantissa(10)
+		tzr.scanMantissa(10)
 	}
 
 exit:
-	if isLetter(tkn.Cur()) {
+	if isLetter(tzr.Cur()) {
 		// A letter cannot immediately follow a float number.
 		if token == FLOAT || token == DECIMAL {
-			return LEX_ERROR, tkn.buf[start:tkn.Pos]
+			return LEX_ERROR, tzr.buf[start:tzr.Pos]
 		}
 		// A letter seen after a few numbers means that we should parse this
 		// as an identifier and not a number.
 		for {
-			ch := tkn.Cur()
+			ch := tzr.Cur()
 			if !isLetter(ch) && !isDigit(ch) {
 				break
 			}
-			tkn.Skip(1)
+			tzr.Skip(1)
 		}
-		return ID, tkn.buf[start:tkn.Pos]
+		return ID, tzr.buf[start:tzr.Pos]
 	}
 
-	return token, tkn.buf[start:tkn.Pos]
+	return token, tzr.buf[start:tzr.Pos]
 }
 
 // scanString scans a string surrounded by the given `delim`, which can be
 // either single or double quotes. Assumes that the given delimiter has just
 // been scanned. If the skin contains any escape sequences, this function
 // will fall back to scanStringSlow
-func (tkn *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
-	start := tkn.Pos
+func (tzr *PsqlTokenizer) scanString(delim uint16, typ int) (int, string) {
+	start := tzr.Pos
 
 	for {
-		switch tkn.Cur() {
+		switch tzr.Cur() {
 		case delim:
-			if tkn.Peek(1) != delim {
-				tkn.Skip(1)
-				return typ, tkn.buf[start : tkn.Pos-1]
+			if tzr.Peek(1) != delim {
+				tzr.Skip(1)
+				return typ, tzr.buf[start : tzr.Pos-1]
 			}
 			fallthrough
 
 		case '\\':
 			var buffer strings.Builder
-			buffer.WriteString(tkn.buf[start:tkn.Pos])
-			return tkn.scanStringSlow(&buffer, delim, typ)
+			buffer.WriteString(tzr.buf[start:tzr.Pos])
+			return tzr.scanStringSlow(&buffer, delim, typ)
 
 		case tokenizer.EofChar:
-			return LEX_ERROR, tkn.buf[start:tkn.Pos]
+			return LEX_ERROR, tzr.buf[start:tzr.Pos]
 		}
 
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
 }
 
 // scanString scans a string surrounded by the given `delim` and containing escape
 // sequencse. The given `buffer` contains the contents of the string that have
 // been scanned so far.
-func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
+func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, typ int) (int, string) {
 	for {
-		ch := tkn.Cur()
+		ch := tzr.Cur()
 		if ch == tokenizer.EofChar {
 			// Unterminated string.
 			return LEX_ERROR, buffer.String()
@@ -684,41 +688,41 @@ func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 
 		if ch != delim && ch != '\\' {
 			// Scan ahead to the next interesting character.
-			start := tkn.Pos
-			for ; tkn.Pos < len(tkn.buf); tkn.Pos++ {
-				ch = uint16(tkn.buf[tkn.Pos])
+			start := tzr.Pos
+			for ; tzr.Pos < len(tzr.buf); tzr.Pos++ {
+				ch = uint16(tzr.buf[tzr.Pos])
 				if ch == delim || ch == '\\' {
 					break
 				}
 			}
 
-			buffer.WriteString(tkn.buf[start:tkn.Pos])
-			if tkn.Pos >= len(tkn.buf) {
+			buffer.WriteString(tzr.buf[start:tzr.Pos])
+			if tzr.Pos >= len(tzr.buf) {
 				// Reached the end of the buffer without finding a delim or
 				// escape character.
-				tkn.Skip(1)
+				tzr.Skip(1)
 				continue
 			}
 		}
-		tkn.Skip(1) // Read one past the delim or escape character.
+		tzr.Skip(1) // Read one past the delim or escape character.
 
 		if ch == '\\' {
-			if tkn.Cur() == tokenizer.EofChar {
+			if tzr.Cur() == tokenizer.EofChar {
 				// String terminates mid escape character.
 				return LEX_ERROR, buffer.String()
 			}
-			if decodedChar := sql_types.SQLDecodeMap[byte(tkn.Cur())]; decodedChar == sql_types.DontEscape {
-				ch = tkn.Cur()
+			if decodedChar := sql_types.SQLDecodeMap[byte(tzr.Cur())]; decodedChar == sql_types.DontEscape {
+				ch = tzr.Cur()
 			} else {
 				ch = uint16(decodedChar)
 			}
-		} else if ch == delim && tkn.Cur() != delim {
+		} else if ch == delim && tzr.Cur() != delim {
 			// Correctly terminated string, which is not a double delim.
 			break
 		}
 
 		buffer.WriteByte(byte(ch))
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
 
 	return typ, buffer.String()
@@ -727,90 +731,90 @@ func (tkn *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim uint16, 
 // scanCommentType1 scans a SQL line-comment, which is applied until the end
 // of the line. The given prefix length varies based on whether the comment
 // is started with '//', '--' or '#'.
-func (tkn *PsqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
-	start := tkn.Pos - prefixLen
-	for tkn.Cur() != tokenizer.EofChar {
-		if tkn.Cur() == '\n' {
-			tkn.Skip(1)
+func (tzr *PsqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
+	start := tzr.Pos - prefixLen
+	for tzr.Cur() != tokenizer.EofChar {
+		if tzr.Cur() == '\n' {
+			tzr.Skip(1)
 			break
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
-	return COMMENT, tkn.buf[start:tkn.Pos]
+	return COMMENT, tzr.buf[start:tzr.Pos]
 }
 
 // scanCommentType2 scans a '/*' delimited comment; assumes the opening
 // prefix has already been scanned
-func (tkn *PsqlTokenizer) scanCommentType2() (int, string) {
-	start := tkn.Pos - 2
+func (tzr *PsqlTokenizer) scanCommentType2() (int, string) {
+	start := tzr.Pos - 2
 	for {
-		if tkn.Cur() == '*' {
-			tkn.Skip(1)
-			if tkn.Cur() == '/' {
-				tkn.Skip(1)
+		if tzr.Cur() == '*' {
+			tzr.Skip(1)
+			if tzr.Cur() == '/' {
+				tzr.Skip(1)
 				break
 			}
 			continue
 		}
-		if tkn.Cur() == tokenizer.EofChar {
-			return LEX_ERROR, tkn.buf[start:tkn.Pos]
+		if tzr.Cur() == tokenizer.EofChar {
+			return LEX_ERROR, tzr.buf[start:tzr.Pos]
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
-	return COMMENT, tkn.buf[start:tkn.Pos]
+	return COMMENT, tzr.buf[start:tzr.Pos]
 }
 
 // scanPSQLSpecificComment scans a PSQL comment pragma, which always starts with '//*`
-func (tkn *PsqlTokenizer) scanPSQLSpecificComment() (int, string) {
-	start := tkn.Pos - 3
+func (tzr *PsqlTokenizer) scanPSQLSpecificComment() (int, string) {
+	start := tzr.Pos - 3
 	for {
-		if tkn.Cur() == '*' {
-			tkn.Skip(1)
-			if tkn.Cur() == '/' {
-				tkn.Skip(1)
+		if tzr.Cur() == '*' {
+			tzr.Skip(1)
+			if tzr.Cur() == '/' {
+				tzr.Skip(1)
 				break
 			}
 			continue
 		}
-		if tkn.Cur() == tokenizer.EofChar {
-			return LEX_ERROR, tkn.buf[start:tkn.Pos]
+		if tzr.Cur() == tokenizer.EofChar {
+			return LEX_ERROR, tzr.buf[start:tzr.Pos]
 		}
-		tkn.Skip(1)
+		tzr.Skip(1)
 	}
 
-	commentVersion, sql := ExtractPsqlComment(tkn.buf[start:tkn.Pos])
+	commentVersion, sql := ExtractPsqlComment(tzr.buf[start:tzr.Pos])
 
 	if "1" >= commentVersion {
 		// Only add the special comment to the tokenizer if the version of PSQL is higher or equal to the comment version
-		tkn.specialComment = NewPsqlStringTokenizer(sql)
+		tzr.specialComment = NewPsqlStringTokenizer(sql)
 	}
 
-	return tkn.Scan()
+	return tzr.Scan()
 }
 
-func (tkn *PsqlTokenizer) Cur() uint16 {
-	return tkn.Peek(0)
+func (tzr *PsqlTokenizer) Cur() uint16 {
+	return tzr.Peek(0)
 }
 
-func (tkn *PsqlTokenizer) Skip(dist int) {
-	tkn.Pos += dist
+func (tzr *PsqlTokenizer) Skip(dist int) {
+	tzr.Pos += dist
 }
 
-func (tkn *PsqlTokenizer) Peek(dist int) uint16 {
-	if tkn.Pos+dist >= len(tkn.buf) {
+func (tzr *PsqlTokenizer) Peek(dist int) uint16 {
+	if tzr.Pos+dist >= len(tzr.buf) {
 		return tokenizer.EofChar
 	}
-	return uint16(tkn.buf[tkn.Pos+dist])
+	return uint16(tzr.buf[tzr.Pos+dist])
 }
 
 // Reset clears any internal state.
-func (tkn *PsqlTokenizer) Reset() {
-	tkn.ParseTree = nil
-	tkn.partialDDL = nil
-	tkn.specialComment = nil
-	tkn.posVarIndex = 0
-	tkn.nesting = 0
-	tkn.SkipToEnd = false
+func (tzr *PsqlTokenizer) Reset() {
+	tzr.ParseTree = nil
+	tzr.partialDDL = nil
+	tzr.specialComment = nil
+	tzr.posVarIndex = 0
+	tzr.nesting = 0
+	tzr.SkipToEnd = false
 }
 
 func isLetter(ch uint16) bool {

@@ -24,6 +24,10 @@ import (
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
+const (
+	EOD_MARKER = "\\."
+)
+
 // keywords is a table of psql keywords that fall into two categories:
 // 1) keywords considered reserved by PostgresQL
 // 2) keywords for us to handle specially in psql.y
@@ -188,6 +192,9 @@ var keywords = []cache.Keyword{
 	{Name: "following", Id: FOLLOWING},
 	{Name: "for", Id: FOR},
 	{Name: "force", Id: FORCE},
+	{Name: "force_quote", Id: FORCE_QUOTE},
+	{Name: "force_not_null", Id: FORCE_NOT_NULL},
+	{Name: "force_null", Id: FORCE_NULL},
 	{Name: "foreign", Id: FOREIGN},
 	{Name: "format", Id: FORMAT},
 	{Name: "forward", Id: FORWARD},
@@ -278,6 +285,7 @@ var keywords = []cache.Keyword{
 	{Name: "lock", Id: LOCK},
 	{Name: "locked", Id: LOCKED},
 	{Name: "logged", Id: LOGGED},
+	{Name: "log_verbosity", Id: LOG_VERBOSITY},
 	{Name: "mapping", Id: MAPPING},
 	{Name: "match", Id: MATCH},
 	{Name: "matched", Id: MATCHED},
@@ -324,6 +332,7 @@ var keywords = []cache.Keyword{
 	{Name: "old", Id: OLD},
 	{Name: "omit", Id: OMIT},
 	{Name: "on", Id: ON},
+	{Name: "on_error", Id: ON_ERROR},
 	{Name: "only", Id: ONLY},
 	{Name: "operator", Id: OPERATOR},
 	{Name: "option", Id: OPTION},
@@ -429,6 +438,7 @@ var keywords = []cache.Keyword{
 	{Name: "some", Id: SOME},
 	{Name: "source", Id: SOURCE},
 	{Name: "sql", Id: SQL},
+	{Name: "stop", Id: STOP},
 	{Name: "stable", Id: STABLE},
 	{Name: "standalone", Id: STANDALONE},
 	{Name: "start", Id: START},

@@ -221,6 +221,16 @@ const (
 	NaturalLanguageModeWithQueryExpansionStr = " in natural language mode with query expansion"
 	QueryExpansionStr                        = " with query expansion"
 
+	// COPY FROM
+	CopyFromFileStr    = " from "
+	CopyFromProgramStr = " from program "
+	CopyFromStdinStr   = " from stdin "
+
+	// COPY TO
+	CopyToFileStr    = " to "
+	CopyToProgramStr = " to program "
+	CopyToStdoutStr  = " to stdout "
+
 	// INTO OUTFILE
 	IntoOutfileStr   = " into outfile "
 	IntoOutfileS3Str = " into outfile s3 "
@@ -359,6 +369,23 @@ const (
 	SecondStr            = "second"
 	SecondMicrosecondStr = "second_microsecond"
 	YearMonthStr         = "year_month"
+
+	// CopyOptionTypes strings
+	CopyOptionFormatStr             = "format"
+	CopyOptionFreezeStr             = "freeze"
+	CopyOptionDelimiterStr          = "delimiter"
+	CopyOptionNullStr               = "null"
+	CopyOptionDefaultStr            = "default"
+	CopyOptionHeaderStr             = "header"
+	CopyOptionHeaderMatchStr        = "header match"
+	CopyOptionQuoteStr              = "quote"
+	CopyOptionEscapeStr             = "escape"
+	CopyOptionForceQuoteStr         = "force_quote"
+	CopyOptionForceNotNullStr       = "force_not_null"
+	CopyOptionForceNullStr          = "force_null"
+	CopyOptionOnErrorStr            = "on_error"
+	CopyOptionEncodingStr           = "encoding"
+	CopyOptionHeaderLogVerbosityStr = "log_verbosity"
 )
 
 // Constants for Enum type - AccessMode
@@ -598,6 +625,20 @@ const (
 	AnalyzeType
 )
 
+// Constant for Enum Type - CopyFromType
+const (
+	CopyFromFile CopyFromType = iota
+	CopyFromProgram
+	CopyFromStdin
+)
+
+// Constant for Enum Type - CopyToType
+const (
+	CopyToFile CopyToType = iota
+	CopyToProgram
+	CopyToStdout
+)
+
 // Constant for Enum Type - SelectIntoType
 const (
 	IntoOutfile SelectIntoType = iota
@@ -743,4 +784,23 @@ const (
 	IntervalHourMicrosecond
 	IntervalMinuteMicrosecond
 	IntervalSecondMicrosecond
+)
+
+// CopyOptionTypes constants
+const (
+	CopyOptionFormat CopyOptionType = iota
+	CopyOptionFreeze
+	CopyOptionDelimiter
+	CopyOptionNull
+	CopyOptionDefault
+	CopyOptionHeader
+	CopyOptionHeaderMatch
+	CopyOptionQuote
+	CopyOptionEscape
+	CopyOptionForceQuote
+	CopyOptionForceNotNull
+	CopyOptionForceNull
+	CopyOptionOnError
+	CopyOptionEncoding
+	CopyOptionHeaderLogVerbosity
 )

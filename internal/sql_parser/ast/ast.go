@@ -281,6 +281,44 @@ type (
 	// SelectIntoType is an enum for SelectInto.Type
 	SelectIntoType int8
 
+	// CopyFrom is a struct that represent the COPY command
+	CopyFrom struct {
+		Table    TableName
+		Columns  Columns
+		From     CopyFromSource
+		With     CopyOptions
+		Where    Expr
+		Comments *ParsedComments
+	}
+
+	// CopyFromType is an enum for CopyFrom.Type
+	CopyFromType int8
+
+	// CopyFromSource is a struct for store variable part of copy from type
+	CopyFromSource struct {
+		Type CopyFromType
+		V    string
+	}
+
+	// CopyTo is a struct that represent the COPY command
+	CopyTo struct {
+		Table    TableName
+		Columns  Columns
+		Query    SelectStatement
+		To       CopyToTarget
+		With     CopyOptions
+		Comments *ParsedComments
+	}
+
+	// CopyToType is an enum for CopyTo.Type
+	CopyToType int8
+
+	// CopyToTarget is a struct for store variable part of copy to target
+	CopyToTarget struct {
+		Type CopyToType
+		V    string
+	}
+
 	// Lock is an enum for the type of lock in the statement
 	Lock int8
 
@@ -425,6 +463,16 @@ type (
 		UpdateDataDirectory bool
 		AlterOptions        []DatabaseOption
 		FullyParsed         bool
+	}
+
+	// CopyOptionType is an enum for copy with options
+	CopyOptionType int8
+
+	// CopyOption is a struct that stores option value
+	CopyOption struct {
+		Type      CopyOptionType
+		IsDefault bool
+		Value     string
 	}
 
 	// Flush represents a FLUSH statement.
@@ -778,6 +826,8 @@ func (*PrepareStmt) iStatement()       {}
 func (*ExecuteStmt) iStatement()       {}
 func (*DeallocateStmt) iStatement()    {}
 func (*CommentOnSchema) iStatement()   {}
+func (*CopyFrom) iStatement()          {}
+func (*CopyTo) iStatement()            {}
 
 func (*CreateView) iDDLStatement()    {}
 func (*AlterView) iDDLStatement()     {}
@@ -2146,6 +2196,12 @@ type TableNames []TableName
 
 // SequenceNames is a list of SequenceName.
 type SequenceNames []SequenceName
+
+// ColIdentities is a list of Column identities.
+type ColIdentities []ColIdent
+
+// CopyOptions is a list of CopyOption
+type CopyOptions []CopyOption
 
 // JoinCondition represents the join conditions (either a ON or USING clause)
 // of a JoinTableExpr.
