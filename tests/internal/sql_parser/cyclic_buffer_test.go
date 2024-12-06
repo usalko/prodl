@@ -14,5 +14,16 @@ func TestCyclicBuffer(t *testing.T) {
 	var r rune = 'w'
 	fmt.Printf("%T\n", r)
 
-	tokenizer.NewCyclicBuffer(5)
+	text := "首映鼓掌10分鐘"
+	fmt.Printf("String (len: %d) element type is %T\n", len(text), text[1])
+	for _, r := range "string" {
+		fmt.Printf("Range string element type is %T\n", r)
+		break
+	}
+
+	cBuf := tokenizer.NewCyclicBuffer(5)
+	cBuf.Put('a', 'b', 'c', 'd', 'e', 'f', 'g')
+	if !cBuf.Has("cd", "fg") {
+		t.Errorf("wrong buffer content %s", cBuf)
+	}
 }
