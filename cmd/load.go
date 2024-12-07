@@ -106,12 +106,8 @@ func processFile(fileName string, sqlDialect dialect.SqlDialect, connection sql_
 			if err != nil {
 				return fmt.Errorf("unable to open file: %s", err)
 			}
-			statements := make([]ast.Statement, 0)
 			sql_parser.StatementStream(rc, sqlDialect,
 				func(statementText string, statement ast.Statement, parseError error) {
-					if statement != nil {
-						statements = append(statements, statement)
-					}
 					if parseError != nil {
 						rootCmd.PrintErrf("parse sql statement:\n %s \n\nfail: %s\n", statementText, parseError)
 					}
