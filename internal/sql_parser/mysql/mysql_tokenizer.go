@@ -42,12 +42,13 @@ type MysqlTokenizer struct {
 	ParseTree           ast.Statement
 	BindVars            map[string]struct{}
 
-	lastToken      string
-	posVarIndex    int
-	partialDDL     ast.Statement
-	nesting        int
-	multi          bool
-	specialComment *MysqlTokenizer
+	lastToken            string
+	posVarIndex          int
+	partialDDL           ast.Statement
+	nesting              int
+	multi                bool
+	specialComment       *MysqlTokenizer
+	ignoreCommentKeyword bool
 
 	Pos int
 	buf string
@@ -121,6 +122,11 @@ func (tkn *MysqlTokenizer) IncNesting() {
 // SetAllowComments implements sql_parser.Tokenizer.
 func (tkn *MysqlTokenizer) SetAllowComments(allow bool) {
 	tkn.AllowComments = allow
+}
+
+// SetIgnoreCommentKeyword implements sql_parser.Tokenizer.
+func (tkn *MysqlTokenizer) SetIgnoreCommentKeyword(ignore bool) {
+	tkn.ignoreCommentKeyword = ignore
 }
 
 // SetParseTree implements sql_parser.Tokenizer.

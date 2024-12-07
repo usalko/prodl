@@ -41,13 +41,14 @@ type PsqlTokenizer struct {
 	ParseTree           ast.Statement
 	BindVars            map[string]struct{}
 
-	lastToken      string
-	posVarIndex    int
-	partialDDL     ast.Statement
-	nesting        int
-	multi          bool
-	specialComment *PsqlTokenizer
-	leftContext    tokenizer.CyclicBuffer
+	lastToken            string
+	posVarIndex          int
+	partialDDL           ast.Statement
+	nesting              int
+	multi                bool
+	specialComment       *PsqlTokenizer
+	leftContext          tokenizer.CyclicBuffer
+	ignoreCommentKeyword bool
 
 	Pos int
 	buf string
@@ -123,6 +124,11 @@ func (tzr *PsqlTokenizer) SetAllowComments(allow bool) {
 	tzr.AllowComments = allow
 }
 
+// SetIgnoreCommentKeyword implements sql_parser.Tokenizer.
+func (tzr *PsqlTokenizer) SetIgnoreCommentKeyword(ignore bool) {
+	tzr.ignoreCommentKeyword = ignore
+}
+
 // SetParseTree implements sql_parser.Tokenizer.
 func (tzr *PsqlTokenizer) SetParseTree(stmt ast.Statement) {
 	tzr.ParseTree = stmt
@@ -194,7 +200,12 @@ func (tzr *PsqlTokenizer) Lex(lval *psqSymType) int {
 
 	typ, val := tzr.Scan()
 	for typ == COMMENT {
-		if tzr.AllowComments || val == "COMMENT" {
+		if tzr.ignoreCommentKeyword {
+			lval.str = val
+			tzr.lastToken = val
+			return ID
+		}
+		if tzr.AllowComments || strings.ToUpper(val) == "COMMENT" {
 			break
 		}
 		typ, val = tzr.Scan()
@@ -324,7 +335,13 @@ func (tzr *PsqlTokenizer) Scan() (int, string) {
 
 		tzr.Skip(1)
 		switch ch {
-		case '=', ',', '(', ')', '+', '*', '%', '^', '~':
+		case '=', ',', '+', '*', '%', '^', '~':
+			return int(ch), ""
+		case '(':
+			tzr.ignoreCommentKeyword = true
+			return int(ch), ""
+		case ')':
+			tzr.ignoreCommentKeyword = false
 			return int(ch), ""
 		case '&':
 			if tzr.Cur() == '&' {
@@ -593,7 +610,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 			tzr.Skip(1)
 			if tzr.Cur() == '.' {
 				tzr.Skip(1)
-				return ';', tzr.buf[start : tzr.Pos]
+				return ';', tzr.buf[start:tzr.Pos]
 			}
 		}
 		if ch == tokenizer.EofChar {

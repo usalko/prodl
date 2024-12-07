@@ -32,6 +32,10 @@ func setAllowComments(psqlex psqLexer, allow bool) {
   psqlex.(tokenizer.Tokenizer).SetAllowComments(allow)
 }
 
+func setIgnoreCommentKeyword(psqlex psqLexer, ignore bool) {
+  psqlex.(tokenizer.Tokenizer).SetIgnoreCommentKeyword(ignore)
+}
+
 func setDDL(psqlex psqLexer, node ast.Statement) {
   psqlex.(tokenizer.Tokenizer).SetPartialDDL(node)
 }
@@ -4126,7 +4130,9 @@ column_list_opt:
   }
 | '(' column_list ')'
   {
+    setIgnoreCommentKeyword(psqlex, true)
     $$ = $2
+    setIgnoreCommentKeyword(psqlex, false)
   }
 | '*'
   {

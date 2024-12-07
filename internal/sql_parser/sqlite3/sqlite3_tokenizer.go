@@ -41,12 +41,13 @@ type Sqlite3Tokenizer struct {
 	ParseTree           ast.Statement
 	BindVars            map[string]struct{}
 
-	lastToken      string
-	posVarIndex    int
-	partialDDL     ast.Statement
-	nesting        int
-	multi          bool
-	specialComment *Sqlite3Tokenizer
+	lastToken            string
+	posVarIndex          int
+	partialDDL           ast.Statement
+	nesting              int
+	multi                bool
+	specialComment       *Sqlite3Tokenizer
+	ignoreCommentKeyword bool
 
 	Pos int
 	buf string
@@ -120,6 +121,11 @@ func (tkn *Sqlite3Tokenizer) IncNesting() {
 // SetAllowComments implements sql_parser.Tokenizer.
 func (tkn *Sqlite3Tokenizer) SetAllowComments(allow bool) {
 	tkn.AllowComments = allow
+}
+
+// SetAllowComments implements sql_parser.Tokenizer.
+func (tkn *Sqlite3Tokenizer) SetIgnoreCommentKeyword(ignore bool) {
+	tkn.ignoreCommentKeyword = ignore
 }
 
 // SetParseTree implements sql_parser.Tokenizer.

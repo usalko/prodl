@@ -7748,6 +7748,7 @@ func mysqIaddr(v any) __yyunsafe__.Pointer {
 }
 
 var (
+	/* available values are: 0, 1, 2, 3, 4 */
 	mysqDebug        = 0
 	mysqErrorVerbose = true
 )
@@ -7863,6 +7864,9 @@ func mysqErrorMessage(state, lookAhead int) string {
 func mysqlex1(lex mysqLexer, lval *mysqSymType) (char, token int) {
 	token = 0
 	char = lex.Lex(lval)
+	if mysqDebug >= 4 {
+		__yyfmt__.Printf("lval is %v => ", lval)
+	}
 	if char <= 0 {
 		token = mysqTok1[0]
 		goto out
@@ -7887,10 +7891,11 @@ func mysqlex1(lex mysqLexer, lval *mysqSymType) (char, token int) {
 
 out:
 	if token == 0 {
+		__yyfmt__.Printf("token zero")
 		token = mysqTok2[1] /* unknown char */
 	}
 	if mysqDebug >= 3 {
-		__yyfmt__.Printf("lex %s(%d)\n", mysqTokname(token), uint(char))
+		__yyfmt__.Printf("lex %s(%d) token=%d\n", mysqTokname(token), uint(char), token)
 	}
 	return char, token
 }
@@ -8019,7 +8024,7 @@ mysqdefault:
 
 				/* the current p has no shift on "error", pop stack */
 				if mysqDebug >= 2 {
-					__yyfmt__.Printf("error recovery pops state %d\n", mysqS[mysqp].yys)
+					__yyfmt__.Printf("error recovery pops state-%d\n", mysqS[mysqp].yys)
 				}
 				mysqp--
 			}

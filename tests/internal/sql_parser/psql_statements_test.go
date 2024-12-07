@@ -42,13 +42,17 @@ func TestPsqlStatements(t *testing.T) {
 			in: "COPY public.articles_article (id, title) FROM stdin;\n11\tArticle 1\n12\tArticle 2\n\\.",
 			id: []int{psql.COPY, 0},
 		},
+		{
+			in: "COPY public.feedback_feedback (id, name, comment, contacts, created) FROM stdin;\n1\tBilly\tcomment\tbiden@wash.gov\t2023-06-07 13:37:49.001783+00\n\\.",
+			id: []int{psql.COPY, 0},
+		},
 	}
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
 			tok, err := sql_parser.Parse(tcase.in, dialect.PSQL)
 			if err != nil {
-				t.Fatalf("%q", err)
+				t.Fatalf("%v", err)
 			}
 			fmt.Printf("tok: %v\n", tok)
 		})

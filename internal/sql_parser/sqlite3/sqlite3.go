@@ -5625,7 +5625,7 @@ sqlite3default:
 
 				/* the current p has no shift on "error", pop stack */
 				if sqlite3Debug >= 2 {
-					__yyfmt__.Printf("error recovery pops state %d\n", sqlite3S[sqlite3p].yys)
+					__yyfmt__.Printf("error recovery pops state-%d\n", sqlite3S[sqlite3p].yys)
 				}
 				sqlite3p--
 			}

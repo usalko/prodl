@@ -24,6 +24,10 @@ func setAllowComments(psqlex psqLexer, allow bool) {
 	psqlex.(tokenizer.Tokenizer).SetAllowComments(allow)
 }
 
+func setIgnoreCommentKeyword(psqlex psqLexer, ignore bool) {
+	psqlex.(tokenizer.Tokenizer).SetIgnoreCommentKeyword(ignore)
+}
+
 func setDDL(psqlex psqLexer, node ast.Statement) {
 	psqlex.(tokenizer.Tokenizer).SetPartialDDL(node)
 }
@@ -7312,7 +7316,7 @@ var psqPgo = [...]int{
 	105, 1806, 1792, 285,
 }
 
-//line psql.y:6446
+//line psql.y:6452
 type psqSymType struct {
 	union             any
 	empty             struct{}
@@ -9269,24 +9273,24 @@ psqdefault:
 
 	case 1:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:582
+//line psql.y:586
 		{
 			setParseTree(psqlex, psqDollar[1].statementUnion())
 		}
 	case 2:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:587
+//line psql.y:591
 		{
 		}
 	case 3:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:588
+//line psql.y:592
 		{
 		}
 	case 4:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:592
+//line psql.y:596
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -9294,51 +9298,51 @@ psqdefault:
 	case 5:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:596
+//line psql.y:600
 		{
 			psqLOCAL = psqDollar[1].statementUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 38:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:632
+//line psql.y:636
 		{
 			setParseTree(psqlex, nil)
 		}
 	case 39:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:638
+//line psql.y:642
 		{
 			psqVAL.colIdent = ast.NewColIdentWithAt(string(psqDollar[1].str), ast.NoAt)
 		}
 	case 40:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:642
+//line psql.y:646
 		{
 			psqVAL.colIdent = ast.NewColIdentWithAt(string(psqDollar[1].str), ast.SingleAt)
 		}
 	case 41:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:646
+//line psql.y:650
 		{
 			psqVAL.colIdent = ast.NewColIdentWithAt(string(psqDollar[1].str), ast.DoubleAt)
 		}
 	case 42:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:651
+//line psql.y:655
 		{
 			psqVAL.colIdent = ast.NewColIdentWithAt("", ast.NoAt)
 		}
 	case 43:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:655
+//line psql.y:659
 		{
 			psqVAL.colIdent = psqDollar[1].colIdent
 		}
 	case 44:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:661
+//line psql.y:665
 		{
 			psqLOCAL = &ast.OtherAdmin{}
 		}
@@ -9346,7 +9350,7 @@ psqdefault:
 	case 45:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:667
+//line psql.y:671
 		{
 			psqLOCAL = &ast.Load{}
 		}
@@ -9354,7 +9358,7 @@ psqdefault:
 	case 46:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.With
-//line psql.y:673
+//line psql.y:677
 		{
 			psqLOCAL = &ast.With{Ctes: psqDollar[2].ctesUnion(), Recursive: false}
 		}
@@ -9362,7 +9366,7 @@ psqdefault:
 	case 47:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.With
-//line psql.y:677
+//line psql.y:681
 		{
 			psqLOCAL = &ast.With{Ctes: psqDollar[3].ctesUnion(), Recursive: true}
 		}
@@ -9370,7 +9374,7 @@ psqdefault:
 	case 48:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.With
-//line psql.y:682
+//line psql.y:686
 		{
 			psqLOCAL = nil
 		}
@@ -9378,14 +9382,14 @@ psqdefault:
 	case 49:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.With
-//line psql.y:686
+//line psql.y:690
 		{
 			psqLOCAL = psqDollar[1].withUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 50:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:692
+//line psql.y:696
 		{
 			psqSLICE := (*[]*ast.CommonTableExpr)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].cteUnion())
@@ -9393,7 +9397,7 @@ psqdefault:
 	case 51:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.CommonTableExpr
-//line psql.y:696
+//line psql.y:700
 		{
 			psqLOCAL = []*ast.CommonTableExpr{psqDollar[1].cteUnion()}
 		}
@@ -9401,7 +9405,7 @@ psqdefault:
 	case 52:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.CommonTableExpr
-//line psql.y:702
+//line psql.y:706
 		{
 			psqLOCAL = &ast.CommonTableExpr{TableID: psqDollar[1].tableIdent, Columns: psqDollar[2].columnsUnion(), Subquery: psqDollar[4].subqueryUnion()}
 		}
@@ -9409,7 +9413,7 @@ psqdefault:
 	case 53:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:708
+//line psql.y:712
 		{
 			psqLOCAL = psqDollar[2].selStmtUnion()
 		}
@@ -9417,7 +9421,7 @@ psqdefault:
 	case 54:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:712
+//line psql.y:716
 		{
 			psqLOCAL = psqDollar[2].selStmtUnion()
 		}
@@ -9425,7 +9429,7 @@ psqdefault:
 	case 55:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:716
+//line psql.y:720
 		{
 			ast.SetLockInSelect(psqDollar[2].selStmtUnion(), psqDollar[3].lockUnion())
 			psqLOCAL = psqDollar[2].selStmtUnion()
@@ -9434,7 +9438,7 @@ psqdefault:
 	case 56:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:739
+//line psql.y:743
 		{
 			psqDollar[1].selStmtUnion().SetOrderBy(psqDollar[2].orderByUnion())
 			psqDollar[1].selStmtUnion().SetLimit(psqDollar[3].limitUnion())
@@ -9444,7 +9448,7 @@ psqdefault:
 	case 57:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:745
+//line psql.y:749
 		{
 			psqDollar[1].selStmtUnion().SetLimit(psqDollar[2].limitUnion())
 			psqLOCAL = psqDollar[1].selStmtUnion()
@@ -9453,7 +9457,7 @@ psqdefault:
 	case 58:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:750
+//line psql.y:754
 		{
 			psqDollar[1].selStmtUnion().SetOrderBy(psqDollar[2].orderByUnion())
 			psqDollar[1].selStmtUnion().SetLimit(psqDollar[3].limitUnion())
@@ -9463,7 +9467,7 @@ psqdefault:
 	case 59:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:756
+//line psql.y:760
 		{
 			psqDollar[2].selStmtUnion().SetWith(psqDollar[1].withUnion())
 			psqDollar[2].selStmtUnion().SetOrderBy(psqDollar[3].orderByUnion())
@@ -9474,7 +9478,7 @@ psqdefault:
 	case 60:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:763
+//line psql.y:767
 		{
 			psqDollar[2].selStmtUnion().SetWith(psqDollar[1].withUnion())
 			psqDollar[2].selStmtUnion().SetLimit(psqDollar[3].limitUnion())
@@ -9484,7 +9488,7 @@ psqdefault:
 	case 61:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:769
+//line psql.y:773
 		{
 			psqDollar[2].selStmtUnion().SetWith(psqDollar[1].withUnion())
 			psqDollar[2].selStmtUnion().SetOrderBy(psqDollar[3].orderByUnion())
@@ -9494,14 +9498,14 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 62:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:776
+//line psql.y:780
 		{
 			psqDollar[2].selStmtUnion().SetWith(psqDollar[1].withUnion())
 		}
 	case 63:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:780
+//line psql.y:784
 		{
 			psqLOCAL = ast.NewSelect(ast.Comments(psqDollar[2].strs), ast.SelectExprs{&ast.Nextval{Expr: psqDollar[5].exprUnion()}}, []string{psqDollar[3].str} /*options*/, nil, ast.TableExprs{&ast.AliasedTableExpr{Expr: psqDollar[7].tableName}}, nil /*where*/, nil /*groupBy*/, nil /*having*/)
 		}
@@ -9509,7 +9513,7 @@ psqdefault:
 	case 64:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:786
+//line psql.y:790
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -9517,7 +9521,7 @@ psqdefault:
 	case 65:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:790
+//line psql.y:794
 		{
 			psqLOCAL = &ast.Union{Left: psqDollar[1].selStmtUnion(), Distinct: psqDollar[2].booleanUnion(), Right: psqDollar[3].selStmtUnion()}
 		}
@@ -9525,7 +9529,7 @@ psqdefault:
 	case 66:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:794
+//line psql.y:798
 		{
 			psqLOCAL = &ast.Union{Left: psqDollar[1].selStmtUnion(), Distinct: psqDollar[2].booleanUnion(), Right: psqDollar[3].selStmtUnion()}
 		}
@@ -9533,7 +9537,7 @@ psqdefault:
 	case 67:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:798
+//line psql.y:802
 		{
 			psqLOCAL = &ast.Union{Left: psqDollar[1].selStmtUnion(), Distinct: psqDollar[2].booleanUnion(), Right: psqDollar[3].selStmtUnion()}
 		}
@@ -9541,7 +9545,7 @@ psqdefault:
 	case 68:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:802
+//line psql.y:806
 		{
 			psqLOCAL = &ast.Union{Left: psqDollar[1].selStmtUnion(), Distinct: psqDollar[2].booleanUnion(), Right: psqDollar[3].selStmtUnion()}
 		}
@@ -9549,7 +9553,7 @@ psqdefault:
 	case 69:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:808
+//line psql.y:812
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -9557,7 +9561,7 @@ psqdefault:
 	case 70:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:812
+//line psql.y:816
 		{
 			ast.SetLockInSelect(psqDollar[1].selStmtUnion(), psqDollar[2].lockUnion())
 			psqLOCAL = psqDollar[1].selStmtUnion()
@@ -9566,7 +9570,7 @@ psqdefault:
 	case 71:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:817
+//line psql.y:821
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -9574,7 +9578,7 @@ psqdefault:
 	case 72:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:821
+//line psql.y:825
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -9582,7 +9586,7 @@ psqdefault:
 	case 73:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:827
+//line psql.y:831
 		{
 			psqLOCAL = psqDollar[2].selStmtUnion()
 		}
@@ -9590,7 +9594,7 @@ psqdefault:
 	case 74:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:831
+//line psql.y:835
 		{
 			psqDollar[1].selStmtUnion().SetInto(psqDollar[2].selectIntoUnion())
 			psqLOCAL = psqDollar[1].selStmtUnion()
@@ -9599,7 +9603,7 @@ psqdefault:
 	case 75:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:836
+//line psql.y:840
 		{
 			psqDollar[1].selStmtUnion().SetInto(psqDollar[2].selectIntoUnion())
 			psqLOCAL = psqDollar[1].selStmtUnion()
@@ -9608,7 +9612,7 @@ psqdefault:
 	case 76:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:843
+//line psql.y:847
 		{
 			psqLOCAL = &ast.Stream{Comments: ast.Comments(psqDollar[2].strs).Parsed(), SelectExpr: psqDollar[3].selectExprUnion(), Table: psqDollar[5].tableName}
 		}
@@ -9616,7 +9620,7 @@ psqdefault:
 	case 77:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:849
+//line psql.y:853
 		{
 			psqLOCAL = &ast.VStream{Comments: ast.Comments(psqDollar[2].strs).Parsed(), SelectExpr: psqDollar[3].selectExprUnion(), Table: psqDollar[5].tableName, Where: ast.NewWhere(ast.WhereClause, psqDollar[6].exprUnion()), Limit: psqDollar[7].limitUnion()}
 		}
@@ -9624,7 +9628,7 @@ psqdefault:
 	case 78:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.SelectStatement
-//line psql.y:857
+//line psql.y:861
 		{
 			psqLOCAL = ast.NewSelect(ast.Comments(psqDollar[2].strs), psqDollar[4].selectExprsUnion() /*SelectExprs*/, psqDollar[3].strs /*options*/, nil, psqDollar[5].tableExprsUnion() /*from*/, ast.NewWhere(ast.WhereClause, psqDollar[6].exprUnion()), ast.GroupBy(psqDollar[7].exprsUnion()), ast.NewWhere(ast.HavingClause, psqDollar[8].exprUnion()))
 		}
@@ -9632,7 +9636,7 @@ psqdefault:
 	case 79:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:863
+//line psql.y:867
 		{
 			psqLOCAL = &ast.CopyFrom{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Table: psqDollar[3].tableName, Columns: psqDollar[4].columnsUnion(), From: psqDollar[6].copyFromSource, With: psqDollar[7].copyOptions, Where: psqDollar[8].exprUnion()}
 		}
@@ -9640,7 +9644,7 @@ psqdefault:
 	case 80:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:867
+//line psql.y:871
 		{
 			psqLOCAL = &ast.CopyTo{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Table: psqDollar[3].tableName, Columns: psqDollar[4].columnsUnion(), To: psqDollar[6].copyToTarget, With: psqDollar[7].copyOptions}
 		}
@@ -9648,189 +9652,189 @@ psqdefault:
 	case 81:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:871
+//line psql.y:875
 		{
 			psqLOCAL = &ast.CopyTo{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Query: psqDollar[3].selStmtUnion(), To: psqDollar[5].copyToTarget, With: psqDollar[6].copyOptions}
 		}
 		psqVAL.union = psqLOCAL
 	case 82:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:877
+//line psql.y:881
 		{
 			psqVAL.copyFromSource = ast.CopyFromSource{Type: ast.CopyFromFile, V: psqDollar[1].str}
 		}
 	case 83:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:881
+//line psql.y:885
 		{
 			psqVAL.copyFromSource = ast.CopyFromSource{Type: ast.CopyFromProgram, V: psqDollar[1].str}
 		}
 	case 84:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:885
+//line psql.y:889
 		{
 			psqVAL.copyFromSource = ast.CopyFromSource{Type: ast.CopyFromStdin}
 		}
 	case 85:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:891
+//line psql.y:895
 		{
 			psqVAL.copyToTarget = ast.CopyToTarget{Type: ast.CopyToFile, V: psqDollar[1].str}
 		}
 	case 86:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:895
+//line psql.y:899
 		{
 			psqVAL.copyToTarget = ast.CopyToTarget{Type: ast.CopyToProgram, V: psqDollar[1].str}
 		}
 	case 87:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:899
+//line psql.y:903
 		{
 			psqVAL.copyToTarget = ast.CopyToTarget{Type: ast.CopyToStdout}
 		}
 	case 88:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:904
+//line psql.y:908
 		{
 			psqVAL.copyOptions = nil
 		}
 	case 89:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:908
+//line psql.y:912
 		{
 			psqVAL.copyOptions = psqDollar[3].copyOptions
 		}
 	case 90:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:912
+//line psql.y:916
 		{
 			psqVAL.copyOptions = psqDollar[2].copyOptions
 		}
 	case 91:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:918
+//line psql.y:922
 		{
 			psqVAL.copyOptions = []ast.CopyOption{psqDollar[1].copyOption}
 		}
 	case 92:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:922
+//line psql.y:926
 		{
 			psqVAL.copyOptions = append(psqVAL.copyOptions, psqDollar[3].copyOption)
 		}
 	case 93:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:928
+//line psql.y:932
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionFormat, Value: psqDollar[2].str}
 		}
 	case 94:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:932
+//line psql.y:936
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionFreeze, Value: psqDollar[2].boolValUnion().String()}
 		}
 	case 95:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:936
+//line psql.y:940
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionDelimiter, Value: psqDollar[2].str}
 		}
 	case 96:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:940
+//line psql.y:944
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionNull, Value: psqDollar[2].str}
 		}
 	case 97:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:944
+//line psql.y:948
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionDefault, Value: psqDollar[2].str}
 		}
 	case 98:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:948
+//line psql.y:952
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionHeader, Value: psqDollar[2].boolValUnion().String()}
 		}
 	case 99:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:952
+//line psql.y:956
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionHeaderMatch}
 		}
 	case 100:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:956
+//line psql.y:960
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionQuote, Value: psqDollar[2].str}
 		}
 	case 101:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:960
+//line psql.y:964
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionEscape, Value: psqDollar[2].str}
 		}
 	case 102:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:964
+//line psql.y:968
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionForceQuote}
 		}
 	case 103:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:968
+//line psql.y:972
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionForceNotNull}
 		}
 	case 104:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:972
+//line psql.y:976
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionForceNull}
 		}
 	case 105:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:976
+//line psql.y:980
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionOnError, Value: psqDollar[2].str}
 		}
 	case 106:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:980
+//line psql.y:984
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionEncoding, Value: psqDollar[2].str}
 		}
 	case 107:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:984
+//line psql.y:988
 		{
 			psqVAL.copyOption = ast.CopyOption{Type: ast.CopyOptionHeaderLogVerbosity, Value: psqDollar[2].str}
 		}
 	case 108:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:989
+//line psql.y:993
 		{
 			psqVAL.str = "stop"
 		}
 	case 109:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:993
+//line psql.y:997
 		{
 			psqVAL.str = "stop"
 		}
 	case 110:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:997
+//line psql.y:1001
 		{
 			psqVAL.str = "ignore"
 		}
 	case 111:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1003
+//line psql.y:1007
 		{
 			// insert_data returns a *ast.Insert pre-filled with Columns & Values
 			ins := psqDollar[5].insUnion()
@@ -9845,7 +9849,7 @@ psqdefault:
 	case 112:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1014
+//line psql.y:1018
 		{
 			cols := make(ast.Columns, 0, len(psqDollar[6].updateExprsUnion()))
 			vals := make(ast.ValTuple, 0, len(psqDollar[7].updateExprsUnion()))
@@ -9859,7 +9863,7 @@ psqdefault:
 	case 113:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.InsertAction
-//line psql.y:1026
+//line psql.y:1030
 		{
 			psqLOCAL = ast.InsertAct
 		}
@@ -9867,7 +9871,7 @@ psqdefault:
 	case 114:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.InsertAction
-//line psql.y:1030
+//line psql.y:1034
 		{
 			psqLOCAL = ast.ReplaceAct
 		}
@@ -9875,7 +9879,7 @@ psqdefault:
 	case 115:
 		psqDollar = psqS[psqpt-10 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1036
+//line psql.y:1040
 		{
 			psqLOCAL = &ast.Update{With: psqDollar[1].withUnion(), Comments: ast.Comments(psqDollar[3].strs).Parsed(), Ignore: psqDollar[4].ignoreUnion(), TableExprs: psqDollar[5].tableExprsUnion(), Exprs: psqDollar[7].updateExprsUnion(), Where: ast.NewWhere(ast.WhereClause, psqDollar[8].exprUnion()), OrderBy: psqDollar[9].orderByUnion(), Limit: psqDollar[10].limitUnion()}
 		}
@@ -9883,7 +9887,7 @@ psqdefault:
 	case 116:
 		psqDollar = psqS[psqpt-10 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1042
+//line psql.y:1046
 		{
 			psqLOCAL = &ast.Delete{With: psqDollar[1].withUnion(), Comments: ast.Comments(psqDollar[3].strs).Parsed(), Ignore: psqDollar[4].ignoreUnion(), TableExprs: ast.TableExprs{&ast.AliasedTableExpr{Expr: psqDollar[6].tableName, As: psqDollar[7].tableIdent}}, Where: ast.NewWhere(ast.WhereClause, psqDollar[8].exprUnion()), OrderBy: psqDollar[9].orderByUnion(), Limit: psqDollar[10].limitUnion()}
 		}
@@ -9891,7 +9895,7 @@ psqdefault:
 	case 117:
 		psqDollar = psqS[psqpt-9 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1046
+//line psql.y:1050
 		{
 			psqLOCAL = &ast.Delete{With: psqDollar[1].withUnion(), Comments: ast.Comments(psqDollar[3].strs).Parsed(), Ignore: psqDollar[4].ignoreUnion(), Targets: psqDollar[6].tableNamesUnion(), TableExprs: psqDollar[8].tableExprsUnion(), Where: ast.NewWhere(ast.WhereClause, psqDollar[9].exprUnion())}
 		}
@@ -9899,7 +9903,7 @@ psqdefault:
 	case 118:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1050
+//line psql.y:1054
 		{
 			psqLOCAL = &ast.Delete{With: psqDollar[1].withUnion(), Comments: ast.Comments(psqDollar[3].strs).Parsed(), Ignore: psqDollar[4].ignoreUnion(), Targets: psqDollar[5].tableNamesUnion(), TableExprs: psqDollar[7].tableExprsUnion(), Where: ast.NewWhere(ast.WhereClause, psqDollar[8].exprUnion())}
 		}
@@ -9907,32 +9911,32 @@ psqdefault:
 	case 119:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1054
+//line psql.y:1058
 		{
 			psqLOCAL = &ast.Delete{With: psqDollar[1].withUnion(), Comments: ast.Comments(psqDollar[3].strs).Parsed(), Ignore: psqDollar[4].ignoreUnion(), Targets: psqDollar[5].tableNamesUnion(), TableExprs: psqDollar[7].tableExprsUnion(), Where: ast.NewWhere(ast.WhereClause, psqDollar[8].exprUnion())}
 		}
 		psqVAL.union = psqLOCAL
 	case 120:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1059
+//line psql.y:1063
 		{
 		}
 	case 121:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1060
+//line psql.y:1064
 		{
 		}
 	case 122:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableNames
-//line psql.y:1064
+//line psql.y:1068
 		{
 			psqLOCAL = ast.TableNames{psqDollar[1].tableName.ToViewName()}
 		}
 		psqVAL.union = psqLOCAL
 	case 123:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1068
+//line psql.y:1072
 		{
 			psqSLICE := (*ast.TableNames)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableName.ToViewName())
@@ -9940,14 +9944,14 @@ psqdefault:
 	case 124:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableNames
-//line psql.y:1074
+//line psql.y:1078
 		{
 			psqLOCAL = ast.TableNames{psqDollar[1].tableName}
 		}
 		psqVAL.union = psqLOCAL
 	case 125:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1078
+//line psql.y:1082
 		{
 			psqSLICE := (*ast.TableNames)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableName)
@@ -9955,14 +9959,14 @@ psqdefault:
 	case 126:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableNames
-//line psql.y:1084
+//line psql.y:1088
 		{
 			psqLOCAL = ast.TableNames{psqDollar[1].tableName}
 		}
 		psqVAL.union = psqLOCAL
 	case 127:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1088
+//line psql.y:1092
 		{
 			psqSLICE := (*ast.TableNames)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableName)
@@ -9970,7 +9974,7 @@ psqdefault:
 	case 128:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1094
+//line psql.y:1098
 		{
 			psqLOCAL = &ast.Set{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Exprs: psqDollar[3].setExprsUnion()}
 		}
@@ -9978,7 +9982,7 @@ psqdefault:
 	case 129:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1100
+//line psql.y:1104
 		{
 			psqLOCAL = &ast.SetTransaction{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Scope: psqDollar[3].scopeUnion(), Characteristics: psqDollar[5].characteristicsUnion()}
 		}
@@ -9986,7 +9990,7 @@ psqdefault:
 	case 130:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1104
+//line psql.y:1108
 		{
 			psqLOCAL = &ast.SetTransaction{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Characteristics: psqDollar[4].characteristicsUnion(), Scope: ast.ImplicitScope}
 		}
@@ -9994,14 +9998,14 @@ psqdefault:
 	case 131:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.Characteristic
-//line psql.y:1110
+//line psql.y:1114
 		{
 			psqLOCAL = []ast.Characteristic{psqDollar[1].characteristicUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 132:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1114
+//line psql.y:1118
 		{
 			psqSLICE := (*[]ast.Characteristic)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].characteristicUnion())
@@ -10009,7 +10013,7 @@ psqdefault:
 	case 133:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Characteristic
-//line psql.y:1120
+//line psql.y:1124
 		{
 			psqLOCAL = psqDollar[3].isolationLevelUnion()
 		}
@@ -10017,7 +10021,7 @@ psqdefault:
 	case 134:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Characteristic
-//line psql.y:1124
+//line psql.y:1128
 		{
 			psqLOCAL = ast.ReadWrite
 		}
@@ -10025,7 +10029,7 @@ psqdefault:
 	case 135:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Characteristic
-//line psql.y:1128
+//line psql.y:1132
 		{
 			psqLOCAL = ast.ReadOnly
 		}
@@ -10033,7 +10037,7 @@ psqdefault:
 	case 136:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IsolationLevel
-//line psql.y:1134
+//line psql.y:1138
 		{
 			psqLOCAL = ast.RepeatableRead
 		}
@@ -10041,7 +10045,7 @@ psqdefault:
 	case 137:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IsolationLevel
-//line psql.y:1138
+//line psql.y:1142
 		{
 			psqLOCAL = ast.ReadCommitted
 		}
@@ -10049,7 +10053,7 @@ psqdefault:
 	case 138:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IsolationLevel
-//line psql.y:1142
+//line psql.y:1146
 		{
 			psqLOCAL = ast.ReadUncommitted
 		}
@@ -10057,7 +10061,7 @@ psqdefault:
 	case 139:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IsolationLevel
-//line psql.y:1146
+//line psql.y:1150
 		{
 			psqLOCAL = ast.Serializable
 		}
@@ -10065,7 +10069,7 @@ psqdefault:
 	case 140:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Scope
-//line psql.y:1152
+//line psql.y:1156
 		{
 			psqLOCAL = ast.SessionScope
 		}
@@ -10073,7 +10077,7 @@ psqdefault:
 	case 141:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Scope
-//line psql.y:1156
+//line psql.y:1160
 		{
 			psqLOCAL = ast.GlobalScope
 		}
@@ -10081,7 +10085,7 @@ psqdefault:
 	case 142:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1162
+//line psql.y:1166
 		{
 			psqDollar[1].createTableUnion().TableSpec = psqDollar[2].tableSpecUnion()
 			psqDollar[1].createTableUnion().FullyParsed = true
@@ -10091,7 +10095,7 @@ psqdefault:
 	case 143:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1168
+//line psql.y:1172
 		{
 			// Create table [name] like [name]
 			psqDollar[1].createTableUnion().OptLike = psqDollar[2].optLikeUnion()
@@ -10102,7 +10106,7 @@ psqdefault:
 	case 144:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1175
+//line psql.y:1179
 		{
 			indexDef := psqDollar[1].alterTableUnion().AlterOptions[0].(*ast.AddIndexDefinition).IndexDefinition
 			indexDef.Columns = psqDollar[3].indexColumnsUnion()
@@ -10114,7 +10118,7 @@ psqdefault:
 	case 145:
 		psqDollar = psqS[psqpt-11 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1183
+//line psql.y:1187
 		{
 			psqLOCAL = &ast.CreateView{ViewName: psqDollar[7].tableName.ToViewName(), Comments: ast.Comments(psqDollar[2].strs).Parsed(), IsReplace: psqDollar[3].booleanUnion(), Definer: psqDollar[4].definerUnion(), Security: psqDollar[5].str, Columns: psqDollar[8].columnsUnion(), Select: psqDollar[10].selStmtUnion(), CheckOption: psqDollar[11].str}
 		}
@@ -10122,7 +10126,7 @@ psqdefault:
 	case 146:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1187
+//line psql.y:1191
 		{
 			psqDollar[1].createDatabaseUnion().FullyParsed = true
 			psqDollar[1].createDatabaseUnion().CreateOptions = psqDollar[2].databaseOptionsUnion()
@@ -10132,7 +10136,7 @@ psqdefault:
 	case 147:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:1193
+//line psql.y:1197
 		{
 			psqDollar[1].createSequenceUnion().SequenceSpec = psqDollar[2].sequenceSpecUnion()
 			psqDollar[1].createSequenceUnion().FullyParsed = true
@@ -10142,7 +10146,7 @@ psqdefault:
 	case 148:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:1200
+//line psql.y:1204
 		{
 			psqLOCAL = false
 		}
@@ -10150,33 +10154,33 @@ psqdefault:
 	case 149:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:1204
+//line psql.y:1208
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 150:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:1209
+//line psql.y:1213
 		{
 			psqVAL.colIdent = ast.NewColIdent("")
 		}
 	case 151:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:1213
+//line psql.y:1217
 		{
 			psqVAL.colIdent = psqDollar[2].colIdent
 		}
 	case 152:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1219
+//line psql.y:1223
 		{
 			psqVAL.colIdent = psqDollar[1].colIdent
 		}
 	case 153:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []ast.VindexParam
-//line psql.y:1224
+//line psql.y:1228
 		{
 			var v []ast.VindexParam
 			psqLOCAL = v
@@ -10185,7 +10189,7 @@ psqdefault:
 	case 154:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL []ast.VindexParam
-//line psql.y:1229
+//line psql.y:1233
 		{
 			psqLOCAL = psqDollar[2].vindexParamsUnion()
 		}
@@ -10193,7 +10197,7 @@ psqdefault:
 	case 155:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.VindexParam
-//line psql.y:1235
+//line psql.y:1239
 		{
 			psqLOCAL = make([]ast.VindexParam, 0, 4)
 			psqLOCAL = append(psqLOCAL, psqDollar[1].vindexParam)
@@ -10201,21 +10205,21 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 156:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1240
+//line psql.y:1244
 		{
 			psqSLICE := (*[]ast.VindexParam)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].vindexParam)
 		}
 	case 157:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1246
+//line psql.y:1250
 		{
 			psqVAL.vindexParam = ast.VindexParam{Key: psqDollar[1].colIdent, Val: psqDollar[3].str}
 		}
 	case 158:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []*ast.JSONObjectParam
-//line psql.y:1251
+//line psql.y:1255
 		{
 			psqLOCAL = nil
 		}
@@ -10223,7 +10227,7 @@ psqdefault:
 	case 159:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.JSONObjectParam
-//line psql.y:1255
+//line psql.y:1259
 		{
 			psqLOCAL = psqDollar[1].jsonObjectParamsUnion()
 		}
@@ -10231,28 +10235,28 @@ psqdefault:
 	case 160:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.JSONObjectParam
-//line psql.y:1261
+//line psql.y:1265
 		{
 			psqLOCAL = []*ast.JSONObjectParam{psqDollar[1].jsonObjectParam}
 		}
 		psqVAL.union = psqLOCAL
 	case 161:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1265
+//line psql.y:1269
 		{
 			psqSLICE := (*[]*ast.JSONObjectParam)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].jsonObjectParam)
 		}
 	case 162:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1271
+//line psql.y:1275
 		{
 			psqVAL.jsonObjectParam = &ast.JSONObjectParam{Key: psqDollar[1].exprUnion(), Value: psqDollar[3].exprUnion()}
 		}
 	case 163:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.AlterSchema
-//line psql.y:1277
+//line psql.y:1281
 		{
 			psqLOCAL = &ast.AlterSchema{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Schema: psqDollar[3].schemaName}
 			setDDL(psqlex, psqLOCAL)
@@ -10261,7 +10265,7 @@ psqdefault:
 	case 164:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.CreateTable
-//line psql.y:1284
+//line psql.y:1288
 		{
 			psqLOCAL = &ast.CreateTable{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Table: psqDollar[6].tableName, IfNotExists: psqDollar[5].booleanUnion(), Temp: psqDollar[3].booleanUnion()}
 			setDDL(psqlex, psqLOCAL)
@@ -10270,7 +10274,7 @@ psqdefault:
 	case 165:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.AlterTable
-//line psql.y:1291
+//line psql.y:1295
 		{
 			psqLOCAL = &ast.AlterTable{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Only: psqDollar[4].booleanUnion(), Table: psqDollar[5].tableName}
 			setDDL(psqlex, psqLOCAL)
@@ -10279,7 +10283,7 @@ psqdefault:
 	case 166:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL *ast.AlterTable
-//line psql.y:1298
+//line psql.y:1302
 		{
 			psqLOCAL = &ast.AlterTable{Table: psqDollar[7].tableName, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition: &ast.IndexDefinition{Info: &ast.IndexInfo{Name: psqDollar[4].colIdent, Type: string(psqDollar[3].str)}, Options: psqDollar[5].indexOptionsUnion()}}}}
 			setDDL(psqlex, psqLOCAL)
@@ -10288,7 +10292,7 @@ psqdefault:
 	case 167:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.AlterTable
-//line psql.y:1303
+//line psql.y:1307
 		{
 			psqLOCAL = &ast.AlterTable{Table: psqDollar[8].tableName, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition: &ast.IndexDefinition{Info: &ast.IndexInfo{Name: psqDollar[5].colIdent, Type: string(psqDollar[3].str) + " " + string(psqDollar[4].str), Fulltext: true}, Options: psqDollar[6].indexOptionsUnion()}}}}
 			setDDL(psqlex, psqLOCAL)
@@ -10297,7 +10301,7 @@ psqdefault:
 	case 168:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.AlterTable
-//line psql.y:1308
+//line psql.y:1312
 		{
 			psqLOCAL = &ast.AlterTable{Table: psqDollar[8].tableName, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition: &ast.IndexDefinition{Info: &ast.IndexInfo{Name: psqDollar[5].colIdent, Type: string(psqDollar[3].str) + " " + string(psqDollar[4].str), Spatial: true}, Options: psqDollar[6].indexOptionsUnion()}}}}
 			setDDL(psqlex, psqLOCAL)
@@ -10306,7 +10310,7 @@ psqdefault:
 	case 169:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.AlterTable
-//line psql.y:1313
+//line psql.y:1317
 		{
 			psqLOCAL = &ast.AlterTable{Table: psqDollar[8].tableName, AlterOptions: []ast.AlterOption{&ast.AddIndexDefinition{IndexDefinition: &ast.IndexDefinition{Info: &ast.IndexInfo{Name: psqDollar[5].colIdent, Type: string(psqDollar[3].str) + " " + string(psqDollar[4].str), Unique: true}, Options: psqDollar[6].indexOptionsUnion()}}}}
 			setDDL(psqlex, psqLOCAL)
@@ -10315,7 +10319,7 @@ psqdefault:
 	case 170:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.CreateSequence
-//line psql.y:1320
+//line psql.y:1324
 		{
 			psqLOCAL = &ast.CreateSequence{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Sequence: psqDollar[3].sequenceName}
 			setDDL(psqlex, psqLOCAL)
@@ -10324,7 +10328,7 @@ psqdefault:
 	case 171:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.AlterSequence
-//line psql.y:1327
+//line psql.y:1331
 		{
 			psqLOCAL = &ast.AlterSequence{Comments: ast.Comments(psqDollar[2].strs).Parsed(), Sequence: psqDollar[3].sequenceName}
 			setDDL(psqlex, psqLOCAL)
@@ -10333,7 +10337,7 @@ psqdefault:
 	case 172:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.CreateDatabase
-//line psql.y:1334
+//line psql.y:1338
 		{
 			psqLOCAL = &ast.CreateDatabase{Comments: ast.Comments(psqDollar[4].strs).Parsed(), DBName: psqDollar[6].tableIdent, IfNotExists: psqDollar[5].booleanUnion()}
 			setDDL(psqlex, psqLOCAL)
@@ -10342,7 +10346,7 @@ psqdefault:
 	case 173:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.AlterDatabase
-//line psql.y:1341
+//line psql.y:1345
 		{
 			psqLOCAL = &ast.AlterDatabase{}
 			setDDL(psqlex, psqLOCAL)
@@ -10351,7 +10355,7 @@ psqdefault:
 	case 175:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.TableSpec
-//line psql.y:1351
+//line psql.y:1355
 		{
 			psqLOCAL = psqDollar[2].tableSpecUnion()
 			psqLOCAL.Options = psqDollar[4].tableOptionsUnion()
@@ -10360,7 +10364,7 @@ psqdefault:
 	case 176:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []ast.DatabaseOption
-//line psql.y:1357
+//line psql.y:1361
 		{
 			psqLOCAL = nil
 		}
@@ -10368,7 +10372,7 @@ psqdefault:
 	case 177:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.DatabaseOption
-//line psql.y:1361
+//line psql.y:1365
 		{
 			psqLOCAL = psqDollar[1].databaseOptionsUnion()
 		}
@@ -10376,7 +10380,7 @@ psqdefault:
 	case 178:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.DatabaseOption
-//line psql.y:1367
+//line psql.y:1371
 		{
 			psqLOCAL = []ast.DatabaseOption{psqDollar[1].databaseOption}
 		}
@@ -10384,7 +10388,7 @@ psqdefault:
 	case 179:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.DatabaseOption
-//line psql.y:1371
+//line psql.y:1375
 		{
 			psqLOCAL = []ast.DatabaseOption{psqDollar[1].databaseOption}
 		}
@@ -10392,28 +10396,28 @@ psqdefault:
 	case 180:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.DatabaseOption
-//line psql.y:1375
+//line psql.y:1379
 		{
 			psqLOCAL = []ast.DatabaseOption{psqDollar[1].databaseOption}
 		}
 		psqVAL.union = psqLOCAL
 	case 181:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:1379
+//line psql.y:1383
 		{
 			psqSLICE := (*[]ast.DatabaseOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].databaseOption)
 		}
 	case 182:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:1383
+//line psql.y:1387
 		{
 			psqSLICE := (*[]ast.DatabaseOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].databaseOption)
 		}
 	case 183:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:1387
+//line psql.y:1391
 		{
 			psqSLICE := (*[]ast.DatabaseOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].databaseOption)
@@ -10421,7 +10425,7 @@ psqdefault:
 	case 184:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:1393
+//line psql.y:1397
 		{
 			psqLOCAL = false
 		}
@@ -10429,51 +10433,51 @@ psqdefault:
 	case 185:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:1397
+//line psql.y:1401
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 186:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1403
+//line psql.y:1407
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.CharacterSetType, Value: (psqDollar[4].colIdent.String()), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 187:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1407
+//line psql.y:1411
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.CharacterSetType, Value: (sql_types.EncodeStringSQL(psqDollar[4].str)), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 188:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1413
+//line psql.y:1417
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.CollateType, Value: (psqDollar[4].colIdent.String()), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 189:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1417
+//line psql.y:1421
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.CollateType, Value: (sql_types.EncodeStringSQL(psqDollar[4].str)), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 190:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1423
+//line psql.y:1427
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.EncryptionType, Value: (psqDollar[4].colIdent.String()), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 191:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1427
+//line psql.y:1431
 		{
 			psqVAL.databaseOption = ast.DatabaseOption{Type: ast.EncryptionType, Value: (sql_types.EncodeStringSQL(psqDollar[4].str)), IsDefault: psqDollar[1].booleanUnion()}
 		}
 	case 192:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.OptLike
-//line psql.y:1433
+//line psql.y:1437
 		{
 			psqLOCAL = &ast.OptLike{LikeTable: psqDollar[2].tableName}
 		}
@@ -10481,7 +10485,7 @@ psqdefault:
 	case 193:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.OptLike
-//line psql.y:1437
+//line psql.y:1441
 		{
 			psqLOCAL = &ast.OptLike{LikeTable: psqDollar[3].tableName}
 		}
@@ -10489,14 +10493,14 @@ psqdefault:
 	case 194:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.ColumnDefinition
-//line psql.y:1443
+//line psql.y:1447
 		{
 			psqLOCAL = []*ast.ColumnDefinition{psqDollar[1].columnDefinitionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 195:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1447
+//line psql.y:1451
 		{
 			psqSLICE := (*[]*ast.ColumnDefinition)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].columnDefinitionUnion())
@@ -10504,7 +10508,7 @@ psqdefault:
 	case 196:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.TableSpec
-//line psql.y:1453
+//line psql.y:1457
 		{
 			psqLOCAL = &ast.TableSpec{}
 			psqLOCAL.AddColumn(psqDollar[1].columnDefinitionUnion())
@@ -10513,7 +10517,7 @@ psqdefault:
 	case 197:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.TableSpec
-//line psql.y:1458
+//line psql.y:1462
 		{
 			psqLOCAL = &ast.TableSpec{}
 			psqLOCAL.AddConstraint(psqDollar[1].constraintDefinitionUnion())
@@ -10521,39 +10525,39 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 198:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1463
+//line psql.y:1467
 		{
 			psqVAL.tableSpecUnion().AddColumn(psqDollar[3].columnDefinitionUnion())
 		}
 	case 199:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:1467
+//line psql.y:1471
 		{
 			psqVAL.tableSpecUnion().AddColumn(psqDollar[3].columnDefinitionUnion())
 			psqVAL.tableSpecUnion().AddConstraint(psqDollar[4].constraintDefinitionUnion())
 		}
 	case 200:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1472
+//line psql.y:1476
 		{
 			psqVAL.tableSpecUnion().AddIndex(psqDollar[3].indexDefinitionUnion())
 		}
 	case 201:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1476
+//line psql.y:1480
 		{
 			psqVAL.tableSpecUnion().AddConstraint(psqDollar[3].constraintDefinitionUnion())
 		}
 	case 202:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1480
+//line psql.y:1484
 		{
 			psqVAL.tableSpecUnion().AddConstraint(psqDollar[3].constraintDefinitionUnion())
 		}
 	case 203:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.ColumnDefinition
-//line psql.y:1491
+//line psql.y:1495
 		{
 			psqDollar[2].columnType.Options = psqDollar[4].columnTypeOptionsUnion()
 			if psqDollar[2].columnType.Options.Collate == "" {
@@ -10566,7 +10570,7 @@ psqdefault:
 	case 204:
 		psqDollar = psqS[psqpt-10 : psqpt+1]
 		var psqLOCAL *ast.ColumnDefinition
-//line psql.y:1500
+//line psql.y:1504
 		{
 			psqDollar[2].columnType.Options = psqDollar[9].columnTypeOptionsUnion()
 			psqDollar[2].columnType.Options.As = psqDollar[7].exprUnion()
@@ -10577,20 +10581,20 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 205:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:1509
+//line psql.y:1513
 		{
 			psqVAL.str = ""
 		}
 	case 206:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:1513
+//line psql.y:1517
 		{
 			psqVAL.str = ""
 		}
 	case 207:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1522
+//line psql.y:1526
 		{
 			psqLOCAL = &ast.ColumnTypeOptions{Null: nil, Default: nil, OnUpdate: nil, Autoincrement: false, KeyOpt: ast.ColKeyNone, Comment: nil, As: nil, Invisible: nil, Format: ast.UnspecifiedFormat, EngineAttribute: nil, SecondaryEngineAttribute: nil}
 		}
@@ -10598,7 +10602,7 @@ psqdefault:
 	case 208:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1526
+//line psql.y:1530
 		{
 			val := true
 			psqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -10608,7 +10612,7 @@ psqdefault:
 	case 209:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1532
+//line psql.y:1536
 		{
 			val := false
 			psqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -10618,7 +10622,7 @@ psqdefault:
 	case 210:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1538
+//line psql.y:1542
 		{
 			psqDollar[1].columnTypeOptionsUnion().Default = psqDollar[4].exprUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10627,7 +10631,7 @@ psqdefault:
 	case 211:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1543
+//line psql.y:1547
 		{
 			psqDollar[1].columnTypeOptionsUnion().Default = psqDollar[3].exprUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10636,7 +10640,7 @@ psqdefault:
 	case 212:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1548
+//line psql.y:1552
 		{
 			psqDollar[1].columnTypeOptionsUnion().OnUpdate = psqDollar[4].exprUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10645,7 +10649,7 @@ psqdefault:
 	case 213:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1553
+//line psql.y:1557
 		{
 			psqDollar[1].columnTypeOptionsUnion().Autoincrement = true
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10654,7 +10658,7 @@ psqdefault:
 	case 214:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1558
+//line psql.y:1562
 		{
 			psqDollar[1].columnTypeOptionsUnion().Comment = ast.NewStrLiteral(psqDollar[3].str)
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10663,7 +10667,7 @@ psqdefault:
 	case 215:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1563
+//line psql.y:1567
 		{
 			psqDollar[1].columnTypeOptionsUnion().KeyOpt = psqDollar[2].colKeyOptUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10671,14 +10675,14 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 216:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1568
+//line psql.y:1572
 		{
 			psqDollar[1].columnTypeOptionsUnion().Collate = sql_types.EncodeStringSQL(psqDollar[3].str)
 		}
 	case 217:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1572
+//line psql.y:1576
 		{
 			psqDollar[1].columnTypeOptionsUnion().Collate = string(psqDollar[3].colIdent.String())
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10686,14 +10690,14 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 218:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:1577
+//line psql.y:1581
 		{
 			psqDollar[1].columnTypeOptionsUnion().Format = psqDollar[3].columnFormatUnion()
 		}
 	case 219:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1581
+//line psql.y:1585
 		{
 			psqDollar[1].columnTypeOptionsUnion().SRID = ast.NewIntLiteral(psqDollar[3].str)
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10702,7 +10706,7 @@ psqdefault:
 	case 220:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1586
+//line psql.y:1590
 		{
 			val := false
 			psqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -10712,7 +10716,7 @@ psqdefault:
 	case 221:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1592
+//line psql.y:1596
 		{
 			val := true
 			psqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -10722,7 +10726,7 @@ psqdefault:
 	case 222:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnFormat
-//line psql.y:1600
+//line psql.y:1604
 		{
 			psqLOCAL = ast.FixedFormat
 		}
@@ -10730,7 +10734,7 @@ psqdefault:
 	case 223:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnFormat
-//line psql.y:1604
+//line psql.y:1608
 		{
 			psqLOCAL = ast.DynamicFormat
 		}
@@ -10738,7 +10742,7 @@ psqdefault:
 	case 224:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnFormat
-//line psql.y:1608
+//line psql.y:1612
 		{
 			psqLOCAL = ast.DefaultFormat
 		}
@@ -10746,7 +10750,7 @@ psqdefault:
 	case 225:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnStorage
-//line psql.y:1614
+//line psql.y:1618
 		{
 			psqLOCAL = ast.VirtualStorage
 		}
@@ -10754,7 +10758,7 @@ psqdefault:
 	case 226:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnStorage
-//line psql.y:1618
+//line psql.y:1622
 		{
 			psqLOCAL = ast.StoredStorage
 		}
@@ -10762,7 +10766,7 @@ psqdefault:
 	case 227:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1623
+//line psql.y:1627
 		{
 			psqLOCAL = &ast.ColumnTypeOptions{}
 		}
@@ -10770,7 +10774,7 @@ psqdefault:
 	case 228:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1627
+//line psql.y:1631
 		{
 			psqDollar[1].columnTypeOptionsUnion().Storage = psqDollar[2].columnStorageUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10779,7 +10783,7 @@ psqdefault:
 	case 229:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1632
+//line psql.y:1636
 		{
 			val := true
 			psqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -10789,7 +10793,7 @@ psqdefault:
 	case 230:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1638
+//line psql.y:1642
 		{
 			val := false
 			psqDollar[1].columnTypeOptionsUnion().Null = &val
@@ -10799,7 +10803,7 @@ psqdefault:
 	case 231:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1644
+//line psql.y:1648
 		{
 			psqDollar[1].columnTypeOptionsUnion().Comment = ast.NewStrLiteral(psqDollar[3].str)
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10808,7 +10812,7 @@ psqdefault:
 	case 232:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1649
+//line psql.y:1653
 		{
 			psqDollar[1].columnTypeOptionsUnion().KeyOpt = psqDollar[2].colKeyOptUnion()
 			psqLOCAL = psqDollar[1].columnTypeOptionsUnion()
@@ -10817,7 +10821,7 @@ psqdefault:
 	case 233:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1654
+//line psql.y:1658
 		{
 			val := false
 			psqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -10827,7 +10831,7 @@ psqdefault:
 	case 234:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColumnTypeOptions
-//line psql.y:1660
+//line psql.y:1664
 		{
 			val := true
 			psqDollar[1].columnTypeOptionsUnion().Invisible = &val
@@ -10837,7 +10841,7 @@ psqdefault:
 	case 235:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1668
+//line psql.y:1672
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -10845,7 +10849,7 @@ psqdefault:
 	case 237:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1675
+//line psql.y:1679
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("current_timestamp"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -10853,7 +10857,7 @@ psqdefault:
 	case 238:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1679
+//line psql.y:1683
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("localtime"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -10861,7 +10865,7 @@ psqdefault:
 	case 239:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1683
+//line psql.y:1687
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("localtimestamp"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -10869,7 +10873,7 @@ psqdefault:
 	case 240:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1687
+//line psql.y:1691
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("utc_timestamp"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -10877,7 +10881,7 @@ psqdefault:
 	case 241:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1691
+//line psql.y:1695
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("now"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -10885,7 +10889,7 @@ psqdefault:
 	case 242:
 		psqDollar = psqS[psqpt-12 : psqpt+1]
 		var psqLOCAL *ast.SequenceSpec
-//line psql.y:1697
+//line psql.y:1701
 		{
 			psqLOCAL = &ast.SequenceSpec{StartWith: ast.IntRef(psqDollar[3].str), IncrementBy: ast.IntRef(psqDollar[6].str)}
 		}
@@ -10893,7 +10897,7 @@ psqdefault:
 	case 245:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1707
+//line psql.y:1711
 		{
 			psqLOCAL = &ast.NullVal{}
 		}
@@ -10901,7 +10905,7 @@ psqdefault:
 	case 247:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1714
+//line psql.y:1718
 		{
 			psqLOCAL = psqDollar[2].exprUnion()
 		}
@@ -10909,7 +10913,7 @@ psqdefault:
 	case 248:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1718
+//line psql.y:1722
 		{
 			psqLOCAL = &ast.UnaryExpr{Operator: ast.UMinusOp, Expr: psqDollar[2].exprUnion()}
 		}
@@ -10917,7 +10921,7 @@ psqdefault:
 	case 249:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1724
+//line psql.y:1728
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -10925,7 +10929,7 @@ psqdefault:
 	case 250:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1728
+//line psql.y:1732
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -10933,7 +10937,7 @@ psqdefault:
 	case 251:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1732
+//line psql.y:1736
 		{
 			psqLOCAL = psqDollar[1].boolValUnion()
 		}
@@ -10941,7 +10945,7 @@ psqdefault:
 	case 252:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1736
+//line psql.y:1740
 		{
 			psqLOCAL = ast.NewHexLiteral(psqDollar[1].str)
 		}
@@ -10949,7 +10953,7 @@ psqdefault:
 	case 253:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1740
+//line psql.y:1744
 		{
 			psqLOCAL = ast.NewHexNumLiteral(psqDollar[1].str)
 		}
@@ -10957,7 +10961,7 @@ psqdefault:
 	case 254:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1744
+//line psql.y:1748
 		{
 			psqLOCAL = ast.NewBitLiteral(psqDollar[1].str)
 		}
@@ -10965,7 +10969,7 @@ psqdefault:
 	case 255:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1748
+//line psql.y:1752
 		{
 			psqLOCAL = ast.NewArgument(psqDollar[1].str[1:])
 			bindVariable(psqlex, psqDollar[1].str[1:])
@@ -10974,7 +10978,7 @@ psqdefault:
 	case 256:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1753
+//line psql.y:1757
 		{
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: ast.NewBitLiteral(psqDollar[2].str)}
 		}
@@ -10982,7 +10986,7 @@ psqdefault:
 	case 257:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1757
+//line psql.y:1761
 		{
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: ast.NewHexNumLiteral(psqDollar[2].str)}
 		}
@@ -10990,7 +10994,7 @@ psqdefault:
 	case 258:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1761
+//line psql.y:1765
 		{
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: ast.NewHexLiteral(psqDollar[2].str)}
 		}
@@ -10998,7 +11002,7 @@ psqdefault:
 	case 259:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1765
+//line psql.y:1769
 		{
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: psqDollar[2].colNameUnion()}
 		}
@@ -11006,7 +11010,7 @@ psqdefault:
 	case 260:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1769
+//line psql.y:1773
 		{
 			bindVariable(psqlex, psqDollar[2].str[1:])
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: ast.NewArgument(psqDollar[2].str[1:])}
@@ -11014,260 +11018,260 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 261:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1776
+//line psql.y:1780
 		{
 			psqVAL.str = ast.Armscii8Str
 		}
 	case 262:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1780
+//line psql.y:1784
 		{
 			psqVAL.str = ast.ASCIIStr
 		}
 	case 263:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1784
+//line psql.y:1788
 		{
 			psqVAL.str = ast.Big5Str
 		}
 	case 264:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1788
+//line psql.y:1792
 		{
 			psqVAL.str = ast.UBinaryStr
 		}
 	case 265:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1792
+//line psql.y:1796
 		{
 			psqVAL.str = ast.Cp1250Str
 		}
 	case 266:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1796
+//line psql.y:1800
 		{
 			psqVAL.str = ast.Cp1251Str
 		}
 	case 267:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1800
+//line psql.y:1804
 		{
 			psqVAL.str = ast.Cp1256Str
 		}
 	case 268:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1804
+//line psql.y:1808
 		{
 			psqVAL.str = ast.Cp1257Str
 		}
 	case 269:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1808
+//line psql.y:1812
 		{
 			psqVAL.str = ast.Cp850Str
 		}
 	case 270:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1812
+//line psql.y:1816
 		{
 			psqVAL.str = ast.Cp852Str
 		}
 	case 271:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1816
+//line psql.y:1820
 		{
 			psqVAL.str = ast.Cp866Str
 		}
 	case 272:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1820
+//line psql.y:1824
 		{
 			psqVAL.str = ast.Cp932Str
 		}
 	case 273:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1824
+//line psql.y:1828
 		{
 			psqVAL.str = ast.Dec8Str
 		}
 	case 274:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1828
+//line psql.y:1832
 		{
 			psqVAL.str = ast.EucjpmsStr
 		}
 	case 275:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1832
+//line psql.y:1836
 		{
 			psqVAL.str = ast.EuckrStr
 		}
 	case 276:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1836
+//line psql.y:1840
 		{
 			psqVAL.str = ast.Gb18030Str
 		}
 	case 277:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1840
+//line psql.y:1844
 		{
 			psqVAL.str = ast.Gb2312Str
 		}
 	case 278:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1844
+//line psql.y:1848
 		{
 			psqVAL.str = ast.GbkStr
 		}
 	case 279:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1848
+//line psql.y:1852
 		{
 			psqVAL.str = ast.Geostd8Str
 		}
 	case 280:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1852
+//line psql.y:1856
 		{
 			psqVAL.str = ast.GreekStr
 		}
 	case 281:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1856
+//line psql.y:1860
 		{
 			psqVAL.str = ast.HebrewStr
 		}
 	case 282:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1860
+//line psql.y:1864
 		{
 			psqVAL.str = ast.Hp8Str
 		}
 	case 283:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1864
+//line psql.y:1868
 		{
 			psqVAL.str = ast.Keybcs2Str
 		}
 	case 284:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1868
+//line psql.y:1872
 		{
 			psqVAL.str = ast.Koi8rStr
 		}
 	case 285:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1872
+//line psql.y:1876
 		{
 			psqVAL.str = ast.Koi8uStr
 		}
 	case 286:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1876
+//line psql.y:1880
 		{
 			psqVAL.str = ast.Latin1Str
 		}
 	case 287:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1880
+//line psql.y:1884
 		{
 			psqVAL.str = ast.Latin2Str
 		}
 	case 288:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1884
+//line psql.y:1888
 		{
 			psqVAL.str = ast.Latin5Str
 		}
 	case 289:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1888
+//line psql.y:1892
 		{
 			psqVAL.str = ast.Latin7Str
 		}
 	case 290:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1892
+//line psql.y:1896
 		{
 			psqVAL.str = ast.MacceStr
 		}
 	case 291:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1896
+//line psql.y:1900
 		{
 			psqVAL.str = ast.MacromanStr
 		}
 	case 292:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1900
+//line psql.y:1904
 		{
 			psqVAL.str = ast.SjisStr
 		}
 	case 293:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1904
+//line psql.y:1908
 		{
 			psqVAL.str = ast.Swe7Str
 		}
 	case 294:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1908
+//line psql.y:1912
 		{
 			psqVAL.str = ast.Tis620Str
 		}
 	case 295:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1912
+//line psql.y:1916
 		{
 			psqVAL.str = ast.Ucs2Str
 		}
 	case 296:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1916
+//line psql.y:1920
 		{
 			psqVAL.str = ast.UjisStr
 		}
 	case 297:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1920
+//line psql.y:1924
 		{
 			psqVAL.str = ast.Utf16Str
 		}
 	case 298:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1924
+//line psql.y:1928
 		{
 			psqVAL.str = ast.Utf16leStr
 		}
 	case 299:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1928
+//line psql.y:1932
 		{
 			psqVAL.str = ast.Utf32Str
 		}
 	case 300:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1932
+//line psql.y:1936
 		{
 			psqVAL.str = ast.Utf8Str
 		}
 	case 301:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1936
+//line psql.y:1940
 		{
 			psqVAL.str = ast.Utf8mb4Str
 		}
 	case 302:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:1940
+//line psql.y:1944
 		{
 			psqVAL.str = ast.Utf8Str
 		}
 	case 305:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1950
+//line psql.y:1954
 		{
 			psqLOCAL = ast.NewIntLiteral(psqDollar[1].str)
 		}
@@ -11275,7 +11279,7 @@ psqdefault:
 	case 306:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1954
+//line psql.y:1958
 		{
 			psqLOCAL = ast.NewFloatLiteral(psqDollar[1].str)
 		}
@@ -11283,7 +11287,7 @@ psqdefault:
 	case 307:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1958
+//line psql.y:1962
 		{
 			psqLOCAL = ast.NewDecimalLiteral(psqDollar[1].str)
 		}
@@ -11291,7 +11295,7 @@ psqdefault:
 	case 308:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1964
+//line psql.y:1968
 		{
 			psqLOCAL = ast.NewStrLiteral(psqDollar[1].str)
 		}
@@ -11299,7 +11303,7 @@ psqdefault:
 	case 309:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1968
+//line psql.y:1972
 		{
 			psqLOCAL = &ast.UnaryExpr{Operator: ast.NStringOp, Expr: ast.NewStrLiteral(psqDollar[1].str)}
 		}
@@ -11307,7 +11311,7 @@ psqdefault:
 	case 310:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1972
+//line psql.y:1976
 		{
 			psqLOCAL = &ast.IntroducerExpr{CharacterSet: psqDollar[1].str, Expr: ast.NewStrLiteral(psqDollar[2].str)}
 		}
@@ -11315,7 +11319,7 @@ psqdefault:
 	case 311:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1978
+//line psql.y:1982
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -11323,7 +11327,7 @@ psqdefault:
 	case 312:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:1982
+//line psql.y:1986
 		{
 			psqLOCAL = ast.NewArgument(psqDollar[1].str[1:])
 			bindVariable(psqlex, psqDollar[1].str[1:])
@@ -11332,7 +11336,7 @@ psqdefault:
 	case 313:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ColumnKeyOption
-//line psql.y:1989
+//line psql.y:1993
 		{
 			psqLOCAL = ast.ColKeyPrimary
 		}
@@ -11340,7 +11344,7 @@ psqdefault:
 	case 314:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnKeyOption
-//line psql.y:1993
+//line psql.y:1997
 		{
 			psqLOCAL = ast.ColKeyUnique
 		}
@@ -11348,7 +11352,7 @@ psqdefault:
 	case 315:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ColumnKeyOption
-//line psql.y:1997
+//line psql.y:2001
 		{
 			psqLOCAL = ast.ColKeyUniqueKey
 		}
@@ -11356,14 +11360,14 @@ psqdefault:
 	case 316:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColumnKeyOption
-//line psql.y:2001
+//line psql.y:2005
 		{
 			psqLOCAL = ast.ColKey
 		}
 		psqVAL.union = psqLOCAL
 	case 317:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2007
+//line psql.y:2011
 		{
 			psqVAL.columnType = psqDollar[1].columnType
 			psqVAL.columnType.Unsigned = psqDollar[2].booleanUnion()
@@ -11371,74 +11375,74 @@ psqdefault:
 		}
 	case 321:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2018
+//line psql.y:2022
 		{
 			psqVAL.columnType = psqDollar[1].columnType
 			psqVAL.columnType.Length = psqDollar[2].literalUnion()
 		}
 	case 322:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2023
+//line psql.y:2027
 		{
 			psqVAL.columnType = psqDollar[1].columnType
 		}
 	case 323:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2029
+//line psql.y:2033
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 324:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2033
+//line psql.y:2037
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 325:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2037
+//line psql.y:2041
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 326:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2041
+//line psql.y:2045
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 327:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2045
+//line psql.y:2049
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 328:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2049
+//line psql.y:2053
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 329:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2053
+//line psql.y:2057
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 330:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2057
+//line psql.y:2061
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 331:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2061
+//line psql.y:2065
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 332:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2067
+//line psql.y:2071
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 			psqVAL.columnType.Length = psqDollar[2].LengthScaleOption.Length
@@ -11446,7 +11450,7 @@ psqdefault:
 		}
 	case 333:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2073
+//line psql.y:2077
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 			psqVAL.columnType.Length = psqDollar[2].LengthScaleOption.Length
@@ -11454,7 +11458,7 @@ psqdefault:
 		}
 	case 334:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2079
+//line psql.y:2083
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 			psqVAL.columnType.Length = psqDollar[2].LengthScaleOption.Length
@@ -11462,7 +11466,7 @@ psqdefault:
 		}
 	case 335:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2085
+//line psql.y:2089
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 			psqVAL.columnType.Length = psqDollar[2].LengthScaleOption.Length
@@ -11470,7 +11474,7 @@ psqdefault:
 		}
 	case 336:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2091
+//line psql.y:2095
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 			psqVAL.columnType.Length = psqDollar[2].LengthScaleOption.Length
@@ -11478,43 +11482,43 @@ psqdefault:
 		}
 	case 337:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2099
+//line psql.y:2103
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 338:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2103
+//line psql.y:2107
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 339:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2107
+//line psql.y:2111
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 340:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2111
+//line psql.y:2115
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 341:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2115
+//line psql.y:2119
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 342:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2121
+//line psql.y:2125
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion(), Charset: psqDollar[3].columnCharset}
 		}
 	case 343:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2125
+//line psql.y:2129
 		{
 			// CHAR BYTE is an alias for binary. See also:
 			// https://dev.psql.com/doc/refman/8.0/en/string-type-syntax.html
@@ -11522,153 +11526,153 @@ psqdefault:
 		}
 	case 344:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2131
+//line psql.y:2135
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion(), Charset: psqDollar[3].columnCharset}
 		}
 	case 345:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2135
+//line psql.y:2139
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 346:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2139
+//line psql.y:2143
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
 	case 347:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2143
+//line psql.y:2147
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Charset: psqDollar[2].columnCharset}
 		}
 	case 348:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2147
+//line psql.y:2151
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Charset: psqDollar[2].columnCharset}
 		}
 	case 349:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2151
+//line psql.y:2155
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Charset: psqDollar[2].columnCharset}
 		}
 	case 350:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2155
+//line psql.y:2159
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), Charset: psqDollar[2].columnCharset}
 		}
 	case 351:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2159
+//line psql.y:2163
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 352:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2163
+//line psql.y:2167
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 353:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2167
+//line psql.y:2171
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 354:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2171
+//line psql.y:2175
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 355:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2175
+//line psql.y:2179
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 356:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
-//line psql.y:2179
+//line psql.y:2183
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), EnumValues: psqDollar[3].strs, Charset: psqDollar[5].columnCharset}
 		}
 	case 357:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
-//line psql.y:2184
+//line psql.y:2188
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str), EnumValues: psqDollar[3].strs, Charset: psqDollar[5].columnCharset}
 		}
 	case 358:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2190
+//line psql.y:2194
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 359:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2194
+//line psql.y:2198
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 360:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2198
+//line psql.y:2202
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 361:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2202
+//line psql.y:2206
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 362:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2206
+//line psql.y:2210
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 363:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2210
+//line psql.y:2214
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 364:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2214
+//line psql.y:2218
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 365:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2218
+//line psql.y:2222
 		{
 			psqVAL.columnType = ast.ColumnType{Type: string(psqDollar[1].str)}
 		}
 	case 366:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2224
+//line psql.y:2228
 		{
 			psqVAL.strs = make([]string, 0, 4)
 			psqVAL.strs = append(psqVAL.strs, sql_types.EncodeStringSQL(psqDollar[1].str))
 		}
 	case 367:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2229
+//line psql.y:2233
 		{
 			psqVAL.strs = append(psqDollar[1].strs, sql_types.EncodeStringSQL(psqDollar[3].str))
 		}
 	case 368:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.Literal
-//line psql.y:2234
+//line psql.y:2238
 		{
 			psqLOCAL = nil
 		}
@@ -11676,27 +11680,27 @@ psqdefault:
 	case 369:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.Literal
-//line psql.y:2238
+//line psql.y:2242
 		{
 			psqLOCAL = ast.NewIntLiteral(psqDollar[2].str)
 		}
 		psqVAL.union = psqLOCAL
 	case 370:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2243
+//line psql.y:2247
 		{
 			psqVAL.LengthScaleOption = ast.LengthScaleOption{}
 		}
 	case 371:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2248
+//line psql.y:2252
 		{
 			psqVAL.LengthScaleOption = ast.LengthScaleOption{}
 		}
 	case 372:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2253
+//line psql.y:2257
 		{
 			psqLOCAL = false
 		}
@@ -11704,7 +11708,7 @@ psqdefault:
 	case 373:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2257
+//line psql.y:2261
 		{
 			psqLOCAL = true
 		}
@@ -11712,7 +11716,7 @@ psqdefault:
 	case 374:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2261
+//line psql.y:2265
 		{
 			psqLOCAL = false
 		}
@@ -11720,7 +11724,7 @@ psqdefault:
 	case 375:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2266
+//line psql.y:2270
 		{
 			psqLOCAL = false
 		}
@@ -11728,66 +11732,66 @@ psqdefault:
 	case 376:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2270
+//line psql.y:2274
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 377:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2275
+//line psql.y:2279
 		{
 			psqVAL.columnCharset = ast.ColumnCharset{}
 		}
 	case 378:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2279
+//line psql.y:2283
 		{
 			psqVAL.columnCharset = ast.ColumnCharset{Name: string(psqDollar[2].colIdent.String()), Binary: psqDollar[3].booleanUnion()}
 		}
 	case 379:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2283
+//line psql.y:2287
 		{
 			psqVAL.columnCharset = ast.ColumnCharset{Name: sql_types.EncodeStringSQL(psqDollar[2].str), Binary: psqDollar[3].booleanUnion()}
 		}
 	case 380:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2287
+//line psql.y:2291
 		{
 			psqVAL.columnCharset = ast.ColumnCharset{Name: string(psqDollar[2].str)}
 		}
 	case 381:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2291
+//line psql.y:2295
 		{
 			// ASCII: ast.Shorthand for CHARACTER SET latin1.
 			psqVAL.columnCharset = ast.ColumnCharset{Name: "latin1", Binary: psqDollar[2].booleanUnion()}
 		}
 	case 382:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2296
+//line psql.y:2300
 		{
 			// UNICODE: ast.Shorthand for CHARACTER SET ucs2.
 			psqVAL.columnCharset = ast.ColumnCharset{Name: "ucs2", Binary: psqDollar[2].booleanUnion()}
 		}
 	case 383:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2301
+//line psql.y:2305
 		{
 			// BINARY: ast.Shorthand for default CHARACTER SET but with binary collation
 			psqVAL.columnCharset = ast.ColumnCharset{Name: "", Binary: true}
 		}
 	case 384:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2306
+//line psql.y:2310
 		{
 			// BINARY ASCII: ast.Shorthand for CHARACTER SET latin1 with binary collation
 			psqVAL.columnCharset = ast.ColumnCharset{Name: "latin1", Binary: true}
 		}
 	case 385:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2311
+//line psql.y:2315
 		{
 			// BINARY UNICODE: ast.Shorthand for CHARACTER SET ucs2 with binary collation
 			psqVAL.columnCharset = ast.ColumnCharset{Name: "ucs2", Binary: true}
@@ -11795,7 +11799,7 @@ psqdefault:
 	case 386:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2317
+//line psql.y:2321
 		{
 			psqLOCAL = false
 		}
@@ -11803,33 +11807,33 @@ psqdefault:
 	case 387:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2321
+//line psql.y:2325
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 388:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2326
+//line psql.y:2330
 		{
 			psqVAL.str = ""
 		}
 	case 389:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2330
+//line psql.y:2334
 		{
 			psqVAL.str = string(psqDollar[2].colIdent.String())
 		}
 	case 390:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2334
+//line psql.y:2338
 		{
 			psqVAL.str = sql_types.EncodeStringSQL(psqDollar[2].str)
 		}
 	case 391:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.IndexDefinition
-//line psql.y:2341
+//line psql.y:2345
 		{
 			psqLOCAL = &ast.IndexDefinition{Info: psqDollar[1].indexInfoUnion(), Columns: psqDollar[3].indexColumnsUnion(), Options: psqDollar[5].indexOptionsUnion()}
 		}
@@ -11837,7 +11841,7 @@ psqdefault:
 	case 392:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []*ast.IndexOption
-//line psql.y:2346
+//line psql.y:2350
 		{
 			psqLOCAL = nil
 		}
@@ -11845,7 +11849,7 @@ psqdefault:
 	case 393:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.IndexOption
-//line psql.y:2350
+//line psql.y:2354
 		{
 			psqLOCAL = psqDollar[1].indexOptionsUnion()
 		}
@@ -11853,14 +11857,14 @@ psqdefault:
 	case 394:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.IndexOption
-//line psql.y:2356
+//line psql.y:2360
 		{
 			psqLOCAL = []*ast.IndexOption{psqDollar[1].indexOptionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 395:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2360
+//line psql.y:2364
 		{
 			psqSLICE := (*[]*ast.IndexOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].indexOptionUnion())
@@ -11868,7 +11872,7 @@ psqdefault:
 	case 396:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:2366
+//line psql.y:2370
 		{
 			psqLOCAL = psqDollar[1].indexOptionUnion()
 		}
@@ -11876,7 +11880,7 @@ psqdefault:
 	case 397:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:2370
+//line psql.y:2374
 		{
 			psqLOCAL = &ast.IndexOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[2].str)}
 		}
@@ -11884,7 +11888,7 @@ psqdefault:
 	case 398:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:2374
+//line psql.y:2378
 		{
 			psqLOCAL = &ast.IndexOption{Name: string(psqDollar[1].str)}
 		}
@@ -11892,7 +11896,7 @@ psqdefault:
 	case 399:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:2378
+//line psql.y:2382
 		{
 			psqLOCAL = &ast.IndexOption{Name: string(psqDollar[1].str)}
 		}
@@ -11900,27 +11904,27 @@ psqdefault:
 	case 400:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:2382
+//line psql.y:2386
 		{
 			psqLOCAL = &ast.IndexOption{Name: string(psqDollar[1].str) + " " + string(psqDollar[2].str), String: psqDollar[3].colIdent.String()}
 		}
 		psqVAL.union = psqLOCAL
 	case 401:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2388
+//line psql.y:2392
 		{
 			psqVAL.str = ""
 		}
 	case 402:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2392
+//line psql.y:2396
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 403:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.IndexInfo
-//line psql.y:2398
+//line psql.y:2402
 		{
 			psqLOCAL = &ast.IndexInfo{Type: string(psqDollar[2].str) + " " + string(psqDollar[3].str), ConstraintName: ast.NewColIdent(psqDollar[1].str), Name: ast.NewColIdent("PRIMARY"), Primary: true, Unique: true}
 		}
@@ -11928,7 +11932,7 @@ psqdefault:
 	case 404:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.IndexInfo
-//line psql.y:2402
+//line psql.y:2406
 		{
 			psqLOCAL = &ast.IndexInfo{Type: string(psqDollar[1].str) + " " + string(psqDollar[2].str), Name: ast.NewColIdent(psqDollar[3].str), Spatial: true, Unique: false}
 		}
@@ -11936,7 +11940,7 @@ psqdefault:
 	case 405:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.IndexInfo
-//line psql.y:2406
+//line psql.y:2410
 		{
 			psqLOCAL = &ast.IndexInfo{Type: string(psqDollar[1].str) + " " + string(psqDollar[2].str), Name: ast.NewColIdent(psqDollar[3].str), Fulltext: true, Unique: false}
 		}
@@ -11944,7 +11948,7 @@ psqdefault:
 	case 406:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.IndexInfo
-//line psql.y:2410
+//line psql.y:2414
 		{
 			psqLOCAL = &ast.IndexInfo{Type: string(psqDollar[2].str) + " " + string(psqDollar[3].str), ConstraintName: ast.NewColIdent(psqDollar[1].str), Name: ast.NewColIdent(psqDollar[4].str), Unique: true}
 		}
@@ -11952,100 +11956,100 @@ psqdefault:
 	case 407:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.IndexInfo
-//line psql.y:2414
+//line psql.y:2418
 		{
 			psqLOCAL = &ast.IndexInfo{Type: string(psqDollar[1].str), Name: ast.NewColIdent(psqDollar[2].str), Unique: false}
 		}
 		psqVAL.union = psqLOCAL
 	case 408:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2419
+//line psql.y:2423
 		{
 			psqVAL.str = ""
 		}
 	case 409:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2423
+//line psql.y:2427
 		{
 			psqVAL.str = psqDollar[2].str
 		}
 	case 410:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2429
+//line psql.y:2433
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 411:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2433
+//line psql.y:2437
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 412:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2437
+//line psql.y:2441
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 413:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2444
+//line psql.y:2448
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 414:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2448
+//line psql.y:2452
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 415:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2453
+//line psql.y:2457
 		{
 			psqVAL.str = "key"
 		}
 	case 416:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2457
+//line psql.y:2461
 		{
 			psqVAL.str = psqDollar[1].str
 		}
 	case 417:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2463
+//line psql.y:2467
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 418:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2467
+//line psql.y:2471
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 419:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2472
+//line psql.y:2476
 		{
 			psqVAL.str = ""
 		}
 	case 420:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2476
+//line psql.y:2480
 		{
 			psqVAL.str = string(psqDollar[1].colIdent.String())
 		}
 	case 421:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.IndexColumn
-//line psql.y:2482
+//line psql.y:2486
 		{
 			psqLOCAL = []*ast.IndexColumn{psqDollar[1].indexColumnUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 422:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2486
+//line psql.y:2490
 		{
 			psqSLICE := (*[]*ast.IndexColumn)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].indexColumnUnion())
@@ -12053,7 +12057,7 @@ psqdefault:
 	case 423:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.IndexColumn
-//line psql.y:2492
+//line psql.y:2496
 		{
 			psqLOCAL = &ast.IndexColumn{Column: psqDollar[1].colIdent, Length: psqDollar[2].literalUnion(), Direction: psqDollar[3].orderDirectionUnion()}
 		}
@@ -12061,7 +12065,7 @@ psqdefault:
 	case 424:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.IndexColumn
-//line psql.y:2496
+//line psql.y:2500
 		{
 			psqLOCAL = &ast.IndexColumn{Expression: psqDollar[2].exprUnion(), Direction: psqDollar[4].orderDirectionUnion()}
 		}
@@ -12069,7 +12073,7 @@ psqdefault:
 	case 425:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ConstraintDefinition
-//line psql.y:2502
+//line psql.y:2506
 		{
 			psqLOCAL = &ast.ConstraintDefinition{Name: psqDollar[2].colIdent, Details: psqDollar[3].constraintInfoUnion()}
 		}
@@ -12077,7 +12081,7 @@ psqdefault:
 	case 426:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConstraintDefinition
-//line psql.y:2506
+//line psql.y:2510
 		{
 			psqLOCAL = &ast.ConstraintDefinition{Details: psqDollar[1].constraintInfoUnion()}
 		}
@@ -12085,7 +12089,7 @@ psqdefault:
 	case 427:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ConstraintDefinition
-//line psql.y:2512
+//line psql.y:2516
 		{
 			psqLOCAL = &ast.ConstraintDefinition{Name: psqDollar[2].colIdent, Details: psqDollar[3].constraintInfoUnion()}
 		}
@@ -12093,7 +12097,7 @@ psqdefault:
 	case 428:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConstraintDefinition
-//line psql.y:2516
+//line psql.y:2520
 		{
 			psqLOCAL = &ast.ConstraintDefinition{Details: psqDollar[1].constraintInfoUnion()}
 		}
@@ -12101,7 +12105,7 @@ psqdefault:
 	case 429:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.ConstraintInfo
-//line psql.y:2522
+//line psql.y:2526
 		{
 			psqLOCAL = &ast.ForeignKeyDefinition{IndexName: ast.NewColIdent(psqDollar[3].str), Source: psqDollar[5].columnsUnion(), ReferenceDefinition: psqDollar[7].referenceDefinitionUnion()}
 		}
@@ -12109,7 +12113,7 @@ psqdefault:
 	case 430:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2528
+//line psql.y:2532
 		{
 			psqLOCAL = &ast.ReferenceDefinition{ReferencedTable: psqDollar[2].tableName, ReferencedColumns: psqDollar[4].columnsUnion(), Match: psqDollar[6].matchActionUnion()}
 		}
@@ -12117,7 +12121,7 @@ psqdefault:
 	case 431:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2532
+//line psql.y:2536
 		{
 			psqLOCAL = &ast.ReferenceDefinition{ReferencedTable: psqDollar[2].tableName, ReferencedColumns: psqDollar[4].columnsUnion(), Match: psqDollar[6].matchActionUnion(), OnDelete: psqDollar[7].referenceActionUnion()}
 		}
@@ -12125,7 +12129,7 @@ psqdefault:
 	case 432:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2536
+//line psql.y:2540
 		{
 			psqLOCAL = &ast.ReferenceDefinition{ReferencedTable: psqDollar[2].tableName, ReferencedColumns: psqDollar[4].columnsUnion(), Match: psqDollar[6].matchActionUnion(), OnUpdate: psqDollar[7].referenceActionUnion()}
 		}
@@ -12133,7 +12137,7 @@ psqdefault:
 	case 433:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2540
+//line psql.y:2544
 		{
 			psqLOCAL = &ast.ReferenceDefinition{ReferencedTable: psqDollar[2].tableName, ReferencedColumns: psqDollar[4].columnsUnion(), Match: psqDollar[6].matchActionUnion(), OnDelete: psqDollar[7].referenceActionUnion(), OnUpdate: psqDollar[8].referenceActionUnion()}
 		}
@@ -12141,7 +12145,7 @@ psqdefault:
 	case 434:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2544
+//line psql.y:2548
 		{
 			psqLOCAL = &ast.ReferenceDefinition{ReferencedTable: psqDollar[2].tableName, ReferencedColumns: psqDollar[4].columnsUnion(), Match: psqDollar[6].matchActionUnion(), OnUpdate: psqDollar[7].referenceActionUnion(), OnDelete: psqDollar[8].referenceActionUnion()}
 		}
@@ -12149,7 +12153,7 @@ psqdefault:
 	case 435:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2549
+//line psql.y:2553
 		{
 			psqLOCAL = nil
 		}
@@ -12157,7 +12161,7 @@ psqdefault:
 	case 436:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ReferenceDefinition
-//line psql.y:2553
+//line psql.y:2557
 		{
 			psqLOCAL = psqDollar[1].referenceDefinitionUnion()
 		}
@@ -12165,7 +12169,7 @@ psqdefault:
 	case 437:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.ConstraintInfo
-//line psql.y:2559
+//line psql.y:2563
 		{
 			psqLOCAL = &ast.CheckConstraintDefinition{Expr: psqDollar[3].exprUnion(), Enforced: psqDollar[5].booleanUnion()}
 		}
@@ -12173,7 +12177,7 @@ psqdefault:
 	case 438:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2565
+//line psql.y:2569
 		{
 			psqLOCAL = psqDollar[2].matchActionUnion()
 		}
@@ -12181,7 +12185,7 @@ psqdefault:
 	case 439:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2571
+//line psql.y:2575
 		{
 			psqLOCAL = ast.Full
 		}
@@ -12189,7 +12193,7 @@ psqdefault:
 	case 440:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2575
+//line psql.y:2579
 		{
 			psqLOCAL = ast.Partial
 		}
@@ -12197,7 +12201,7 @@ psqdefault:
 	case 441:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2579
+//line psql.y:2583
 		{
 			psqLOCAL = ast.Simple
 		}
@@ -12205,7 +12209,7 @@ psqdefault:
 	case 442:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2584
+//line psql.y:2588
 		{
 			psqLOCAL = ast.DefaultMatch
 		}
@@ -12213,7 +12217,7 @@ psqdefault:
 	case 443:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.MatchAction
-//line psql.y:2588
+//line psql.y:2592
 		{
 			psqLOCAL = psqDollar[1].matchActionUnion()
 		}
@@ -12221,7 +12225,7 @@ psqdefault:
 	case 444:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2594
+//line psql.y:2598
 		{
 			psqLOCAL = psqDollar[3].referenceActionUnion()
 		}
@@ -12229,7 +12233,7 @@ psqdefault:
 	case 445:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2600
+//line psql.y:2604
 		{
 			psqLOCAL = psqDollar[3].referenceActionUnion()
 		}
@@ -12237,7 +12241,7 @@ psqdefault:
 	case 446:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2606
+//line psql.y:2610
 		{
 			psqLOCAL = ast.Restrict
 		}
@@ -12245,7 +12249,7 @@ psqdefault:
 	case 447:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2610
+//line psql.y:2614
 		{
 			psqLOCAL = ast.Cascade
 		}
@@ -12253,7 +12257,7 @@ psqdefault:
 	case 448:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2614
+//line psql.y:2618
 		{
 			psqLOCAL = ast.NoAction
 		}
@@ -12261,7 +12265,7 @@ psqdefault:
 	case 449:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2618
+//line psql.y:2622
 		{
 			psqLOCAL = ast.SetDefault
 		}
@@ -12269,33 +12273,33 @@ psqdefault:
 	case 450:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ReferenceAction
-//line psql.y:2622
+//line psql.y:2626
 		{
 			psqLOCAL = ast.SetNull
 		}
 		psqVAL.union = psqLOCAL
 	case 451:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2627
+//line psql.y:2631
 		{
 			psqVAL.str = ""
 		}
 	case 452:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2631
+//line psql.y:2635
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 453:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2635
+//line psql.y:2639
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 454:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2641
+//line psql.y:2645
 		{
 			psqLOCAL = true
 		}
@@ -12303,7 +12307,7 @@ psqdefault:
 	case 455:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2645
+//line psql.y:2649
 		{
 			psqLOCAL = false
 		}
@@ -12311,7 +12315,7 @@ psqdefault:
 	case 456:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2650
+//line psql.y:2654
 		{
 			psqLOCAL = true
 		}
@@ -12319,7 +12323,7 @@ psqdefault:
 	case 457:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2654
+//line psql.y:2658
 		{
 			psqLOCAL = psqDollar[1].booleanUnion()
 		}
@@ -12327,7 +12331,7 @@ psqdefault:
 	case 458:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.TableOptions
-//line psql.y:2659
+//line psql.y:2663
 		{
 			psqLOCAL = nil
 		}
@@ -12335,7 +12339,7 @@ psqdefault:
 	case 459:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableOptions
-//line psql.y:2663
+//line psql.y:2667
 		{
 			psqLOCAL = psqDollar[1].tableOptionsUnion()
 		}
@@ -12343,21 +12347,21 @@ psqdefault:
 	case 460:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableOptions
-//line psql.y:2669
+//line psql.y:2673
 		{
 			psqLOCAL = ast.TableOptions{psqDollar[1].tableOptionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 461:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2673
+//line psql.y:2677
 		{
 			psqSLICE := (*ast.TableOptions)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableOptionUnion())
 		}
 	case 462:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2677
+//line psql.y:2681
 		{
 			psqSLICE := (*ast.TableOptions)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].tableOptionUnion())
@@ -12365,14 +12369,14 @@ psqdefault:
 	case 463:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableOptions
-//line psql.y:2683
+//line psql.y:2687
 		{
 			psqLOCAL = ast.TableOptions{psqDollar[1].tableOptionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 464:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2687
+//line psql.y:2691
 		{
 			psqSLICE := (*ast.TableOptions)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].tableOptionUnion())
@@ -12380,7 +12384,7 @@ psqdefault:
 	case 465:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2693
+//line psql.y:2697
 		{
 			psqLOCAL = &ast.TableOption{Name: (string(psqDollar[2].str)), String: psqDollar[4].str, CaseSensitive: true}
 		}
@@ -12388,7 +12392,7 @@ psqdefault:
 	case 466:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2697
+//line psql.y:2701
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[2].str), String: psqDollar[4].str, CaseSensitive: true}
 		}
@@ -12396,7 +12400,7 @@ psqdefault:
 	case 467:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2701
+//line psql.y:2705
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[3].str)}
 		}
@@ -12404,7 +12408,7 @@ psqdefault:
 	case 468:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2705
+//line psql.y:2709
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[3].str)}
 		}
@@ -12412,7 +12416,7 @@ psqdefault:
 	case 469:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2709
+//line psql.y:2713
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[3].str)}
 		}
@@ -12420,7 +12424,7 @@ psqdefault:
 	case 470:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2713
+//line psql.y:2717
 		{
 			psqLOCAL = &ast.TableOption{Name: (string(psqDollar[1].str) + " " + string(psqDollar[2].str)), Value: ast.NewStrLiteral(psqDollar[4].str)}
 		}
@@ -12428,7 +12432,7 @@ psqdefault:
 	case 471:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2717
+//line psql.y:2721
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[3].str)}
 		}
@@ -12436,7 +12440,7 @@ psqdefault:
 	case 472:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2721
+//line psql.y:2725
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: string(psqDollar[3].str)}
 		}
@@ -12444,7 +12448,7 @@ psqdefault:
 	case 473:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2725
+//line psql.y:2729
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: string(psqDollar[3].str)}
 		}
@@ -12452,7 +12456,7 @@ psqdefault:
 	case 474:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2729
+//line psql.y:2733
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Value: ast.NewStrLiteral(psqDollar[3].str)}
 		}
@@ -12460,7 +12464,7 @@ psqdefault:
 	case 475:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2733
+//line psql.y:2737
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: string(psqDollar[3].str)}
 		}
@@ -12468,7 +12472,7 @@ psqdefault:
 	case 476:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2737
+//line psql.y:2741
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: string(psqDollar[3].str)}
 		}
@@ -12476,7 +12480,7 @@ psqdefault:
 	case 477:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2741
+//line psql.y:2745
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: string(psqDollar[3].str)}
 		}
@@ -12484,7 +12488,7 @@ psqdefault:
 	case 478:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2745
+//line psql.y:2749
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), String: (psqDollar[3].colIdent.String() + psqDollar[4].str)}
 		}
@@ -12492,57 +12496,57 @@ psqdefault:
 	case 479:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.TableOption
-//line psql.y:2749
+//line psql.y:2753
 		{
 			psqLOCAL = &ast.TableOption{Name: string(psqDollar[1].str), Tables: psqDollar[4].tableNamesUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 480:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2754
+//line psql.y:2758
 		{
 			psqVAL.str = ""
 		}
 	case 481:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2758
+//line psql.y:2762
 		{
 			psqVAL.str = " " + string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 482:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:2762
+//line psql.y:2766
 		{
 			psqVAL.str = " " + string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 492:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2781
+//line psql.y:2785
 		{
 			psqVAL.str = psqDollar[1].colIdent.String()
 		}
 	case 493:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2785
+//line psql.y:2789
 		{
 			psqVAL.str = sql_types.EncodeStringSQL(psqDollar[1].str)
 		}
 	case 494:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:2789
+//line psql.y:2793
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 495:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:2794
+//line psql.y:2798
 		{
 			psqVAL.str = ""
 		}
 	case 497:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2800
+//line psql.y:2804
 		{
 			psqLOCAL = false
 		}
@@ -12550,7 +12554,7 @@ psqdefault:
 	case 498:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:2804
+//line psql.y:2808
 		{
 			psqLOCAL = true
 		}
@@ -12558,7 +12562,7 @@ psqdefault:
 	case 499:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ColName
-//line psql.y:2809
+//line psql.y:2813
 		{
 			psqLOCAL = nil
 		}
@@ -12566,7 +12570,7 @@ psqdefault:
 	case 500:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ColName
-//line psql.y:2813
+//line psql.y:2817
 		{
 			psqLOCAL = psqDollar[2].colNameUnion()
 		}
@@ -12574,7 +12578,7 @@ psqdefault:
 	case 501:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2819
+//line psql.y:2823
 		{
 			psqLOCAL = []ast.AlterOption{&ast.AlterOwner{Owner: &ast.RoleName{Name: ast.RoleIdent{V: psqDollar[3].str}}}}
 		}
@@ -12582,7 +12586,7 @@ psqdefault:
 	case 502:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2824
+//line psql.y:2828
 		{
 			psqLOCAL = nil
 		}
@@ -12590,14 +12594,14 @@ psqdefault:
 	case 503:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2828
+//line psql.y:2832
 		{
 			psqLOCAL = psqDollar[1].alterOptionsUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 504:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
-//line psql.y:2832
+//line psql.y:2836
 		{
 			psqSLICE := (*[]ast.AlterOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, &ast.OrderByOption{Cols: psqDollar[5].columnsUnion()})
@@ -12605,14 +12609,14 @@ psqdefault:
 	case 505:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2836
+//line psql.y:2840
 		{
 			psqLOCAL = psqDollar[1].alterOptionsUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 506:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2840
+//line psql.y:2844
 		{
 			psqSLICE := (*[]ast.AlterOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].alterOptionsUnion()...)
@@ -12620,7 +12624,7 @@ psqdefault:
 	case 507:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2844
+//line psql.y:2848
 		{
 			psqLOCAL = append(append(psqDollar[1].alterOptionsUnion(), psqDollar[3].alterOptionsUnion()...), &ast.OrderByOption{Cols: psqDollar[7].columnsUnion()})
 		}
@@ -12628,21 +12632,21 @@ psqdefault:
 	case 508:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2850
+//line psql.y:2854
 		{
 			psqLOCAL = []ast.AlterOption{psqDollar[1].alterOptionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 509:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2854
+//line psql.y:2858
 		{
 			psqSLICE := (*[]ast.AlterOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].alterOptionUnion())
 		}
 	case 510:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2858
+//line psql.y:2862
 		{
 			psqSLICE := (*[]ast.AlterOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].alterOptionUnion())
@@ -12650,7 +12654,7 @@ psqdefault:
 	case 511:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2864
+//line psql.y:2868
 		{
 			psqLOCAL = psqDollar[1].tableOptionsUnion()
 		}
@@ -12658,7 +12662,7 @@ psqdefault:
 	case 512:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2868
+//line psql.y:2872
 		{
 			psqLOCAL = &ast.AddConstraintDefinition{ConstraintDefinition: psqDollar[2].constraintDefinitionUnion()}
 		}
@@ -12666,7 +12670,7 @@ psqdefault:
 	case 513:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2872
+//line psql.y:2876
 		{
 			psqLOCAL = &ast.AddConstraintDefinition{ConstraintDefinition: psqDollar[2].constraintDefinitionUnion()}
 		}
@@ -12674,7 +12678,7 @@ psqdefault:
 	case 514:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2876
+//line psql.y:2880
 		{
 			psqLOCAL = &ast.AddIndexDefinition{IndexDefinition: psqDollar[2].indexDefinitionUnion()}
 		}
@@ -12682,7 +12686,7 @@ psqdefault:
 	case 515:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2880
+//line psql.y:2884
 		{
 			psqLOCAL = &ast.AddColumns{Columns: psqDollar[4].columnDefinitionsUnion()}
 		}
@@ -12690,7 +12694,7 @@ psqdefault:
 	case 516:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2884
+//line psql.y:2888
 		{
 			psqLOCAL = &ast.AddColumns{Columns: []*ast.ColumnDefinition{psqDollar[3].columnDefinitionUnion()}, First: psqDollar[4].booleanUnion(), After: psqDollar[5].colNameUnion()}
 		}
@@ -12698,7 +12702,7 @@ psqdefault:
 	case 517:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2888
+//line psql.y:2892
 		{
 			psqLOCAL = &ast.AlterColumn{Column: psqDollar[3].colNameUnion(), DropDefault: true}
 		}
@@ -12706,7 +12710,7 @@ psqdefault:
 	case 518:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2892
+//line psql.y:2896
 		{
 			psqLOCAL = &ast.AlterColumn{Column: psqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: psqDollar[6].exprUnion()}
 		}
@@ -12714,7 +12718,7 @@ psqdefault:
 	case 519:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2896
+//line psql.y:2900
 		{
 			psqLOCAL = &ast.AlterColumn{Column: psqDollar[3].colNameUnion(), DropDefault: false, DefaultVal: psqDollar[7].exprUnion()}
 		}
@@ -12722,7 +12726,7 @@ psqdefault:
 	case 520:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2900
+//line psql.y:2904
 		{
 			val := false
 			psqLOCAL = &ast.AlterColumn{Column: psqDollar[3].colNameUnion(), Invisible: &val}
@@ -12731,7 +12735,7 @@ psqdefault:
 	case 521:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2905
+//line psql.y:2909
 		{
 			val := true
 			psqLOCAL = &ast.AlterColumn{Column: psqDollar[3].colNameUnion(), Invisible: &val}
@@ -12740,7 +12744,7 @@ psqdefault:
 	case 522:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2910
+//line psql.y:2914
 		{
 			psqLOCAL = &ast.AlterCheck{Name: psqDollar[3].colIdent, Enforced: psqDollar[4].booleanUnion()}
 		}
@@ -12748,7 +12752,7 @@ psqdefault:
 	case 523:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2914
+//line psql.y:2918
 		{
 			psqLOCAL = &ast.AlterIndex{Name: psqDollar[3].colIdent, Invisible: false}
 		}
@@ -12756,7 +12760,7 @@ psqdefault:
 	case 524:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2918
+//line psql.y:2922
 		{
 			psqLOCAL = &ast.AlterIndex{Name: psqDollar[3].colIdent, Invisible: true}
 		}
@@ -12764,7 +12768,7 @@ psqdefault:
 	case 525:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2922
+//line psql.y:2926
 		{
 			psqLOCAL = &ast.ChangeColumn{OldColumn: psqDollar[3].colNameUnion(), NewColDefinition: psqDollar[4].columnDefinitionUnion(), First: psqDollar[5].booleanUnion(), After: psqDollar[6].colNameUnion()}
 		}
@@ -12772,7 +12776,7 @@ psqdefault:
 	case 526:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2926
+//line psql.y:2930
 		{
 			psqLOCAL = &ast.ModifyColumn{NewColDefinition: psqDollar[3].columnDefinitionUnion(), First: psqDollar[4].booleanUnion(), After: psqDollar[5].colNameUnion()}
 		}
@@ -12780,7 +12784,7 @@ psqdefault:
 	case 527:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2930
+//line psql.y:2934
 		{
 			psqLOCAL = &ast.AlterCharset{CharacterSet: psqDollar[4].str, Collate: psqDollar[5].str}
 		}
@@ -12788,7 +12792,7 @@ psqdefault:
 	case 528:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2934
+//line psql.y:2938
 		{
 			psqLOCAL = &ast.KeyState{Enable: false}
 		}
@@ -12796,7 +12800,7 @@ psqdefault:
 	case 529:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2938
+//line psql.y:2942
 		{
 			psqLOCAL = &ast.KeyState{Enable: true}
 		}
@@ -12804,7 +12808,7 @@ psqdefault:
 	case 530:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2942
+//line psql.y:2946
 		{
 			psqLOCAL = &ast.TablespaceOperation{Import: false}
 		}
@@ -12812,7 +12816,7 @@ psqdefault:
 	case 531:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2946
+//line psql.y:2950
 		{
 			psqLOCAL = &ast.TablespaceOperation{Import: true}
 		}
@@ -12820,7 +12824,7 @@ psqdefault:
 	case 532:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2950
+//line psql.y:2954
 		{
 			psqLOCAL = &ast.DropColumn{Name: psqDollar[3].colNameUnion()}
 		}
@@ -12828,7 +12832,7 @@ psqdefault:
 	case 533:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2954
+//line psql.y:2958
 		{
 			psqLOCAL = &ast.DropKey{Type: ast.NormalKeyType, Name: psqDollar[3].colIdent}
 		}
@@ -12836,7 +12840,7 @@ psqdefault:
 	case 534:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2958
+//line psql.y:2962
 		{
 			psqLOCAL = &ast.DropKey{Type: ast.PrimaryKeyType}
 		}
@@ -12844,7 +12848,7 @@ psqdefault:
 	case 535:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2962
+//line psql.y:2966
 		{
 			psqLOCAL = &ast.DropKey{Type: ast.ForeignKeyType, Name: psqDollar[4].colIdent}
 		}
@@ -12852,7 +12856,7 @@ psqdefault:
 	case 536:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2966
+//line psql.y:2970
 		{
 			psqLOCAL = &ast.DropKey{Type: ast.CheckKeyType, Name: psqDollar[3].colIdent}
 		}
@@ -12860,7 +12864,7 @@ psqdefault:
 	case 537:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2970
+//line psql.y:2974
 		{
 			psqLOCAL = &ast.DropKey{Type: ast.CheckKeyType, Name: psqDollar[3].colIdent}
 		}
@@ -12868,7 +12872,7 @@ psqdefault:
 	case 538:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2974
+//line psql.y:2978
 		{
 			psqLOCAL = &ast.Force{}
 		}
@@ -12876,7 +12880,7 @@ psqdefault:
 	case 539:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2978
+//line psql.y:2982
 		{
 			psqLOCAL = &ast.RenameTableName{Table: psqDollar[3].tableName}
 		}
@@ -12884,7 +12888,7 @@ psqdefault:
 	case 540:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2982
+//line psql.y:2986
 		{
 			psqLOCAL = &ast.RenameIndex{OldName: psqDollar[3].colIdent, NewName: psqDollar[5].colIdent}
 		}
@@ -12892,14 +12896,14 @@ psqdefault:
 	case 541:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.AlterOption
-//line psql.y:2988
+//line psql.y:2992
 		{
 			psqLOCAL = []ast.AlterOption{psqDollar[1].alterOptionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 542:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:2992
+//line psql.y:2996
 		{
 			psqSLICE := (*[]ast.AlterOption)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].alterOptionUnion())
@@ -12907,7 +12911,7 @@ psqdefault:
 	case 543:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:2998
+//line psql.y:3002
 		{
 			psqLOCAL = &ast.LockOption{Type: ast.DefaultType}
 		}
@@ -12915,7 +12919,7 @@ psqdefault:
 	case 544:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:3002
+//line psql.y:3006
 		{
 			psqLOCAL = &ast.LockOption{Type: ast.NoneType}
 		}
@@ -12923,7 +12927,7 @@ psqdefault:
 	case 545:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:3006
+//line psql.y:3010
 		{
 			psqLOCAL = &ast.LockOption{Type: ast.SharedType}
 		}
@@ -12931,7 +12935,7 @@ psqdefault:
 	case 546:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:3010
+//line psql.y:3014
 		{
 			psqLOCAL = &ast.LockOption{Type: ast.ExclusiveType}
 		}
@@ -12939,7 +12943,7 @@ psqdefault:
 	case 547:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:3014
+//line psql.y:3018
 		{
 			psqLOCAL = &ast.Validation{With: true}
 		}
@@ -12947,7 +12951,7 @@ psqdefault:
 	case 548:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.AlterOption
-//line psql.y:3018
+//line psql.y:3022
 		{
 			psqLOCAL = &ast.Validation{With: false}
 		}
@@ -12955,7 +12959,7 @@ psqdefault:
 	case 549:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3024
+//line psql.y:3028
 		{
 			psqDollar[1].alterTableUnion().FullyParsed = true
 			psqDollar[1].alterTableUnion().AlterOptions = psqDollar[2].alterOptionsUnion()
@@ -12965,7 +12969,7 @@ psqdefault:
 	case 550:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3030
+//line psql.y:3034
 		{
 			psqDollar[1].alterSchemaUnion().FullyParsed = true
 			psqDollar[1].alterSchemaUnion().AlterOptions = psqDollar[2].alterOptionsUnion()
@@ -12975,7 +12979,7 @@ psqdefault:
 	case 551:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3036
+//line psql.y:3040
 		{
 			psqDollar[1].alterSequenceUnion().SequenceSpec = psqDollar[2].sequenceSpecUnion()
 			psqDollar[1].alterSequenceUnion().FullyParsed = true
@@ -12985,7 +12989,7 @@ psqdefault:
 	case 552:
 		psqDollar = psqS[psqpt-10 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3042
+//line psql.y:3046
 		{
 			psqLOCAL = &ast.AlterView{ViewName: psqDollar[6].tableName.ToViewName(), Comments: ast.Comments(psqDollar[2].strs).Parsed(), Definer: psqDollar[3].definerUnion(), Security: psqDollar[4].str, Columns: psqDollar[7].columnsUnion(), Select: psqDollar[9].selStmtUnion(), CheckOption: psqDollar[10].str}
 		}
@@ -12993,7 +12997,7 @@ psqdefault:
 	case 553:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3052
+//line psql.y:3056
 		{
 			psqDollar[1].alterDatabaseUnion().FullyParsed = true
 			psqDollar[1].alterDatabaseUnion().DBName = psqDollar[2].tableIdent
@@ -13004,7 +13008,7 @@ psqdefault:
 	case 554:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3059
+//line psql.y:3063
 		{
 			psqLOCAL = &ast.AlterVschema{
 				Action: ast.CreateVindexDDLAction,
@@ -13020,7 +13024,7 @@ psqdefault:
 	case 555:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3071
+//line psql.y:3075
 		{
 			psqLOCAL = &ast.AlterVschema{
 				Action: ast.DropVindexDDLAction,
@@ -13034,7 +13038,7 @@ psqdefault:
 	case 556:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3081
+//line psql.y:3085
 		{
 			psqLOCAL = &ast.AlterVschema{Action: ast.AddVschemaTableDDLAction, Table: psqDollar[6].tableName}
 		}
@@ -13042,7 +13046,7 @@ psqdefault:
 	case 557:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3085
+//line psql.y:3089
 		{
 			psqLOCAL = &ast.AlterVschema{Action: ast.DropVschemaTableDDLAction, Table: psqDollar[6].tableName}
 		}
@@ -13050,7 +13054,7 @@ psqdefault:
 	case 558:
 		psqDollar = psqS[psqpt-13 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3089
+//line psql.y:3093
 		{
 			psqLOCAL = &ast.AlterVschema{
 				Action: ast.AddColVindexDDLAction,
@@ -13067,7 +13071,7 @@ psqdefault:
 	case 559:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3102
+//line psql.y:3106
 		{
 			psqLOCAL = &ast.AlterVschema{
 				Action: ast.DropColVindexDDLAction,
@@ -13081,7 +13085,7 @@ psqdefault:
 	case 560:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3112
+//line psql.y:3116
 		{
 			psqLOCAL = &ast.AlterVschema{Action: ast.AddSequenceDDLAction, Table: psqDollar[6].tableName}
 		}
@@ -13089,7 +13093,7 @@ psqdefault:
 	case 561:
 		psqDollar = psqS[psqpt-10 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3116
+//line psql.y:3120
 		{
 			psqLOCAL = &ast.AlterVschema{
 				Action: ast.AddAutoIncDDLAction,
@@ -13104,7 +13108,7 @@ psqdefault:
 	case 562:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:3129
+//line psql.y:3133
 		{
 			psqLOCAL = &ast.JSONTableExpr{Expr: psqDollar[3].exprUnion(), Filter: psqDollar[5].exprUnion(), Columns: psqDollar[6].jtColumnListUnion(), Alias: psqDollar[8].tableIdent}
 		}
@@ -13112,7 +13116,7 @@ psqdefault:
 	case 563:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL []*ast.JtColumnDefinition
-//line psql.y:3135
+//line psql.y:3139
 		{
 			psqLOCAL = psqDollar[3].jtColumnListUnion()
 		}
@@ -13120,14 +13124,14 @@ psqdefault:
 	case 564:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.JtColumnDefinition
-//line psql.y:3141
+//line psql.y:3145
 		{
 			psqLOCAL = []*ast.JtColumnDefinition{psqDollar[1].jtColumnDefinitionUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 565:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3145
+//line psql.y:3149
 		{
 			psqSLICE := (*[]*ast.JtColumnDefinition)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].jtColumnDefinitionUnion())
@@ -13135,7 +13139,7 @@ psqdefault:
 	case 566:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3151
+//line psql.y:3155
 		{
 			psqLOCAL = &ast.JtColumnDefinition{JtOrdinal: &ast.JtOrdinalColDef{Name: psqDollar[1].colIdent}}
 		}
@@ -13143,7 +13147,7 @@ psqdefault:
 	case 567:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3155
+//line psql.y:3159
 		{
 			psqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: psqDollar[3].str}
 			jtPath := &ast.JtPathColDef{Name: psqDollar[1].colIdent, Type: psqDollar[2].columnType, JtColExists: psqDollar[4].booleanUnion(), Path: psqDollar[6].exprUnion()}
@@ -13153,7 +13157,7 @@ psqdefault:
 	case 568:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3161
+//line psql.y:3165
 		{
 			psqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: psqDollar[3].str}
 			jtPath := &ast.JtPathColDef{Name: psqDollar[1].colIdent, Type: psqDollar[2].columnType, JtColExists: psqDollar[4].booleanUnion(), Path: psqDollar[6].exprUnion(), EmptyOnResponse: psqDollar[7].jtOnResponseUnion()}
@@ -13163,7 +13167,7 @@ psqdefault:
 	case 569:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3167
+//line psql.y:3171
 		{
 			psqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: psqDollar[3].str}
 			jtPath := &ast.JtPathColDef{Name: psqDollar[1].colIdent, Type: psqDollar[2].columnType, JtColExists: psqDollar[4].booleanUnion(), Path: psqDollar[6].exprUnion(), ErrorOnResponse: psqDollar[7].jtOnResponseUnion()}
@@ -13173,7 +13177,7 @@ psqdefault:
 	case 570:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3173
+//line psql.y:3177
 		{
 			psqDollar[2].columnType.Options = &ast.ColumnTypeOptions{Collate: psqDollar[3].str}
 			jtPath := &ast.JtPathColDef{Name: psqDollar[1].colIdent, Type: psqDollar[2].columnType, JtColExists: psqDollar[4].booleanUnion(), Path: psqDollar[6].exprUnion(), EmptyOnResponse: psqDollar[7].jtOnResponseUnion(), ErrorOnResponse: psqDollar[8].jtOnResponseUnion()}
@@ -13183,7 +13187,7 @@ psqdefault:
 	case 571:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.JtColumnDefinition
-//line psql.y:3179
+//line psql.y:3183
 		{
 			jtNestedPath := &ast.JtNestedPathColDef{Path: psqDollar[3].exprUnion(), Columns: psqDollar[4].jtColumnListUnion()}
 			psqLOCAL = &ast.JtColumnDefinition{JtNestedPath: jtNestedPath}
@@ -13192,7 +13196,7 @@ psqdefault:
 	case 572:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3185
+//line psql.y:3189
 		{
 			psqLOCAL = false
 		}
@@ -13200,7 +13204,7 @@ psqdefault:
 	case 573:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3189
+//line psql.y:3193
 		{
 			psqLOCAL = true
 		}
@@ -13208,7 +13212,7 @@ psqdefault:
 	case 574:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3193
+//line psql.y:3197
 		{
 			psqLOCAL = false
 		}
@@ -13216,7 +13220,7 @@ psqdefault:
 	case 575:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3197
+//line psql.y:3201
 		{
 			psqLOCAL = true
 		}
@@ -13224,7 +13228,7 @@ psqdefault:
 	case 576:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.JtOnResponse
-//line psql.y:3203
+//line psql.y:3207
 		{
 			psqLOCAL = psqDollar[1].jtOnResponseUnion()
 		}
@@ -13232,7 +13236,7 @@ psqdefault:
 	case 577:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.JtOnResponse
-//line psql.y:3209
+//line psql.y:3213
 		{
 			psqLOCAL = psqDollar[1].jtOnResponseUnion()
 		}
@@ -13240,7 +13244,7 @@ psqdefault:
 	case 578:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.JtOnResponse
-//line psql.y:3215
+//line psql.y:3219
 		{
 			psqLOCAL = &ast.JtOnResponse{ResponseType: ast.ErrorJSONType}
 		}
@@ -13248,7 +13252,7 @@ psqdefault:
 	case 579:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.JtOnResponse
-//line psql.y:3219
+//line psql.y:3223
 		{
 			psqLOCAL = &ast.JtOnResponse{ResponseType: ast.NullJSONType}
 		}
@@ -13256,7 +13260,7 @@ psqdefault:
 	case 580:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.JtOnResponse
-//line psql.y:3223
+//line psql.y:3227
 		{
 			psqLOCAL = &ast.JtOnResponse{ResponseType: ast.DefaultJSONType, Expr: psqDollar[2].exprUnion()}
 		}
@@ -13264,7 +13268,7 @@ psqdefault:
 	case 581:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3229
+//line psql.y:3233
 		{
 			psqLOCAL = &ast.RenameTable{TablePairs: psqDollar[3].renameTablePairsUnion()}
 		}
@@ -13272,14 +13276,14 @@ psqdefault:
 	case 582:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL []*ast.RenameTablePair
-//line psql.y:3235
+//line psql.y:3239
 		{
 			psqLOCAL = []*ast.RenameTablePair{{FromTable: psqDollar[1].tableName, ToTable: psqDollar[3].tableName}}
 		}
 		psqVAL.union = psqLOCAL
 	case 583:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
-//line psql.y:3239
+//line psql.y:3243
 		{
 			psqSLICE := (*[]*ast.RenameTablePair)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, &ast.RenameTablePair{FromTable: psqDollar[3].tableName, ToTable: psqDollar[5].tableName})
@@ -13287,7 +13291,7 @@ psqdefault:
 	case 584:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3245
+//line psql.y:3249
 		{
 			psqLOCAL = &ast.DropTable{FromTables: psqDollar[6].tableNamesUnion(), IfExists: psqDollar[5].booleanUnion(), Comments: ast.Comments(psqDollar[2].strs).Parsed(), Temp: psqDollar[3].booleanUnion()}
 		}
@@ -13295,7 +13299,7 @@ psqdefault:
 	case 585:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3249
+//line psql.y:3253
 		{
 			// Change this to an alter statement
 			if psqDollar[4].colIdent.Lowered() == "primary" {
@@ -13308,7 +13312,7 @@ psqdefault:
 	case 586:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3258
+//line psql.y:3262
 		{
 			psqLOCAL = &ast.DropView{FromTables: psqDollar[5].tableNamesUnion(), Comments: ast.Comments(psqDollar[2].strs).Parsed(), IfExists: psqDollar[4].booleanUnion()}
 		}
@@ -13316,7 +13320,7 @@ psqdefault:
 	case 587:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3262
+//line psql.y:3266
 		{
 			psqLOCAL = &ast.DropDatabase{Comments: ast.Comments(psqDollar[2].strs).Parsed(), DBName: psqDollar[5].tableIdent, IfExists: psqDollar[4].booleanUnion()}
 		}
@@ -13324,7 +13328,7 @@ psqdefault:
 	case 588:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3268
+//line psql.y:3272
 		{
 			psqLOCAL = &ast.TruncateTable{Table: psqDollar[3].tableName}
 		}
@@ -13332,7 +13336,7 @@ psqdefault:
 	case 589:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3272
+//line psql.y:3276
 		{
 			psqLOCAL = &ast.TruncateTable{Table: psqDollar[2].tableName}
 		}
@@ -13340,7 +13344,7 @@ psqdefault:
 	case 590:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3277
+//line psql.y:3281
 		{
 			psqLOCAL = &ast.OtherRead{}
 		}
@@ -13348,7 +13352,7 @@ psqdefault:
 	case 591:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3283
+//line psql.y:3287
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Charset, Filter: psqDollar[3].showFilterUnion()}}
 		}
@@ -13356,7 +13360,7 @@ psqdefault:
 	case 592:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3287
+//line psql.y:3291
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Collation, Filter: psqDollar[3].showFilterUnion()}}
 		}
@@ -13364,7 +13368,7 @@ psqdefault:
 	case 593:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3291
+//line psql.y:3295
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Full: psqDollar[2].booleanUnion(), Command: ast.Column, Tbl: psqDollar[5].tableName, DbName: psqDollar[6].tableIdent, Filter: psqDollar[7].showFilterUnion()}}
 		}
@@ -13372,7 +13376,7 @@ psqdefault:
 	case 594:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3295
+//line psql.y:3299
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Database, Filter: psqDollar[3].showFilterUnion()}}
 		}
@@ -13380,7 +13384,7 @@ psqdefault:
 	case 595:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3299
+//line psql.y:3303
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Database, Filter: psqDollar[3].showFilterUnion()}}
 		}
@@ -13388,7 +13392,7 @@ psqdefault:
 	case 596:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3303
+//line psql.y:3307
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: psqDollar[3].showFilterUnion()}}
 		}
@@ -13396,7 +13400,7 @@ psqdefault:
 	case 597:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3307
+//line psql.y:3311
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Function, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13404,7 +13408,7 @@ psqdefault:
 	case 598:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3311
+//line psql.y:3315
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Index, Tbl: psqDollar[5].tableName, DbName: psqDollar[6].tableIdent, Filter: psqDollar[7].showFilterUnion()}}
 		}
@@ -13412,7 +13416,7 @@ psqdefault:
 	case 599:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3315
+//line psql.y:3319
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.OpenTable, DbName: psqDollar[4].tableIdent, Filter: psqDollar[5].showFilterUnion()}}
 		}
@@ -13420,7 +13424,7 @@ psqdefault:
 	case 600:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3319
+//line psql.y:3323
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Privilege}}
 		}
@@ -13428,7 +13432,7 @@ psqdefault:
 	case 601:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3323
+//line psql.y:3327
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Procedure, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13436,7 +13440,7 @@ psqdefault:
 	case 602:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3327
+//line psql.y:3331
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.StatusSession, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13444,7 +13448,7 @@ psqdefault:
 	case 603:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3331
+//line psql.y:3335
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.StatusGlobal, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13452,7 +13456,7 @@ psqdefault:
 	case 604:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3335
+//line psql.y:3339
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VariableSession, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13460,7 +13464,7 @@ psqdefault:
 	case 605:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3339
+//line psql.y:3343
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VariableGlobal, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13468,7 +13472,7 @@ psqdefault:
 	case 606:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3343
+//line psql.y:3347
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.TableStatus, DbName: psqDollar[4].tableIdent, Filter: psqDollar[5].showFilterUnion()}}
 		}
@@ -13476,7 +13480,7 @@ psqdefault:
 	case 607:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3347
+//line psql.y:3351
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Table, Full: psqDollar[2].booleanUnion(), DbName: psqDollar[4].tableIdent, Filter: psqDollar[5].showFilterUnion()}}
 		}
@@ -13484,7 +13488,7 @@ psqdefault:
 	case 608:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3351
+//line psql.y:3355
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Trigger, DbName: psqDollar[3].tableIdent, Filter: psqDollar[4].showFilterUnion()}}
 		}
@@ -13492,7 +13496,7 @@ psqdefault:
 	case 609:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3355
+//line psql.y:3359
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateDb, Op: psqDollar[4].tableName}}
 		}
@@ -13500,7 +13504,7 @@ psqdefault:
 	case 610:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3359
+//line psql.y:3363
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateE, Op: psqDollar[4].tableName}}
 		}
@@ -13508,7 +13512,7 @@ psqdefault:
 	case 611:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3363
+//line psql.y:3367
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateF, Op: psqDollar[4].tableName}}
 		}
@@ -13516,7 +13520,7 @@ psqdefault:
 	case 612:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3367
+//line psql.y:3371
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateProc, Op: psqDollar[4].tableName}}
 		}
@@ -13524,7 +13528,7 @@ psqdefault:
 	case 613:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3371
+//line psql.y:3375
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateTbl, Op: psqDollar[4].tableName}}
 		}
@@ -13532,7 +13536,7 @@ psqdefault:
 	case 614:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3375
+//line psql.y:3379
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateTr, Op: psqDollar[4].tableName}}
 		}
@@ -13540,7 +13544,7 @@ psqdefault:
 	case 615:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3379
+//line psql.y:3383
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowCreate{Command: ast.CreateV, Op: psqDollar[4].tableName}}
 		}
@@ -13548,7 +13552,7 @@ psqdefault:
 	case 616:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3383
+//line psql.y:3387
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Plugins}}
 		}
@@ -13556,7 +13560,7 @@ psqdefault:
 	case 617:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3387
+//line psql.y:3391
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.GtidExecGlobal, DbName: psqDollar[4].tableIdent}}
 		}
@@ -13564,7 +13568,7 @@ psqdefault:
 	case 618:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3391
+//line psql.y:3395
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VGtidExecGlobal, DbName: psqDollar[4].tableIdent}}
 		}
@@ -13572,7 +13576,7 @@ psqdefault:
 	case 619:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3395
+//line psql.y:3399
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaTables}}
 		}
@@ -13580,7 +13584,7 @@ psqdefault:
 	case 620:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3399
+//line psql.y:3403
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaVindexes}}
 		}
@@ -13588,7 +13592,7 @@ psqdefault:
 	case 621:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3403
+//line psql.y:3407
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaVindexes, Tbl: psqDollar[5].tableName}}
 		}
@@ -13596,7 +13600,7 @@ psqdefault:
 	case 622:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3407
+//line psql.y:3411
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Warnings}}
 		}
@@ -13604,7 +13608,7 @@ psqdefault:
 	case 623:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3414
+//line psql.y:3418
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].colIdent.String())}}
 		}
@@ -13612,7 +13616,7 @@ psqdefault:
 	case 624:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3418
+//line psql.y:3422
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str) + " " + string(psqDollar[3].str)}}
 		}
@@ -13620,7 +13624,7 @@ psqdefault:
 	case 625:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3422
+//line psql.y:3426
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str) + " " + psqDollar[3].colIdent.String()}}
 		}
@@ -13628,7 +13632,7 @@ psqdefault:
 	case 626:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3426
+//line psql.y:3430
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str) + " " + string(psqDollar[3].str)}}
 		}
@@ -13636,7 +13640,7 @@ psqdefault:
 	case 627:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3430
+//line psql.y:3434
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str) + " " + string(psqDollar[3].str) + " " + ast.String(psqDollar[4].tableName)}}
 		}
@@ -13644,7 +13648,7 @@ psqdefault:
 	case 628:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3434
+//line psql.y:3438
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str) + " " + string(psqDollar[3].str) + " " + ast.String(psqDollar[4].tableName)}}
 		}
@@ -13652,7 +13656,7 @@ psqdefault:
 	case 629:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3438
+//line psql.y:3442
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[3].str)}}
 		}
@@ -13660,27 +13664,27 @@ psqdefault:
 	case 630:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3442
+//line psql.y:3446
 		{
 			psqLOCAL = &ast.Show{Internal: &ast.ShowOther{Command: string(psqDollar[2].str)}}
 		}
 		psqVAL.union = psqLOCAL
 	case 631:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3448
+//line psql.y:3452
 		{
 			psqVAL.str = ""
 		}
 	case 632:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3452
+//line psql.y:3456
 		{
 			psqVAL.str = "extended "
 		}
 	case 633:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3458
+//line psql.y:3462
 		{
 			psqLOCAL = false
 		}
@@ -13688,45 +13692,45 @@ psqdefault:
 	case 634:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3462
+//line psql.y:3466
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 635:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3468
+//line psql.y:3472
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 636:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3472
+//line psql.y:3476
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 637:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3478
+//line psql.y:3482
 		{
 			psqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 638:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3482
+//line psql.y:3486
 		{
 			psqVAL.tableIdent = psqDollar[2].tableIdent
 		}
 	case 639:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3486
+//line psql.y:3490
 		{
 			psqVAL.tableIdent = psqDollar[2].tableIdent
 		}
 	case 640:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ShowFilter
-//line psql.y:3492
+//line psql.y:3496
 		{
 			psqLOCAL = nil
 		}
@@ -13734,7 +13738,7 @@ psqdefault:
 	case 641:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ShowFilter
-//line psql.y:3496
+//line psql.y:3500
 		{
 			psqLOCAL = &ast.ShowFilter{Like: string(psqDollar[2].str)}
 		}
@@ -13742,45 +13746,45 @@ psqdefault:
 	case 642:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ShowFilter
-//line psql.y:3500
+//line psql.y:3504
 		{
 			psqLOCAL = &ast.ShowFilter{Filter: psqDollar[2].exprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 643:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3506
+//line psql.y:3510
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 644:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3510
+//line psql.y:3514
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 645:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3514
+//line psql.y:3518
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 646:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3520
+//line psql.y:3524
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 647:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3524
+//line psql.y:3528
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 648:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3530
+//line psql.y:3534
 		{
 			psqLOCAL = &ast.Use{DBName: psqDollar[2].tableIdent}
 		}
@@ -13788,7 +13792,7 @@ psqdefault:
 	case 649:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3534
+//line psql.y:3538
 		{
 			psqLOCAL = &ast.Use{DBName: ast.TableIdent{V: ""}}
 		}
@@ -13796,7 +13800,7 @@ psqdefault:
 	case 650:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3538
+//line psql.y:3542
 		{
 			psqLOCAL = &ast.Use{DBName: ast.NewTableIdent(psqDollar[2].tableIdent.String() + "@" + string(psqDollar[3].str))}
 		}
@@ -13804,7 +13808,7 @@ psqdefault:
 	case 651:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3544
+//line psql.y:3548
 		{
 			psqLOCAL = &ast.Begin{}
 		}
@@ -13812,7 +13816,7 @@ psqdefault:
 	case 652:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3548
+//line psql.y:3552
 		{
 			psqLOCAL = &ast.Begin{}
 		}
@@ -13820,7 +13824,7 @@ psqdefault:
 	case 653:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3554
+//line psql.y:3558
 		{
 			psqLOCAL = &ast.Commit{}
 		}
@@ -13828,7 +13832,7 @@ psqdefault:
 	case 654:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3560
+//line psql.y:3564
 		{
 			psqLOCAL = &ast.Rollback{}
 		}
@@ -13836,39 +13840,39 @@ psqdefault:
 	case 655:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3564
+//line psql.y:3568
 		{
 			psqLOCAL = &ast.SRollback{Name: psqDollar[5].colIdent}
 		}
 		psqVAL.union = psqLOCAL
 	case 656:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3569
+//line psql.y:3573
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 657:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3571
+//line psql.y:3575
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 658:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3574
+//line psql.y:3578
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 659:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3576
+//line psql.y:3580
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 660:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3581
+//line psql.y:3585
 		{
 			psqLOCAL = &ast.Savepoint{Name: psqDollar[2].colIdent}
 		}
@@ -13876,7 +13880,7 @@ psqdefault:
 	case 661:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3587
+//line psql.y:3591
 		{
 			psqLOCAL = &ast.Release{Name: psqDollar[3].colIdent}
 		}
@@ -13884,7 +13888,7 @@ psqdefault:
 	case 662:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3592
+//line psql.y:3596
 		{
 			psqLOCAL = ast.EmptyType
 		}
@@ -13892,7 +13896,7 @@ psqdefault:
 	case 663:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3596
+//line psql.y:3600
 		{
 			psqLOCAL = ast.JSONType
 		}
@@ -13900,7 +13904,7 @@ psqdefault:
 	case 664:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3600
+//line psql.y:3604
 		{
 			psqLOCAL = ast.TreeType
 		}
@@ -13908,7 +13912,7 @@ psqdefault:
 	case 665:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3604
+//line psql.y:3608
 		{
 			psqLOCAL = ast.TraditionalType
 		}
@@ -13916,7 +13920,7 @@ psqdefault:
 	case 666:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3608
+//line psql.y:3612
 		{
 			psqLOCAL = ast.AnalyzeType
 		}
@@ -13924,33 +13928,33 @@ psqdefault:
 	case 667:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ExplainType
-//line psql.y:3612
+//line psql.y:3616
 		{
 			psqLOCAL = ast.AnalyzeType
 		}
 		psqVAL.union = psqLOCAL
 	case 668:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3618
+//line psql.y:3622
 		{
 			psqVAL.str = psqDollar[1].str
 		}
 	case 669:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3622
+//line psql.y:3626
 		{
 			psqVAL.str = psqDollar[1].str
 		}
 	case 670:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3626
+//line psql.y:3630
 		{
 			psqVAL.str = psqDollar[1].str
 		}
 	case 671:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3632
+//line psql.y:3636
 		{
 			psqLOCAL = psqDollar[1].selStmtUnion()
 		}
@@ -13958,7 +13962,7 @@ psqdefault:
 	case 672:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3636
+//line psql.y:3640
 		{
 			psqLOCAL = psqDollar[1].statementUnion()
 		}
@@ -13966,7 +13970,7 @@ psqdefault:
 	case 673:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3640
+//line psql.y:3644
 		{
 			psqLOCAL = psqDollar[1].statementUnion()
 		}
@@ -13974,33 +13978,33 @@ psqdefault:
 	case 674:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3644
+//line psql.y:3648
 		{
 			psqLOCAL = psqDollar[1].statementUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 675:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3649
+//line psql.y:3653
 		{
 			psqVAL.str = ""
 		}
 	case 676:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3653
+//line psql.y:3657
 		{
 			psqVAL.str = psqDollar[1].colIdent.Val
 		}
 	case 677:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3657
+//line psql.y:3661
 		{
 			psqVAL.str = sql_types.EncodeStringSQL(psqDollar[1].str)
 		}
 	case 678:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3663
+//line psql.y:3667
 		{
 			psqLOCAL = &ast.ExplainTab{Table: psqDollar[2].tableName, Wild: psqDollar[3].str}
 		}
@@ -14008,7 +14012,7 @@ psqdefault:
 	case 679:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3667
+//line psql.y:3671
 		{
 			psqLOCAL = &ast.ExplainStmt{Type: psqDollar[2].explainTypeUnion(), Statement: psqDollar[3].statementUnion()}
 		}
@@ -14016,7 +14020,7 @@ psqdefault:
 	case 680:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3673
+//line psql.y:3677
 		{
 			psqLOCAL = &ast.OtherAdmin{}
 		}
@@ -14024,7 +14028,7 @@ psqdefault:
 	case 681:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3677
+//line psql.y:3681
 		{
 			psqLOCAL = &ast.OtherAdmin{}
 		}
@@ -14032,7 +14036,7 @@ psqdefault:
 	case 682:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3683
+//line psql.y:3687
 		{
 			psqLOCAL = &ast.LockTables{Tables: psqDollar[3].tableAndLockTypesUnion()}
 		}
@@ -14040,14 +14044,14 @@ psqdefault:
 	case 683:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableAndLockTypes
-//line psql.y:3689
+//line psql.y:3693
 		{
 			psqLOCAL = ast.TableAndLockTypes{psqDollar[1].tableAndLockTypeUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 684:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3693
+//line psql.y:3697
 		{
 			psqSLICE := (*ast.TableAndLockTypes)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableAndLockTypeUnion())
@@ -14055,7 +14059,7 @@ psqdefault:
 	case 685:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.TableAndLockType
-//line psql.y:3699
+//line psql.y:3703
 		{
 			psqLOCAL = &ast.TableAndLockType{Table: psqDollar[1].aliasedTableNameUnion(), Lock: psqDollar[2].lockTypeUnion()}
 		}
@@ -14063,7 +14067,7 @@ psqdefault:
 	case 686:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.LockType
-//line psql.y:3705
+//line psql.y:3709
 		{
 			psqLOCAL = ast.Read
 		}
@@ -14071,7 +14075,7 @@ psqdefault:
 	case 687:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.LockType
-//line psql.y:3709
+//line psql.y:3713
 		{
 			psqLOCAL = ast.ReadLocal
 		}
@@ -14079,7 +14083,7 @@ psqdefault:
 	case 688:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.LockType
-//line psql.y:3713
+//line psql.y:3717
 		{
 			psqLOCAL = ast.Write
 		}
@@ -14087,7 +14091,7 @@ psqdefault:
 	case 689:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.LockType
-//line psql.y:3717
+//line psql.y:3721
 		{
 			psqLOCAL = ast.LowPriorityWrite
 		}
@@ -14095,7 +14099,7 @@ psqdefault:
 	case 690:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3723
+//line psql.y:3727
 		{
 			psqLOCAL = &ast.UnlockTables{}
 		}
@@ -14103,7 +14107,7 @@ psqdefault:
 	case 691:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3729
+//line psql.y:3733
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion(), FlushOptions: psqDollar[3].strs}
 		}
@@ -14111,7 +14115,7 @@ psqdefault:
 	case 692:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3733
+//line psql.y:3737
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion()}
 		}
@@ -14119,7 +14123,7 @@ psqdefault:
 	case 693:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3737
+//line psql.y:3741
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion(), WithLock: true}
 		}
@@ -14127,7 +14131,7 @@ psqdefault:
 	case 694:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3741
+//line psql.y:3745
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion(), TableNames: psqDollar[4].tableNamesUnion()}
 		}
@@ -14135,7 +14139,7 @@ psqdefault:
 	case 695:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3745
+//line psql.y:3749
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion(), TableNames: psqDollar[4].tableNamesUnion(), WithLock: true}
 		}
@@ -14143,93 +14147,93 @@ psqdefault:
 	case 696:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3749
+//line psql.y:3753
 		{
 			psqLOCAL = &ast.Flush{IsLocal: psqDollar[2].booleanUnion(), TableNames: psqDollar[4].tableNamesUnion(), ForExport: true}
 		}
 		psqVAL.union = psqLOCAL
 	case 697:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3755
+//line psql.y:3759
 		{
 			psqVAL.strs = []string{psqDollar[1].str}
 		}
 	case 698:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3759
+//line psql.y:3763
 		{
 			psqVAL.strs = append(psqDollar[1].strs, psqDollar[3].str)
 		}
 	case 699:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3765
+//line psql.y:3769
 		{
 			psqVAL.str = string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 700:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3769
+//line psql.y:3773
 		{
 			psqVAL.str = string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 701:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3773
+//line psql.y:3777
 		{
 			psqVAL.str = string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 702:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3777
+//line psql.y:3781
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 703:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3781
+//line psql.y:3785
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 704:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3785
+//line psql.y:3789
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 705:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3789
+//line psql.y:3793
 		{
 			psqVAL.str = string(psqDollar[1].str) + " " + string(psqDollar[2].str) + psqDollar[3].str
 		}
 	case 706:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3793
+//line psql.y:3797
 		{
 			psqVAL.str = string(psqDollar[1].str) + " " + string(psqDollar[2].str)
 		}
 	case 707:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3797
+//line psql.y:3801
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 708:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3801
+//line psql.y:3805
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 709:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3805
+//line psql.y:3809
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 710:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3810
+//line psql.y:3814
 		{
 			psqLOCAL = false
 		}
@@ -14237,7 +14241,7 @@ psqdefault:
 	case 711:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3814
+//line psql.y:3818
 		{
 			psqLOCAL = true
 		}
@@ -14245,33 +14249,33 @@ psqdefault:
 	case 712:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3818
+//line psql.y:3822
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 713:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3823
+//line psql.y:3827
 		{
 			psqVAL.str = ""
 		}
 	case 714:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3827
+//line psql.y:3831
 		{
 			psqVAL.str = " " + string(psqDollar[1].str) + " " + string(psqDollar[2].str) + " " + psqDollar[3].colIdent.String()
 		}
 	case 715:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3832
+//line psql.y:3836
 		{
 			setAllowComments(psqlex, true)
 		}
 	case 716:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3836
+//line psql.y:3840
 		{
 			// Strange argumets shift
 			psqLOCAL = &ast.CommentOnSchema{Comments: ast.Comments{psqDollar[2].str}.Parsed(), Schema: psqDollar[5].schemaName.Name, Value: psqDollar[7].exprUnion()}
@@ -14280,33 +14284,33 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 717:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3844
+//line psql.y:3848
 		{
 			setAllowComments(psqlex, true)
 		}
 	case 718:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3848
+//line psql.y:3852
 		{
 			psqVAL.strs = psqDollar[2].strs
 			setAllowComments(psqlex, false)
 		}
 	case 719:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3854
+//line psql.y:3858
 		{
 			psqVAL.strs = nil
 		}
 	case 720:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3858
+//line psql.y:3862
 		{
 			psqVAL.strs = append(psqDollar[1].strs, psqDollar[2].str)
 		}
 	case 721:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3863
+//line psql.y:3867
 		{
 			psqLOCAL = false
 		}
@@ -14314,7 +14318,7 @@ psqdefault:
 	case 722:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3867
+//line psql.y:3871
 		{
 			psqLOCAL = true
 		}
@@ -14322,7 +14326,7 @@ psqdefault:
 	case 723:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3873
+//line psql.y:3877
 		{
 			psqLOCAL = true
 		}
@@ -14330,7 +14334,7 @@ psqdefault:
 	case 724:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3877
+//line psql.y:3881
 		{
 			psqLOCAL = false
 		}
@@ -14338,33 +14342,33 @@ psqdefault:
 	case 725:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3881
+//line psql.y:3885
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 726:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3886
+//line psql.y:3890
 		{
 			psqVAL.str = ""
 		}
 	case 727:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3890
+//line psql.y:3894
 		{
 			psqVAL.str = ast.SQLNoCacheStr
 		}
 	case 728:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3894
+//line psql.y:3898
 		{
 			psqVAL.str = ast.SQLCacheStr
 		}
 	case 729:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3899
+//line psql.y:3903
 		{
 			psqLOCAL = false
 		}
@@ -14372,7 +14376,7 @@ psqdefault:
 	case 730:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3903
+//line psql.y:3907
 		{
 			psqLOCAL = true
 		}
@@ -14380,7 +14384,7 @@ psqdefault:
 	case 731:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:3907
+//line psql.y:3911
 		{
 			psqLOCAL = true
 		}
@@ -14388,7 +14392,7 @@ psqdefault:
 	case 732:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3913
+//line psql.y:3917
 		{
 			psqLOCAL = &ast.PrepareStmt{Name: psqDollar[3].colIdent, Comments: ast.Comments(psqDollar[2].strs).Parsed(), Statement: psqDollar[5].exprUnion()}
 		}
@@ -14396,7 +14400,7 @@ psqdefault:
 	case 733:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3917
+//line psql.y:3921
 		{
 			psqLOCAL = &ast.PrepareStmt{
 				Name:     psqDollar[3].colIdent,
@@ -14410,7 +14414,7 @@ psqdefault:
 	case 734:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3929
+//line psql.y:3933
 		{
 			psqLOCAL = &ast.ExecuteStmt{Name: psqDollar[3].colIdent, Comments: ast.Comments(psqDollar[2].strs).Parsed(), Arguments: psqDollar[4].columnsUnion()}
 		}
@@ -14418,7 +14422,7 @@ psqdefault:
 	case 735:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:3934
+//line psql.y:3938
 		{
 			psqLOCAL = nil
 		}
@@ -14426,7 +14430,7 @@ psqdefault:
 	case 736:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:3938
+//line psql.y:3942
 		{
 			psqLOCAL = psqDollar[2].columnsUnion()
 		}
@@ -14434,7 +14438,7 @@ psqdefault:
 	case 737:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3944
+//line psql.y:3948
 		{
 			psqLOCAL = &ast.DeallocateStmt{Type: ast.DeallocateType, Comments: ast.Comments(psqDollar[2].strs).Parsed(), Name: psqDollar[4].colIdent}
 		}
@@ -14442,7 +14446,7 @@ psqdefault:
 	case 738:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:3948
+//line psql.y:3952
 		{
 			psqLOCAL = &ast.DeallocateStmt{Type: ast.DropType, Comments: ast.Comments(psqDollar[2].strs).Parsed(), Name: psqDollar[4].colIdent}
 		}
@@ -14450,7 +14454,7 @@ psqdefault:
 	case 739:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.SelectExprs
-//line psql.y:3953
+//line psql.y:3957
 		{
 			psqLOCAL = nil
 		}
@@ -14458,94 +14462,94 @@ psqdefault:
 	case 740:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectExprs
-//line psql.y:3957
+//line psql.y:3961
 		{
 			psqLOCAL = psqDollar[1].selectExprsUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 741:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:3962
+//line psql.y:3966
 		{
 			psqVAL.strs = nil
 		}
 	case 742:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3966
+//line psql.y:3970
 		{
 			psqVAL.strs = []string{psqDollar[1].str}
 		}
 	case 743:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:3970
+//line psql.y:3974
 		{ // TODO: ast.This is a hack since I couldn't get it to work in a nicer way. I got 'conflicts: 8 shift/reduce'
 			psqVAL.strs = []string{psqDollar[1].str, psqDollar[2].str}
 		}
 	case 744:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:3974
+//line psql.y:3978
 		{
 			psqVAL.strs = []string{psqDollar[1].str, psqDollar[2].str, psqDollar[3].str}
 		}
 	case 745:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:3978
+//line psql.y:3982
 		{
 			psqVAL.strs = []string{psqDollar[1].str, psqDollar[2].str, psqDollar[3].str, psqDollar[4].str}
 		}
 	case 746:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3984
+//line psql.y:3988
 		{
 			psqVAL.str = ast.SQLNoCacheStr
 		}
 	case 747:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3988
+//line psql.y:3992
 		{
 			psqVAL.str = ast.SQLCacheStr
 		}
 	case 748:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3992
+//line psql.y:3996
 		{
 			psqVAL.str = ast.DistinctStr
 		}
 	case 749:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:3996
+//line psql.y:4000
 		{
 			psqVAL.str = ast.DistinctStr
 		}
 	case 750:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4000
+//line psql.y:4004
 		{
 			psqVAL.str = ast.StraightJoinHint
 		}
 	case 751:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4004
+//line psql.y:4008
 		{
 			psqVAL.str = ast.SQLCalcFoundRowsStr
 		}
 	case 752:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4008
+//line psql.y:4012
 		{
 			psqVAL.str = ast.AllStr // These are not picked up by NewSelect, and so ALL will be dropped. But this is OK, since it's redundant anyway
 		}
 	case 753:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectExprs
-//line psql.y:4014
+//line psql.y:4018
 		{
 			psqLOCAL = ast.SelectExprs{psqDollar[1].selectExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 754:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4018
+//line psql.y:4022
 		{
 			psqSLICE := (*ast.SelectExprs)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].selectExprUnion())
@@ -14553,7 +14557,7 @@ psqdefault:
 	case 755:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SelectExpr
-//line psql.y:4024
+//line psql.y:4028
 		{
 			psqLOCAL = &ast.StarExpr{}
 		}
@@ -14561,7 +14565,7 @@ psqdefault:
 	case 756:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.SelectExpr
-//line psql.y:4028
+//line psql.y:4032
 		{
 			psqLOCAL = &ast.AliasedExpr{Expr: psqDollar[1].exprUnion(), As: psqDollar[2].colIdent}
 		}
@@ -14569,7 +14573,7 @@ psqdefault:
 	case 757:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.SelectExpr
-//line psql.y:4032
+//line psql.y:4036
 		{
 			psqLOCAL = &ast.StarExpr{TableName: ast.TableName{Name: psqDollar[1].tableIdent}}
 		}
@@ -14577,39 +14581,39 @@ psqdefault:
 	case 758:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.SelectExpr
-//line psql.y:4036
+//line psql.y:4040
 		{
 			psqLOCAL = &ast.StarExpr{TableName: ast.TableName{Qualifier: psqDollar[1].tableIdent, Name: psqDollar[3].tableIdent}}
 		}
 		psqVAL.union = psqLOCAL
 	case 759:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4041
+//line psql.y:4045
 		{
 			psqVAL.colIdent = ast.ColIdent{}
 		}
 	case 760:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4045
+//line psql.y:4049
 		{
 			psqVAL.colIdent = psqDollar[1].colIdent
 		}
 	case 761:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4049
+//line psql.y:4053
 		{
 			psqVAL.colIdent = psqDollar[2].colIdent
 		}
 	case 763:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4056
+//line psql.y:4060
 		{
 			psqVAL.colIdent = ast.NewColIdent(string(psqDollar[1].str))
 		}
 	case 764:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.TableExprs
-//line psql.y:4061
+//line psql.y:4065
 		{
 			psqLOCAL = ast.TableExprs{&ast.AliasedTableExpr{Expr: ast.TableName{Name: ast.NewTableIdent("dual")}}}
 		}
@@ -14617,7 +14621,7 @@ psqdefault:
 	case 765:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableExprs
-//line psql.y:4065
+//line psql.y:4069
 		{
 			psqLOCAL = psqDollar[1].tableExprsUnion()
 		}
@@ -14625,7 +14629,7 @@ psqdefault:
 	case 766:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.TableExprs
-//line psql.y:4071
+//line psql.y:4075
 		{
 			psqLOCAL = psqDollar[2].tableExprsUnion()
 		}
@@ -14633,14 +14637,14 @@ psqdefault:
 	case 767:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableExprs
-//line psql.y:4077
+//line psql.y:4081
 		{
 			psqLOCAL = ast.TableExprs{psqDollar[1].tableExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 768:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4081
+//line psql.y:4085
 		{
 			psqSLICE := (*ast.TableExprs)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].tableExprUnion())
@@ -14648,7 +14652,7 @@ psqdefault:
 	case 771:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4091
+//line psql.y:4095
 		{
 			psqLOCAL = psqDollar[1].aliasedTableNameUnion()
 		}
@@ -14656,7 +14660,7 @@ psqdefault:
 	case 772:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4095
+//line psql.y:4099
 		{
 			psqLOCAL = &ast.AliasedTableExpr{Expr: psqDollar[1].derivedTableUnion(), As: psqDollar[3].tableIdent, Columns: psqDollar[4].columnsUnion()}
 		}
@@ -14664,7 +14668,7 @@ psqdefault:
 	case 773:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4099
+//line psql.y:4103
 		{
 			psqLOCAL = &ast.ParenTableExpr{Exprs: psqDollar[2].tableExprsUnion()}
 		}
@@ -14672,7 +14676,7 @@ psqdefault:
 	case 774:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4103
+//line psql.y:4107
 		{
 			psqLOCAL = psqDollar[1].tableExprUnion()
 		}
@@ -14680,7 +14684,7 @@ psqdefault:
 	case 775:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.DerivedTable
-//line psql.y:4109
+//line psql.y:4113
 		{
 			psqLOCAL = &ast.DerivedTable{Lateral: false, Select: psqDollar[2].selStmtUnion()}
 		}
@@ -14688,7 +14692,7 @@ psqdefault:
 	case 776:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.DerivedTable
-//line psql.y:4113
+//line psql.y:4117
 		{
 			psqLOCAL = &ast.DerivedTable{Lateral: true, Select: psqDollar[3].selStmtUnion()}
 		}
@@ -14696,7 +14700,7 @@ psqdefault:
 	case 777:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.AliasedTableExpr
-//line psql.y:4119
+//line psql.y:4123
 		{
 			psqLOCAL = &ast.AliasedTableExpr{Expr: psqDollar[1].tableName, As: psqDollar[2].tableIdent, Hints: psqDollar[3].indexHintsUnion()}
 		}
@@ -14704,7 +14708,7 @@ psqdefault:
 	case 778:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4124
+//line psql.y:4128
 		{
 			psqLOCAL = nil
 		}
@@ -14712,15 +14716,17 @@ psqdefault:
 	case 779:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4128
+//line psql.y:4132
 		{
+			setIgnoreCommentKeyword(psqlex, true)
 			psqLOCAL = psqDollar[2].columnsUnion()
+			setIgnoreCommentKeyword(psqlex, false)
 		}
 		psqVAL.union = psqLOCAL
 	case 780:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4132
+//line psql.y:4138
 		{
 			psqLOCAL = nil
 		}
@@ -14728,14 +14734,14 @@ psqdefault:
 	case 781:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4138
+//line psql.y:4144
 		{
 			psqLOCAL = ast.Columns{psqDollar[1].colIdent}
 		}
 		psqVAL.union = psqLOCAL
 	case 782:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4142
+//line psql.y:4148
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].colIdent)
@@ -14743,14 +14749,14 @@ psqdefault:
 	case 783:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4148
+//line psql.y:4154
 		{
 			psqLOCAL = ast.Columns{ast.NewColIdentWithAt(string(psqDollar[1].str), ast.SingleAt)}
 		}
 		psqVAL.union = psqLOCAL
 	case 784:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4152
+//line psql.y:4158
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, ast.NewColIdentWithAt(string(psqDollar[3].str), ast.SingleAt))
@@ -14758,7 +14764,7 @@ psqdefault:
 	case 785:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4158
+//line psql.y:4164
 		{
 			psqLOCAL = ast.Columns{psqDollar[1].colIdent}
 		}
@@ -14766,21 +14772,21 @@ psqdefault:
 	case 786:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:4162
+//line psql.y:4168
 		{
 			psqLOCAL = ast.Columns{ast.NewColIdent(string(psqDollar[1].str))}
 		}
 		psqVAL.union = psqLOCAL
 	case 787:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4166
+//line psql.y:4172
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].colIdent)
 		}
 	case 788:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4170
+//line psql.y:4176
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, ast.NewColIdent(string(psqDollar[3].str)))
@@ -14788,7 +14794,7 @@ psqdefault:
 	case 789:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4183
+//line psql.y:4189
 		{
 			psqLOCAL = &ast.JoinTableExpr{LeftExpr: psqDollar[1].tableExprUnion(), Join: psqDollar[2].joinTypeUnion(), RightExpr: psqDollar[3].tableExprUnion(), Condition: psqDollar[4].joinCondition}
 		}
@@ -14796,7 +14802,7 @@ psqdefault:
 	case 790:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4187
+//line psql.y:4193
 		{
 			psqLOCAL = &ast.JoinTableExpr{LeftExpr: psqDollar[1].tableExprUnion(), Join: psqDollar[2].joinTypeUnion(), RightExpr: psqDollar[3].tableExprUnion(), Condition: psqDollar[4].joinCondition}
 		}
@@ -14804,7 +14810,7 @@ psqdefault:
 	case 791:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4191
+//line psql.y:4197
 		{
 			psqLOCAL = &ast.JoinTableExpr{LeftExpr: psqDollar[1].tableExprUnion(), Join: psqDollar[2].joinTypeUnion(), RightExpr: psqDollar[3].tableExprUnion(), Condition: psqDollar[4].joinCondition}
 		}
@@ -14812,93 +14818,93 @@ psqdefault:
 	case 792:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.TableExpr
-//line psql.y:4195
+//line psql.y:4201
 		{
 			psqLOCAL = &ast.JoinTableExpr{LeftExpr: psqDollar[1].tableExprUnion(), Join: psqDollar[2].joinTypeUnion(), RightExpr: psqDollar[3].tableExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 793:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4201
+//line psql.y:4207
 		{
 			psqVAL.joinCondition = &ast.JoinCondition{On: psqDollar[2].exprUnion()}
 		}
 	case 794:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:4203
+//line psql.y:4209
 		{
 			psqVAL.joinCondition = &ast.JoinCondition{Using: psqDollar[3].columnsUnion()}
 		}
 	case 795:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4207
+//line psql.y:4213
 		{
 			psqVAL.joinCondition = &ast.JoinCondition{}
 		}
 	case 796:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4209
+//line psql.y:4215
 		{
 			psqVAL.joinCondition = psqDollar[1].joinCondition
 		}
 	case 797:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4213
+//line psql.y:4219
 		{
 			psqVAL.joinCondition = &ast.JoinCondition{}
 		}
 	case 798:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4215
+//line psql.y:4221
 		{
 			psqVAL.joinCondition = &ast.JoinCondition{On: psqDollar[2].exprUnion()}
 		}
 	case 799:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4219
+//line psql.y:4225
 		{
 			psqVAL.schemaName = ast.SchemaName{Name: psqDollar[2].schemaIdent}
 		}
 	case 800:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4224
+//line psql.y:4230
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 801:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4226
+//line psql.y:4232
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 802:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4229
+//line psql.y:4235
 		{
 			psqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 803:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4233
+//line psql.y:4239
 		{
 			psqVAL.tableIdent = psqDollar[1].tableIdent
 		}
 	case 804:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4237
+//line psql.y:4243
 		{
 			psqVAL.tableIdent = psqDollar[2].tableIdent
 		}
 	case 806:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4244
+//line psql.y:4250
 		{
 			psqVAL.tableIdent = ast.NewTableIdent(string(psqDollar[1].str))
 		}
 	case 807:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4250
+//line psql.y:4256
 		{
 			psqLOCAL = ast.NormalJoinType
 		}
@@ -14906,7 +14912,7 @@ psqdefault:
 	case 808:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4254
+//line psql.y:4260
 		{
 			psqLOCAL = ast.NormalJoinType
 		}
@@ -14914,7 +14920,7 @@ psqdefault:
 	case 809:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4258
+//line psql.y:4264
 		{
 			psqLOCAL = ast.NormalJoinType
 		}
@@ -14922,7 +14928,7 @@ psqdefault:
 	case 810:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4264
+//line psql.y:4270
 		{
 			psqLOCAL = ast.StraightJoinType
 		}
@@ -14930,7 +14936,7 @@ psqdefault:
 	case 811:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4270
+//line psql.y:4276
 		{
 			psqLOCAL = ast.LeftJoinType
 		}
@@ -14938,7 +14944,7 @@ psqdefault:
 	case 812:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4274
+//line psql.y:4280
 		{
 			psqLOCAL = ast.LeftJoinType
 		}
@@ -14946,7 +14952,7 @@ psqdefault:
 	case 813:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4278
+//line psql.y:4284
 		{
 			psqLOCAL = ast.RightJoinType
 		}
@@ -14954,7 +14960,7 @@ psqdefault:
 	case 814:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4282
+//line psql.y:4288
 		{
 			psqLOCAL = ast.RightJoinType
 		}
@@ -14962,7 +14968,7 @@ psqdefault:
 	case 815:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4288
+//line psql.y:4294
 		{
 			psqLOCAL = ast.NaturalJoinType
 		}
@@ -14970,7 +14976,7 @@ psqdefault:
 	case 816:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.JoinType
-//line psql.y:4292
+//line psql.y:4298
 		{
 			if psqDollar[2].joinTypeUnion() == ast.LeftJoinType {
 				psqLOCAL = ast.NaturalLeftJoinType
@@ -14981,38 +14987,38 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 817:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4302
+//line psql.y:4308
 		{
 			psqVAL.tableName = psqDollar[2].tableName
 		}
 	case 818:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4306
+//line psql.y:4312
 		{
 			psqVAL.tableName = psqDollar[1].tableName
 		}
 	case 819:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:4312
+//line psql.y:4318
 		{
 			psqVAL.tableName = ast.TableName{Name: psqDollar[1].tableIdent}
 		}
 	case 820:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4316
+//line psql.y:4322
 		{
 			psqVAL.tableName = ast.TableName{Qualifier: psqDollar[1].tableIdent, Name: psqDollar[3].tableIdent}
 		}
 	case 821:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4322
+//line psql.y:4328
 		{
 			psqVAL.tableName = ast.TableName{Name: psqDollar[1].tableIdent}
 		}
 	case 822:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.IndexHints
-//line psql.y:4327
+//line psql.y:4333
 		{
 			psqLOCAL = nil
 		}
@@ -15020,7 +15026,7 @@ psqdefault:
 	case 823:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IndexHints
-//line psql.y:4331
+//line psql.y:4337
 		{
 			psqLOCAL = psqDollar[1].indexHintsUnion()
 		}
@@ -15028,14 +15034,14 @@ psqdefault:
 	case 824:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IndexHints
-//line psql.y:4337
+//line psql.y:4343
 		{
 			psqLOCAL = ast.IndexHints{psqDollar[1].indexHintUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 825:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4341
+//line psql.y:4347
 		{
 			psqSLICE := (*ast.IndexHints)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].indexHintUnion())
@@ -15043,7 +15049,7 @@ psqdefault:
 	case 826:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.IndexHint
-//line psql.y:4347
+//line psql.y:4353
 		{
 			psqLOCAL = &ast.IndexHint{Type: ast.UseOp, ForType: psqDollar[3].indexHintForTypeUnion(), Indexes: psqDollar[5].columnsUnion()}
 		}
@@ -15051,7 +15057,7 @@ psqdefault:
 	case 827:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.IndexHint
-//line psql.y:4351
+//line psql.y:4357
 		{
 			psqLOCAL = &ast.IndexHint{Type: ast.UseOp, ForType: psqDollar[3].indexHintForTypeUnion()}
 		}
@@ -15059,7 +15065,7 @@ psqdefault:
 	case 828:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.IndexHint
-//line psql.y:4355
+//line psql.y:4361
 		{
 			psqLOCAL = &ast.IndexHint{Type: ast.IgnoreOp, ForType: psqDollar[3].indexHintForTypeUnion(), Indexes: psqDollar[5].columnsUnion()}
 		}
@@ -15067,7 +15073,7 @@ psqdefault:
 	case 829:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL *ast.IndexHint
-//line psql.y:4359
+//line psql.y:4365
 		{
 			psqLOCAL = &ast.IndexHint{Type: ast.ForceOp, ForType: psqDollar[3].indexHintForTypeUnion(), Indexes: psqDollar[5].columnsUnion()}
 		}
@@ -15075,7 +15081,7 @@ psqdefault:
 	case 830:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.IndexHintForType
-//line psql.y:4364
+//line psql.y:4370
 		{
 			psqLOCAL = ast.NoForType
 		}
@@ -15083,7 +15089,7 @@ psqdefault:
 	case 831:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IndexHintForType
-//line psql.y:4368
+//line psql.y:4374
 		{
 			psqLOCAL = ast.JoinForType
 		}
@@ -15091,7 +15097,7 @@ psqdefault:
 	case 832:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.IndexHintForType
-//line psql.y:4372
+//line psql.y:4378
 		{
 			psqLOCAL = ast.OrderByForType
 		}
@@ -15099,27 +15105,27 @@ psqdefault:
 	case 833:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.IndexHintForType
-//line psql.y:4376
+//line psql.y:4382
 		{
 			psqLOCAL = ast.GroupByForType
 		}
 		psqVAL.union = psqLOCAL
 	case 834:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:4382
+//line psql.y:4388
 		{
 			psqVAL.sequenceName = ast.SequenceName{Name: psqDollar[2].sequenceIdent}
 		}
 	case 835:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:4386
+//line psql.y:4392
 		{
 			psqVAL.sequenceName = ast.SequenceName{Qualifier: psqDollar[2].sequenceIdent, Name: psqDollar[4].sequenceIdent}
 		}
 	case 836:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4392
+//line psql.y:4398
 		{
 			psqLOCAL = nil
 		}
@@ -15127,7 +15133,7 @@ psqdefault:
 	case 837:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4396
+//line psql.y:4402
 		{
 			psqLOCAL = psqDollar[2].exprUnion()
 		}
@@ -15135,7 +15141,7 @@ psqdefault:
 	case 838:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4403
+//line psql.y:4409
 		{
 			psqLOCAL = &ast.OrExpr{Left: psqDollar[1].exprUnion(), Right: psqDollar[3].exprUnion()}
 		}
@@ -15143,7 +15149,7 @@ psqdefault:
 	case 839:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4407
+//line psql.y:4413
 		{
 			psqLOCAL = &ast.AndExpr{Left: psqDollar[1].exprUnion(), Right: psqDollar[3].exprUnion()}
 		}
@@ -15151,7 +15157,7 @@ psqdefault:
 	case 840:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4411
+//line psql.y:4417
 		{
 			psqLOCAL = &ast.NotExpr{Expr: psqDollar[2].exprUnion()}
 		}
@@ -15159,7 +15165,7 @@ psqdefault:
 	case 841:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4415
+//line psql.y:4421
 		{
 			psqLOCAL = &ast.IsExpr{Left: psqDollar[1].exprUnion(), Right: psqDollar[3].isExprOperatorUnion()}
 		}
@@ -15167,7 +15173,7 @@ psqdefault:
 	case 842:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4419
+//line psql.y:4425
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15175,7 +15181,7 @@ psqdefault:
 	case 843:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4423
+//line psql.y:4429
 		{
 			psqLOCAL = &ast.MemberOfExpr{Value: psqDollar[1].exprUnion(), JSONArr: psqDollar[5].exprUnion()}
 		}
@@ -15183,7 +15189,7 @@ psqdefault:
 	case 844:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4430
+//line psql.y:4436
 		{
 			psqLOCAL = &ast.IsExpr{Left: psqDollar[1].exprUnion(), Right: ast.IsNullOp}
 		}
@@ -15191,7 +15197,7 @@ psqdefault:
 	case 845:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4434
+//line psql.y:4440
 		{
 			psqLOCAL = &ast.IsExpr{Left: psqDollar[1].exprUnion(), Right: ast.IsNotNullOp}
 		}
@@ -15199,7 +15205,7 @@ psqdefault:
 	case 846:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4438
+//line psql.y:4444
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: psqDollar[2].comparisonExprOperatorUnion(), Right: psqDollar[3].exprUnion()}
 		}
@@ -15207,7 +15213,7 @@ psqdefault:
 	case 847:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4442
+//line psql.y:4448
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15215,7 +15221,7 @@ psqdefault:
 	case 848:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4448
+//line psql.y:4454
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.InOp, Right: psqDollar[3].colTupleUnion()}
 		}
@@ -15223,7 +15229,7 @@ psqdefault:
 	case 849:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4452
+//line psql.y:4458
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.NotInOp, Right: psqDollar[4].colTupleUnion()}
 		}
@@ -15231,7 +15237,7 @@ psqdefault:
 	case 850:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4456
+//line psql.y:4462
 		{
 			psqLOCAL = &ast.BetweenExpr{Left: psqDollar[1].exprUnion(), IsBetween: true, From: psqDollar[3].exprUnion(), To: psqDollar[5].exprUnion()}
 		}
@@ -15239,7 +15245,7 @@ psqdefault:
 	case 851:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4460
+//line psql.y:4466
 		{
 			psqLOCAL = &ast.BetweenExpr{Left: psqDollar[1].exprUnion(), IsBetween: false, From: psqDollar[4].exprUnion(), To: psqDollar[6].exprUnion()}
 		}
@@ -15247,7 +15253,7 @@ psqdefault:
 	case 852:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4464
+//line psql.y:4470
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.LikeOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15255,7 +15261,7 @@ psqdefault:
 	case 853:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4468
+//line psql.y:4474
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.NotLikeOp, Right: psqDollar[4].exprUnion()}
 		}
@@ -15263,7 +15269,7 @@ psqdefault:
 	case 854:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4472
+//line psql.y:4478
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.LikeOp, Right: psqDollar[3].exprUnion(), Escape: psqDollar[5].exprUnion()}
 		}
@@ -15271,7 +15277,7 @@ psqdefault:
 	case 855:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4476
+//line psql.y:4482
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.NotLikeOp, Right: psqDollar[4].exprUnion(), Escape: psqDollar[6].exprUnion()}
 		}
@@ -15279,7 +15285,7 @@ psqdefault:
 	case 856:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4480
+//line psql.y:4486
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.RegexpOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15287,7 +15293,7 @@ psqdefault:
 	case 857:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4484
+//line psql.y:4490
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.NotRegexpOp, Right: psqDollar[4].exprUnion()}
 		}
@@ -15295,7 +15301,7 @@ psqdefault:
 	case 858:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4488
+//line psql.y:4494
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15303,7 +15309,7 @@ psqdefault:
 	case 859:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4492
+//line psql.y:4498
 		{
 			psqLOCAL = &ast.ComparisonExpr{Left: psqDollar[1].exprUnion(), Operator: ast.InOp, Right: psqDollar[4].colTupleUnion()}
 		}
@@ -15311,7 +15317,7 @@ psqdefault:
 	case 860:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4498
+//line psql.y:4504
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.BitOrOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15319,7 +15325,7 @@ psqdefault:
 	case 861:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4502
+//line psql.y:4508
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.BitAndOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15327,7 +15333,7 @@ psqdefault:
 	case 862:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4506
+//line psql.y:4512
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.ShiftLeftOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15335,7 +15341,7 @@ psqdefault:
 	case 863:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4510
+//line psql.y:4516
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.ShiftRightOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15343,7 +15349,7 @@ psqdefault:
 	case 864:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4514
+//line psql.y:4520
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.PlusOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15351,7 +15357,7 @@ psqdefault:
 	case 865:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4518
+//line psql.y:4524
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.MinusOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15359,7 +15365,7 @@ psqdefault:
 	case 866:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4522
+//line psql.y:4528
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.MultOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15367,7 +15373,7 @@ psqdefault:
 	case 867:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4526
+//line psql.y:4532
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.DivOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15375,7 +15381,7 @@ psqdefault:
 	case 868:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4530
+//line psql.y:4536
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.ModOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15383,7 +15389,7 @@ psqdefault:
 	case 869:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4534
+//line psql.y:4540
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.IntDivOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15391,7 +15397,7 @@ psqdefault:
 	case 870:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4538
+//line psql.y:4544
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.ModOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15399,7 +15405,7 @@ psqdefault:
 	case 871:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4542
+//line psql.y:4548
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].exprUnion(), Operator: ast.BitXorOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15407,7 +15413,7 @@ psqdefault:
 	case 872:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4546
+//line psql.y:4552
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15415,7 +15421,7 @@ psqdefault:
 	case 873:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4552
+//line psql.y:4558
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15423,7 +15429,7 @@ psqdefault:
 	case 874:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4556
+//line psql.y:4562
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15431,7 +15437,7 @@ psqdefault:
 	case 875:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4560
+//line psql.y:4566
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15439,7 +15445,7 @@ psqdefault:
 	case 876:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4564
+//line psql.y:4570
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15447,7 +15453,7 @@ psqdefault:
 	case 877:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4568
+//line psql.y:4574
 		{
 			psqLOCAL = &ast.CollateExpr{Expr: psqDollar[1].exprUnion(), Collation: psqDollar[3].str}
 		}
@@ -15455,7 +15461,7 @@ psqdefault:
 	case 878:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4572
+//line psql.y:4578
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15463,7 +15469,7 @@ psqdefault:
 	case 879:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4576
+//line psql.y:4582
 		{
 			psqLOCAL = psqDollar[1].colNameUnion()
 		}
@@ -15471,7 +15477,7 @@ psqdefault:
 	case 880:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4580
+//line psql.y:4586
 		{
 			psqLOCAL = psqDollar[2].exprUnion() // TODO: do we really want to ignore unary '+' before any kind of literals?
 		}
@@ -15479,7 +15485,7 @@ psqdefault:
 	case 881:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4584
+//line psql.y:4590
 		{
 			psqLOCAL = &ast.UnaryExpr{Operator: ast.UMinusOp, Expr: psqDollar[2].exprUnion()}
 		}
@@ -15487,7 +15493,7 @@ psqdefault:
 	case 882:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4588
+//line psql.y:4594
 		{
 			psqLOCAL = &ast.UnaryExpr{Operator: ast.TildaOp, Expr: psqDollar[2].exprUnion()}
 		}
@@ -15495,7 +15501,7 @@ psqdefault:
 	case 883:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4592
+//line psql.y:4598
 		{
 			psqLOCAL = &ast.UnaryExpr{Operator: ast.BangOp, Expr: psqDollar[2].exprUnion()}
 		}
@@ -15503,7 +15509,7 @@ psqdefault:
 	case 884:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4596
+//line psql.y:4602
 		{
 			psqLOCAL = psqDollar[1].subqueryUnion()
 		}
@@ -15511,7 +15517,7 @@ psqdefault:
 	case 885:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4600
+//line psql.y:4606
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15519,7 +15525,7 @@ psqdefault:
 	case 886:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4604
+//line psql.y:4610
 		{
 			psqLOCAL = &ast.ExistsExpr{Subquery: psqDollar[2].subqueryUnion()}
 		}
@@ -15527,7 +15533,7 @@ psqdefault:
 	case 887:
 		psqDollar = psqS[psqpt-9 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4608
+//line psql.y:4614
 		{
 			psqLOCAL = &ast.MatchExpr{Columns: psqDollar[3].selectExprsUnion(), Expr: psqDollar[7].exprUnion(), Option: psqDollar[8].matchExprOptionUnion()}
 		}
@@ -15535,7 +15541,7 @@ psqdefault:
 	case 888:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4612
+//line psql.y:4618
 		{
 			psqLOCAL = &ast.ConvertExpr{Expr: psqDollar[3].exprUnion(), Type: psqDollar[5].convertTypeUnion()}
 		}
@@ -15543,7 +15549,7 @@ psqdefault:
 	case 889:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4616
+//line psql.y:4622
 		{
 			psqLOCAL = &ast.ConvertExpr{Expr: psqDollar[3].exprUnion(), Type: psqDollar[5].convertTypeUnion()}
 		}
@@ -15551,7 +15557,7 @@ psqdefault:
 	case 890:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4620
+//line psql.y:4626
 		{
 			psqLOCAL = &ast.ConvertUsingExpr{Expr: psqDollar[3].exprUnion(), Type: psqDollar[5].str}
 		}
@@ -15559,7 +15565,7 @@ psqdefault:
 	case 891:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4624
+//line psql.y:4630
 		{
 			// From: https://dev.psql.com/doc/refman/8.0/en/cast-functions.html#operator_binary
 			// To convert a string expression to a binary string, these constructs are equivalent:
@@ -15571,7 +15577,7 @@ psqdefault:
 	case 892:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4632
+//line psql.y:4638
 		{
 			psqLOCAL = &ast.Default{ColName: psqDollar[2].str}
 		}
@@ -15579,7 +15585,7 @@ psqdefault:
 	case 893:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4636
+//line psql.y:4642
 		{
 			// This rule prevents the usage of INTERVAL
 			// as a function. If support is needed for that,
@@ -15591,7 +15597,7 @@ psqdefault:
 	case 894:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4644
+//line psql.y:4650
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].colNameUnion(), Operator: ast.JSONExtractOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15599,7 +15605,7 @@ psqdefault:
 	case 895:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4648
+//line psql.y:4654
 		{
 			psqLOCAL = &ast.BinaryExpr{Left: psqDollar[1].colNameUnion(), Operator: ast.JSONUnquoteExtractOp, Right: psqDollar[3].exprUnion()}
 		}
@@ -15607,7 +15613,7 @@ psqdefault:
 	case 896:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TrimType
-//line psql.y:4654
+//line psql.y:4660
 		{
 			psqLOCAL = ast.BothTrimType
 		}
@@ -15615,7 +15621,7 @@ psqdefault:
 	case 897:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TrimType
-//line psql.y:4658
+//line psql.y:4664
 		{
 			psqLOCAL = ast.LeadingTrimType
 		}
@@ -15623,27 +15629,27 @@ psqdefault:
 	case 898:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.TrimType
-//line psql.y:4662
+//line psql.y:4668
 		{
 			psqLOCAL = ast.TrailingTrimType
 		}
 		psqVAL.union = psqLOCAL
 	case 899:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:4668
+//line psql.y:4674
 		{
 			psqVAL.str = ""
 		}
 	case 900:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4672
+//line psql.y:4678
 		{
 			psqVAL.str = string(psqDollar[2].colIdent.String())
 		}
 	case 901:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.BoolVal
-//line psql.y:4678
+//line psql.y:4684
 		{
 			psqLOCAL = ast.BoolVal(true)
 		}
@@ -15651,7 +15657,7 @@ psqdefault:
 	case 902:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.BoolVal
-//line psql.y:4682
+//line psql.y:4688
 		{
 			psqLOCAL = ast.BoolVal(false)
 		}
@@ -15659,7 +15665,7 @@ psqdefault:
 	case 903:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IsExprOperator
-//line psql.y:4689
+//line psql.y:4695
 		{
 			psqLOCAL = ast.IsTrueOp
 		}
@@ -15667,7 +15673,7 @@ psqdefault:
 	case 904:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IsExprOperator
-//line psql.y:4693
+//line psql.y:4699
 		{
 			psqLOCAL = ast.IsNotTrueOp
 		}
@@ -15675,7 +15681,7 @@ psqdefault:
 	case 905:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IsExprOperator
-//line psql.y:4697
+//line psql.y:4703
 		{
 			psqLOCAL = ast.IsFalseOp
 		}
@@ -15683,7 +15689,7 @@ psqdefault:
 	case 906:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.IsExprOperator
-//line psql.y:4701
+//line psql.y:4707
 		{
 			psqLOCAL = ast.IsNotFalseOp
 		}
@@ -15691,7 +15697,7 @@ psqdefault:
 	case 907:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4707
+//line psql.y:4713
 		{
 			psqLOCAL = ast.EqualOp
 		}
@@ -15699,7 +15705,7 @@ psqdefault:
 	case 908:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4711
+//line psql.y:4717
 		{
 			psqLOCAL = ast.LessThanOp
 		}
@@ -15707,7 +15713,7 @@ psqdefault:
 	case 909:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4715
+//line psql.y:4721
 		{
 			psqLOCAL = ast.GreaterThanOp
 		}
@@ -15715,7 +15721,7 @@ psqdefault:
 	case 910:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4719
+//line psql.y:4725
 		{
 			psqLOCAL = ast.LessEqualOp
 		}
@@ -15723,7 +15729,7 @@ psqdefault:
 	case 911:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4723
+//line psql.y:4729
 		{
 			psqLOCAL = ast.GreaterEqualOp
 		}
@@ -15731,7 +15737,7 @@ psqdefault:
 	case 912:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4727
+//line psql.y:4733
 		{
 			psqLOCAL = ast.NotEqualOp
 		}
@@ -15739,7 +15745,7 @@ psqdefault:
 	case 913:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ComparisonExprOperator
-//line psql.y:4731
+//line psql.y:4737
 		{
 			psqLOCAL = ast.NullSafeEqualOp
 		}
@@ -15747,7 +15753,7 @@ psqdefault:
 	case 914:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColTuple
-//line psql.y:4737
+//line psql.y:4743
 		{
 			psqLOCAL = psqDollar[1].valTupleUnion()
 		}
@@ -15755,7 +15761,7 @@ psqdefault:
 	case 915:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColTuple
-//line psql.y:4741
+//line psql.y:4747
 		{
 			psqLOCAL = psqDollar[1].subqueryUnion()
 		}
@@ -15763,7 +15769,7 @@ psqdefault:
 	case 916:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ColTuple
-//line psql.y:4745
+//line psql.y:4751
 		{
 			psqLOCAL = ast.ListArg(psqDollar[1].str[2:])
 			bindVariable(psqlex, psqDollar[1].str[2:])
@@ -15772,7 +15778,7 @@ psqdefault:
 	case 917:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.Subquery
-//line psql.y:4752
+//line psql.y:4758
 		{
 			psqLOCAL = &ast.Subquery{psqDollar[1].selStmtUnion()}
 		}
@@ -15780,14 +15786,14 @@ psqdefault:
 	case 918:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Exprs
-//line psql.y:4758
+//line psql.y:4764
 		{
 			psqLOCAL = ast.Exprs{psqDollar[1].exprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 919:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:4762
+//line psql.y:4768
 		{
 			psqSLICE := (*ast.Exprs)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].exprUnion())
@@ -15795,7 +15801,7 @@ psqdefault:
 	case 920:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4772
+//line psql.y:4778
 		{
 			psqLOCAL = &ast.FuncExpr{Name: psqDollar[1].colIdent, Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -15803,7 +15809,7 @@ psqdefault:
 	case 921:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4776
+//line psql.y:4782
 		{
 			psqLOCAL = &ast.FuncExpr{Name: psqDollar[1].colIdent, Distinct: true, Exprs: psqDollar[4].selectExprsUnion()}
 		}
@@ -15811,7 +15817,7 @@ psqdefault:
 	case 922:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4780
+//line psql.y:4786
 		{
 			psqLOCAL = &ast.FuncExpr{Name: psqDollar[1].colIdent, Distinct: true, Exprs: psqDollar[4].selectExprsUnion()}
 		}
@@ -15819,7 +15825,7 @@ psqdefault:
 	case 923:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4784
+//line psql.y:4790
 		{
 			psqLOCAL = &ast.FuncExpr{Qualifier: psqDollar[1].tableIdent, Name: psqDollar[3].colIdent, Exprs: psqDollar[5].selectExprsUnion()}
 		}
@@ -15827,7 +15833,7 @@ psqdefault:
 	case 924:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4794
+//line psql.y:4800
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("left"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -15835,7 +15841,7 @@ psqdefault:
 	case 925:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4798
+//line psql.y:4804
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("right"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -15843,7 +15849,7 @@ psqdefault:
 	case 926:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4802
+//line psql.y:4808
 		{
 			psqLOCAL = &ast.SubstrExpr{Name: psqDollar[3].exprUnion(), From: psqDollar[5].exprUnion(), To: psqDollar[7].exprUnion()}
 		}
@@ -15851,7 +15857,7 @@ psqdefault:
 	case 927:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4806
+//line psql.y:4812
 		{
 			psqLOCAL = &ast.SubstrExpr{Name: psqDollar[3].exprUnion(), From: psqDollar[5].exprUnion()}
 		}
@@ -15859,7 +15865,7 @@ psqdefault:
 	case 928:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4810
+//line psql.y:4816
 		{
 			psqLOCAL = &ast.SubstrExpr{Name: psqDollar[3].exprUnion(), From: psqDollar[5].exprUnion(), To: psqDollar[7].exprUnion()}
 		}
@@ -15867,7 +15873,7 @@ psqdefault:
 	case 929:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4814
+//line psql.y:4820
 		{
 			psqLOCAL = &ast.SubstrExpr{Name: psqDollar[3].exprUnion(), From: psqDollar[5].exprUnion()}
 		}
@@ -15875,7 +15881,7 @@ psqdefault:
 	case 930:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4818
+//line psql.y:4824
 		{
 			psqLOCAL = &ast.GroupConcatExpr{Distinct: psqDollar[3].booleanUnion(), Exprs: psqDollar[4].selectExprsUnion(), OrderBy: psqDollar[5].orderByUnion(), Separator: psqDollar[6].str, Limit: psqDollar[7].limitUnion()}
 		}
@@ -15883,7 +15889,7 @@ psqdefault:
 	case 931:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4822
+//line psql.y:4828
 		{
 			psqLOCAL = &ast.CaseExpr{Expr: psqDollar[2].exprUnion(), Whens: psqDollar[3].whensUnion(), Else: psqDollar[4].exprUnion()}
 		}
@@ -15891,7 +15897,7 @@ psqdefault:
 	case 932:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4826
+//line psql.y:4832
 		{
 			psqLOCAL = &ast.ValuesFuncExpr{Name: psqDollar[3].colNameUnion()}
 		}
@@ -15899,7 +15905,7 @@ psqdefault:
 	case 933:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4830
+//line psql.y:4836
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent(psqDollar[1].str)}
 		}
@@ -15907,7 +15913,7 @@ psqdefault:
 	case 934:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4841
+//line psql.y:4847
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("utc_date")}
 		}
@@ -15915,7 +15921,7 @@ psqdefault:
 	case 935:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4845
+//line psql.y:4851
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
@@ -15923,7 +15929,7 @@ psqdefault:
 	case 936:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4851
+//line psql.y:4857
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("current_date")}
 		}
@@ -15931,7 +15937,7 @@ psqdefault:
 	case 937:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4855
+//line psql.y:4861
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("utc_time"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -15939,7 +15945,7 @@ psqdefault:
 	case 938:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4860
+//line psql.y:4866
 		{
 			psqLOCAL = &ast.CurTimeFuncExpr{Name: ast.NewColIdent("current_time"), Fsp: psqDollar[2].exprUnion()}
 		}
@@ -15947,7 +15953,7 @@ psqdefault:
 	case 939:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4864
+//line psql.y:4870
 		{
 			psqLOCAL = &ast.TimestampFuncExpr{Name: string("timestampadd"), Unit: psqDollar[3].colIdent.String(), Expr1: psqDollar[5].exprUnion(), Expr2: psqDollar[7].exprUnion()}
 		}
@@ -15955,7 +15961,7 @@ psqdefault:
 	case 940:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4868
+//line psql.y:4874
 		{
 			psqLOCAL = &ast.TimestampFuncExpr{Name: string("timestampdiff"), Unit: psqDollar[3].colIdent.String(), Expr1: psqDollar[5].exprUnion(), Expr2: psqDollar[7].exprUnion()}
 		}
@@ -15963,7 +15969,7 @@ psqdefault:
 	case 941:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4872
+//line psql.y:4878
 		{
 			psqLOCAL = &ast.ExtractFuncExpr{IntervalTypes: psqDollar[3].intervalTypeUnion(), Expr: psqDollar[5].exprUnion()}
 		}
@@ -15971,7 +15977,7 @@ psqdefault:
 	case 942:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4876
+//line psql.y:4882
 		{
 			psqLOCAL = &ast.WeightStringFuncExpr{Expr: psqDollar[3].exprUnion(), As: psqDollar[4].convertTypeUnion()}
 		}
@@ -15979,7 +15985,7 @@ psqdefault:
 	case 943:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4880
+//line psql.y:4886
 		{
 			psqLOCAL = &ast.JSONPrettyExpr{JSONVal: psqDollar[3].exprUnion()}
 		}
@@ -15987,7 +15993,7 @@ psqdefault:
 	case 944:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4884
+//line psql.y:4890
 		{
 			psqLOCAL = &ast.JSONStorageFreeExpr{JSONVal: psqDollar[3].exprUnion()}
 		}
@@ -15995,7 +16001,7 @@ psqdefault:
 	case 945:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4888
+//line psql.y:4894
 		{
 			psqLOCAL = &ast.JSONStorageSizeExpr{JSONVal: psqDollar[3].exprUnion()}
 		}
@@ -16003,7 +16009,7 @@ psqdefault:
 	case 946:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4892
+//line psql.y:4898
 		{
 			psqLOCAL = &ast.TrimFuncExpr{TrimFuncType: ast.LTrimType, StringArg: psqDollar[3].exprUnion()}
 		}
@@ -16011,7 +16017,7 @@ psqdefault:
 	case 947:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4896
+//line psql.y:4902
 		{
 			psqLOCAL = &ast.TrimFuncExpr{TrimFuncType: ast.RTrimType, StringArg: psqDollar[3].exprUnion()}
 		}
@@ -16019,7 +16025,7 @@ psqdefault:
 	case 948:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4900
+//line psql.y:4906
 		{
 			psqLOCAL = &ast.TrimFuncExpr{Type: psqDollar[3].trimTypeUnion(), TrimArg: psqDollar[4].exprUnion(), StringArg: psqDollar[6].exprUnion()}
 		}
@@ -16027,7 +16033,7 @@ psqdefault:
 	case 949:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4904
+//line psql.y:4910
 		{
 			psqLOCAL = &ast.TrimFuncExpr{StringArg: psqDollar[3].exprUnion()}
 		}
@@ -16035,7 +16041,7 @@ psqdefault:
 	case 950:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4908
+//line psql.y:4914
 		{
 			psqLOCAL = &ast.TrimFuncExpr{TrimArg: psqDollar[3].exprUnion(), StringArg: psqDollar[5].exprUnion()}
 		}
@@ -16043,7 +16049,7 @@ psqdefault:
 	case 951:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4912
+//line psql.y:4918
 		{
 			psqLOCAL = &ast.JSONSchemaValidFuncExpr{Schema: psqDollar[3].exprUnion(), Document: psqDollar[5].exprUnion()}
 		}
@@ -16051,7 +16057,7 @@ psqdefault:
 	case 952:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4916
+//line psql.y:4922
 		{
 			psqLOCAL = &ast.JSONSchemaValidationReportFuncExpr{Schema: psqDollar[3].exprUnion(), Document: psqDollar[5].exprUnion()}
 		}
@@ -16059,7 +16065,7 @@ psqdefault:
 	case 953:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4920
+//line psql.y:4926
 		{
 			psqLOCAL = &ast.JSONArrayExpr{Params: psqDollar[3].exprsUnion()}
 		}
@@ -16067,7 +16073,7 @@ psqdefault:
 	case 954:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4924
+//line psql.y:4930
 		{
 			psqLOCAL = &ast.JSONObjectExpr{Params: psqDollar[3].jsonObjectParamsUnion()}
 		}
@@ -16075,7 +16081,7 @@ psqdefault:
 	case 955:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4928
+//line psql.y:4934
 		{
 			psqLOCAL = &ast.JSONQuoteExpr{StringArg: psqDollar[3].exprUnion()}
 		}
@@ -16083,7 +16089,7 @@ psqdefault:
 	case 956:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4932
+//line psql.y:4938
 		{
 			psqLOCAL = &ast.JSONContainsExpr{Target: psqDollar[3].exprUnion(), Candidate: psqDollar[5].exprUnion(), PathList: psqDollar[6].jsonPathParamsUnion()}
 		}
@@ -16091,7 +16097,7 @@ psqdefault:
 	case 957:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4936
+//line psql.y:4942
 		{
 			psqLOCAL = &ast.JSONContainsPathExpr{JSONDoc: psqDollar[3].exprUnion(), OneOrAll: psqDollar[5].exprUnion(), PathList: psqDollar[7].jsonPathParamsUnion()}
 		}
@@ -16099,7 +16105,7 @@ psqdefault:
 	case 958:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4940
+//line psql.y:4946
 		{
 			psqLOCAL = &ast.JSONExtractExpr{JSONDoc: psqDollar[3].exprUnion(), PathList: psqDollar[5].jsonPathParamsUnion()}
 		}
@@ -16107,7 +16113,7 @@ psqdefault:
 	case 959:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4944
+//line psql.y:4950
 		{
 			psqLOCAL = &ast.JSONKeysExpr{JSONDoc: psqDollar[3].exprUnion(), PathList: psqDollar[4].jsonPathParamsUnion()}
 		}
@@ -16115,7 +16121,7 @@ psqdefault:
 	case 960:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4948
+//line psql.y:4954
 		{
 			psqLOCAL = &ast.JSONOverlapsExpr{JSONDoc1: psqDollar[3].exprUnion(), JSONDoc2: psqDollar[5].exprUnion()}
 		}
@@ -16123,7 +16129,7 @@ psqdefault:
 	case 961:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4952
+//line psql.y:4958
 		{
 			psqLOCAL = &ast.JSONSearchExpr{JSONDoc: psqDollar[3].exprUnion(), OneOrAll: psqDollar[5].exprUnion(), SearchStr: psqDollar[7].exprUnion()}
 		}
@@ -16131,7 +16137,7 @@ psqdefault:
 	case 962:
 		psqDollar = psqS[psqpt-11 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4956
+//line psql.y:4962
 		{
 			psqLOCAL = &ast.JSONSearchExpr{JSONDoc: psqDollar[3].exprUnion(), OneOrAll: psqDollar[5].exprUnion(), SearchStr: psqDollar[7].exprUnion(), EscapeChar: psqDollar[9].exprUnion(), PathList: psqDollar[10].jsonPathParamsUnion()}
 		}
@@ -16139,7 +16145,7 @@ psqdefault:
 	case 963:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4960
+//line psql.y:4966
 		{
 			psqLOCAL = &ast.JSONValueExpr{JSONDoc: psqDollar[3].exprUnion(), Path: psqDollar[5].jsonPathParam, ReturningType: psqDollar[6].convertTypeUnion()}
 		}
@@ -16147,7 +16153,7 @@ psqdefault:
 	case 964:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4964
+//line psql.y:4970
 		{
 			psqLOCAL = &ast.JSONValueExpr{JSONDoc: psqDollar[3].exprUnion(), Path: psqDollar[5].jsonPathParam, ReturningType: psqDollar[6].convertTypeUnion(), EmptyOnResponse: psqDollar[7].jtOnResponseUnion()}
 		}
@@ -16155,7 +16161,7 @@ psqdefault:
 	case 965:
 		psqDollar = psqS[psqpt-8 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4968
+//line psql.y:4974
 		{
 			psqLOCAL = &ast.JSONValueExpr{JSONDoc: psqDollar[3].exprUnion(), Path: psqDollar[5].jsonPathParam, ReturningType: psqDollar[6].convertTypeUnion(), ErrorOnResponse: psqDollar[7].jtOnResponseUnion()}
 		}
@@ -16163,7 +16169,7 @@ psqdefault:
 	case 966:
 		psqDollar = psqS[psqpt-9 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4972
+//line psql.y:4978
 		{
 			psqLOCAL = &ast.JSONValueExpr{JSONDoc: psqDollar[3].exprUnion(), Path: psqDollar[5].jsonPathParam, ReturningType: psqDollar[6].convertTypeUnion(), EmptyOnResponse: psqDollar[7].jtOnResponseUnion(), ErrorOnResponse: psqDollar[8].jtOnResponseUnion()}
 		}
@@ -16171,7 +16177,7 @@ psqdefault:
 	case 967:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4976
+//line psql.y:4982
 		{
 			psqLOCAL = &ast.JSONAttributesExpr{Type: ast.DepthAttributeType, JSONDoc: psqDollar[3].exprUnion()}
 		}
@@ -16179,7 +16185,7 @@ psqdefault:
 	case 968:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4980
+//line psql.y:4986
 		{
 			psqLOCAL = &ast.JSONAttributesExpr{Type: ast.ValidAttributeType, JSONDoc: psqDollar[3].exprUnion()}
 		}
@@ -16187,7 +16193,7 @@ psqdefault:
 	case 969:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4984
+//line psql.y:4990
 		{
 			psqLOCAL = &ast.JSONAttributesExpr{Type: ast.TypeAttributeType, JSONDoc: psqDollar[3].exprUnion()}
 		}
@@ -16195,7 +16201,7 @@ psqdefault:
 	case 970:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4988
+//line psql.y:4994
 		{
 			psqLOCAL = &ast.JSONAttributesExpr{Type: ast.LengthAttributeType, JSONDoc: psqDollar[3].exprUnion()}
 		}
@@ -16203,7 +16209,7 @@ psqdefault:
 	case 971:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4992
+//line psql.y:4998
 		{
 			psqLOCAL = &ast.JSONAttributesExpr{Type: ast.LengthAttributeType, JSONDoc: psqDollar[3].exprUnion(), Path: psqDollar[5].jsonPathParam}
 		}
@@ -16211,7 +16217,7 @@ psqdefault:
 	case 972:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:4996
+//line psql.y:5002
 		{
 			psqLOCAL = &ast.JSONValueModifierExpr{Type: ast.JSONArrayAppendType, JSONDoc: psqDollar[3].exprUnion(), Params: psqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16219,7 +16225,7 @@ psqdefault:
 	case 973:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5000
+//line psql.y:5006
 		{
 			psqLOCAL = &ast.JSONValueModifierExpr{Type: ast.JSONArrayInsertType, JSONDoc: psqDollar[3].exprUnion(), Params: psqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16227,7 +16233,7 @@ psqdefault:
 	case 974:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5004
+//line psql.y:5010
 		{
 			psqLOCAL = &ast.JSONValueModifierExpr{Type: ast.JSONInsertType, JSONDoc: psqDollar[3].exprUnion(), Params: psqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16235,7 +16241,7 @@ psqdefault:
 	case 975:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5008
+//line psql.y:5014
 		{
 			psqLOCAL = &ast.JSONValueModifierExpr{Type: ast.JSONReplaceType, JSONDoc: psqDollar[3].exprUnion(), Params: psqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16243,7 +16249,7 @@ psqdefault:
 	case 976:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5012
+//line psql.y:5018
 		{
 			psqLOCAL = &ast.JSONValueModifierExpr{Type: ast.JSONSetType, JSONDoc: psqDollar[3].exprUnion(), Params: psqDollar[5].jsonObjectParamsUnion()}
 		}
@@ -16251,7 +16257,7 @@ psqdefault:
 	case 977:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5016
+//line psql.y:5022
 		{
 			psqLOCAL = &ast.JSONValueMergeExpr{Type: ast.JSONMergeType, JSONDoc: psqDollar[3].exprUnion(), JSONDocList: psqDollar[5].exprsUnion()}
 		}
@@ -16259,7 +16265,7 @@ psqdefault:
 	case 978:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5020
+//line psql.y:5026
 		{
 			psqLOCAL = &ast.JSONValueMergeExpr{Type: ast.JSONMergePatchType, JSONDoc: psqDollar[3].exprUnion(), JSONDocList: psqDollar[5].exprsUnion()}
 		}
@@ -16267,7 +16273,7 @@ psqdefault:
 	case 979:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5024
+//line psql.y:5030
 		{
 			psqLOCAL = &ast.JSONValueMergeExpr{Type: ast.JSONMergePreserveType, JSONDoc: psqDollar[3].exprUnion(), JSONDocList: psqDollar[5].exprsUnion()}
 		}
@@ -16275,7 +16281,7 @@ psqdefault:
 	case 980:
 		psqDollar = psqS[psqpt-6 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5028
+//line psql.y:5034
 		{
 			psqLOCAL = &ast.JSONRemoveExpr{JSONDoc: psqDollar[3].exprUnion(), PathList: psqDollar[5].exprsUnion()}
 		}
@@ -16283,7 +16289,7 @@ psqdefault:
 	case 981:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5032
+//line psql.y:5038
 		{
 			psqLOCAL = &ast.JSONUnquoteExpr{JSONValue: psqDollar[3].exprUnion()}
 		}
@@ -16291,7 +16297,7 @@ psqdefault:
 	case 982:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5037
+//line psql.y:5043
 		{
 			psqLOCAL = nil
 		}
@@ -16299,7 +16305,7 @@ psqdefault:
 	case 983:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5041
+//line psql.y:5047
 		{
 			psqLOCAL = psqDollar[2].convertTypeUnion()
 		}
@@ -16307,7 +16313,7 @@ psqdefault:
 	case 984:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []ast.JSONPathParam
-//line psql.y:5046
+//line psql.y:5052
 		{
 			psqLOCAL = nil
 		}
@@ -16315,7 +16321,7 @@ psqdefault:
 	case 985:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL []ast.JSONPathParam
-//line psql.y:5050
+//line psql.y:5056
 		{
 			psqLOCAL = psqDollar[2].jsonPathParamsUnion()
 		}
@@ -16323,39 +16329,39 @@ psqdefault:
 	case 986:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []ast.JSONPathParam
-//line psql.y:5056
+//line psql.y:5062
 		{
 			psqLOCAL = []ast.JSONPathParam{psqDollar[1].jsonPathParam}
 		}
 		psqVAL.union = psqLOCAL
 	case 987:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5060
+//line psql.y:5066
 		{
 			psqSLICE := (*[]ast.JSONPathParam)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].jsonPathParam)
 		}
 	case 988:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5066
+//line psql.y:5072
 		{
 			psqVAL.jsonPathParam = ast.JSONPathParam(psqDollar[1].exprUnion())
 		}
 	case 989:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5070
+//line psql.y:5076
 		{
 			psqVAL.jsonPathParam = ast.JSONPathParam(psqDollar[1].colNameUnion())
 		}
 	case 990:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5076
+//line psql.y:5082
 		{
 		}
 	case 991:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5078
+//line psql.y:5084
 		{
 			psqLOCAL = ast.IntervalDayHour
 		}
@@ -16363,7 +16369,7 @@ psqdefault:
 	case 992:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5082
+//line psql.y:5088
 		{
 			psqLOCAL = ast.IntervalDayMicrosecond
 		}
@@ -16371,7 +16377,7 @@ psqdefault:
 	case 993:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5086
+//line psql.y:5092
 		{
 			psqLOCAL = ast.IntervalDayMinute
 		}
@@ -16379,7 +16385,7 @@ psqdefault:
 	case 994:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5090
+//line psql.y:5096
 		{
 			psqLOCAL = ast.IntervalDaySecond
 		}
@@ -16387,7 +16393,7 @@ psqdefault:
 	case 995:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5094
+//line psql.y:5100
 		{
 			psqLOCAL = ast.IntervalHourMicrosecond
 		}
@@ -16395,7 +16401,7 @@ psqdefault:
 	case 996:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5098
+//line psql.y:5104
 		{
 			psqLOCAL = ast.IntervalHourMinute
 		}
@@ -16403,7 +16409,7 @@ psqdefault:
 	case 997:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5102
+//line psql.y:5108
 		{
 			psqLOCAL = ast.IntervalHourSecond
 		}
@@ -16411,7 +16417,7 @@ psqdefault:
 	case 998:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5106
+//line psql.y:5112
 		{
 			psqLOCAL = ast.IntervalMinuteMicrosecond
 		}
@@ -16419,7 +16425,7 @@ psqdefault:
 	case 999:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5110
+//line psql.y:5116
 		{
 			psqLOCAL = ast.IntervalMinuteSecond
 		}
@@ -16427,7 +16433,7 @@ psqdefault:
 	case 1000:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5114
+//line psql.y:5120
 		{
 			psqLOCAL = ast.IntervalSecondMicrosecond
 		}
@@ -16435,7 +16441,7 @@ psqdefault:
 	case 1001:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5118
+//line psql.y:5124
 		{
 			psqLOCAL = ast.IntervalYearMonth
 		}
@@ -16443,7 +16449,7 @@ psqdefault:
 	case 1002:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5124
+//line psql.y:5130
 		{
 			psqLOCAL = ast.IntervalDay
 		}
@@ -16451,7 +16457,7 @@ psqdefault:
 	case 1003:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5128
+//line psql.y:5134
 		{
 			psqLOCAL = ast.IntervalWeek
 		}
@@ -16459,7 +16465,7 @@ psqdefault:
 	case 1004:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5132
+//line psql.y:5138
 		{
 			psqLOCAL = ast.IntervalHour
 		}
@@ -16467,7 +16473,7 @@ psqdefault:
 	case 1005:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5136
+//line psql.y:5142
 		{
 			psqLOCAL = ast.IntervalMinute
 		}
@@ -16475,7 +16481,7 @@ psqdefault:
 	case 1006:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5140
+//line psql.y:5146
 		{
 			psqLOCAL = ast.IntervalMonth
 		}
@@ -16483,7 +16489,7 @@ psqdefault:
 	case 1007:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5144
+//line psql.y:5150
 		{
 			psqLOCAL = ast.IntervalQuarter
 		}
@@ -16491,7 +16497,7 @@ psqdefault:
 	case 1008:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5148
+//line psql.y:5154
 		{
 			psqLOCAL = ast.IntervalSecond
 		}
@@ -16499,7 +16505,7 @@ psqdefault:
 	case 1009:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5152
+//line psql.y:5158
 		{
 			psqLOCAL = ast.IntervalMicrosecond
 		}
@@ -16507,7 +16513,7 @@ psqdefault:
 	case 1010:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.IntervalTypes
-//line psql.y:5156
+//line psql.y:5162
 		{
 			psqLOCAL = ast.IntervalYear
 		}
@@ -16515,7 +16521,7 @@ psqdefault:
 	case 1013:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5166
+//line psql.y:5172
 		{
 			psqLOCAL = nil
 		}
@@ -16523,7 +16529,7 @@ psqdefault:
 	case 1014:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5170
+//line psql.y:5176
 		{
 			psqLOCAL = nil
 		}
@@ -16531,7 +16537,7 @@ psqdefault:
 	case 1015:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5174
+//line psql.y:5180
 		{
 			psqLOCAL = ast.NewArgument(psqDollar[2].str[1:])
 			bindVariable(psqlex, psqDollar[2].str[1:])
@@ -16540,7 +16546,7 @@ psqdefault:
 	case 1016:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5185
+//line psql.y:5191
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("if"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -16548,7 +16554,7 @@ psqdefault:
 	case 1017:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5189
+//line psql.y:5195
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("database"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -16556,7 +16562,7 @@ psqdefault:
 	case 1018:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5193
+//line psql.y:5199
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("schema"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -16564,7 +16570,7 @@ psqdefault:
 	case 1019:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5197
+//line psql.y:5203
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("mod"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -16572,7 +16578,7 @@ psqdefault:
 	case 1020:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5201
+//line psql.y:5207
 		{
 			psqLOCAL = &ast.FuncExpr{Name: ast.NewColIdent("replace"), Exprs: psqDollar[3].selectExprsUnion()}
 		}
@@ -16580,7 +16586,7 @@ psqdefault:
 	case 1021:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.MatchExprOption
-//line psql.y:5207
+//line psql.y:5213
 		{
 			psqLOCAL = ast.NoOption
 		}
@@ -16588,7 +16594,7 @@ psqdefault:
 	case 1022:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.MatchExprOption
-//line psql.y:5211
+//line psql.y:5217
 		{
 			psqLOCAL = ast.BooleanModeOpt
 		}
@@ -16596,7 +16602,7 @@ psqdefault:
 	case 1023:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.MatchExprOption
-//line psql.y:5215
+//line psql.y:5221
 		{
 			psqLOCAL = ast.NaturalLanguageModeOpt
 		}
@@ -16604,7 +16610,7 @@ psqdefault:
 	case 1024:
 		psqDollar = psqS[psqpt-7 : psqpt+1]
 		var psqLOCAL ast.MatchExprOption
-//line psql.y:5219
+//line psql.y:5225
 		{
 			psqLOCAL = ast.NaturalLanguageModeWithQueryExpansionOpt
 		}
@@ -16612,33 +16618,33 @@ psqdefault:
 	case 1025:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.MatchExprOption
-//line psql.y:5223
+//line psql.y:5229
 		{
 			psqLOCAL = ast.QueryExpansionOpt
 		}
 		psqVAL.union = psqLOCAL
 	case 1026:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5229
+//line psql.y:5235
 		{
 			psqVAL.str = string(psqDollar[1].colIdent.String())
 		}
 	case 1027:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5233
+//line psql.y:5239
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1028:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5237
+//line psql.y:5243
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1029:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5243
+//line psql.y:5249
 		{
 			psqLOCAL = nil
 		}
@@ -16646,7 +16652,7 @@ psqdefault:
 	case 1030:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5249
+//line psql.y:5255
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
@@ -16654,7 +16660,7 @@ psqdefault:
 	case 1031:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5253
+//line psql.y:5259
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion(), Charset: psqDollar[3].columnCharset}
 		}
@@ -16662,7 +16668,7 @@ psqdefault:
 	case 1032:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5257
+//line psql.y:5263
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16670,7 +16676,7 @@ psqdefault:
 	case 1033:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5261
+//line psql.y:5267
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
@@ -16678,7 +16684,7 @@ psqdefault:
 	case 1034:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5265
+//line psql.y:5271
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 			psqLOCAL.Length = psqDollar[2].LengthScaleOption.Length
@@ -16688,7 +16694,7 @@ psqdefault:
 	case 1035:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5271
+//line psql.y:5277
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16696,7 +16702,7 @@ psqdefault:
 	case 1036:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5275
+//line psql.y:5281
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
@@ -16704,7 +16710,7 @@ psqdefault:
 	case 1037:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5279
+//line psql.y:5285
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16712,7 +16718,7 @@ psqdefault:
 	case 1038:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5283
+//line psql.y:5289
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16720,7 +16726,7 @@ psqdefault:
 	case 1039:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5287
+//line psql.y:5293
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
@@ -16728,7 +16734,7 @@ psqdefault:
 	case 1040:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5291
+//line psql.y:5297
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16736,7 +16742,7 @@ psqdefault:
 	case 1041:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5295
+//line psql.y:5301
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16744,7 +16750,7 @@ psqdefault:
 	case 1042:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5299
+//line psql.y:5305
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str), Length: psqDollar[2].literalUnion()}
 		}
@@ -16752,7 +16758,7 @@ psqdefault:
 	case 1043:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5303
+//line psql.y:5309
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16760,7 +16766,7 @@ psqdefault:
 	case 1044:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ConvertType
-//line psql.y:5307
+//line psql.y:5313
 		{
 			psqLOCAL = &ast.ConvertType{Type: string(psqDollar[1].str)}
 		}
@@ -16768,7 +16774,7 @@ psqdefault:
 	case 1045:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5313
+//line psql.y:5319
 		{
 			psqLOCAL = nil
 		}
@@ -16776,34 +16782,34 @@ psqdefault:
 	case 1046:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5317
+//line psql.y:5323
 		{
 			psqLOCAL = psqDollar[1].exprUnion()
 		}
 		psqVAL.union = psqLOCAL
 	case 1047:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5322
+//line psql.y:5328
 		{
 			psqVAL.str = string("")
 		}
 	case 1048:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:5326
+//line psql.y:5332
 		{
 			psqVAL.str = " separator " + sql_types.EncodeStringSQL(psqDollar[2].str)
 		}
 	case 1049:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.When
-//line psql.y:5332
+//line psql.y:5338
 		{
 			psqLOCAL = []*ast.When{psqDollar[1].whenUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1050:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:5336
+//line psql.y:5342
 		{
 			psqSLICE := (*[]*ast.When)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[2].whenUnion())
@@ -16811,7 +16817,7 @@ psqdefault:
 	case 1051:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.When
-//line psql.y:5342
+//line psql.y:5348
 		{
 			psqLOCAL = &ast.When{Cond: psqDollar[2].exprUnion(), Val: psqDollar[4].exprUnion()}
 		}
@@ -16819,7 +16825,7 @@ psqdefault:
 	case 1052:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5347
+//line psql.y:5353
 		{
 			psqLOCAL = nil
 		}
@@ -16827,7 +16833,7 @@ psqdefault:
 	case 1053:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5351
+//line psql.y:5357
 		{
 			psqLOCAL = psqDollar[2].exprUnion()
 		}
@@ -16835,7 +16841,7 @@ psqdefault:
 	case 1054:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.ColName
-//line psql.y:5357
+//line psql.y:5363
 		{
 			psqLOCAL = &ast.ColName{Name: psqDollar[1].colIdent}
 		}
@@ -16843,7 +16849,7 @@ psqdefault:
 	case 1055:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.ColName
-//line psql.y:5361
+//line psql.y:5367
 		{
 			psqLOCAL = &ast.ColName{Qualifier: ast.TableName{Name: psqDollar[1].tableIdent}, Name: psqDollar[3].colIdent}
 		}
@@ -16851,7 +16857,7 @@ psqdefault:
 	case 1056:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.ColName
-//line psql.y:5365
+//line psql.y:5371
 		{
 			psqLOCAL = &ast.ColName{Qualifier: ast.TableName{Qualifier: psqDollar[1].tableIdent, Name: psqDollar[3].tableIdent}, Name: psqDollar[5].colIdent}
 		}
@@ -16859,7 +16865,7 @@ psqdefault:
 	case 1057:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5371
+//line psql.y:5377
 		{
 			// TODO(sougou): ast.Deprecate this construct.
 			if psqDollar[1].colIdent.Lowered() != "value" {
@@ -16872,7 +16878,7 @@ psqdefault:
 	case 1058:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5380
+//line psql.y:5386
 		{
 			psqLOCAL = ast.NewArgument(psqDollar[1].str[1:])
 			bindVariable(psqlex, psqDollar[1].str[1:])
@@ -16881,7 +16887,7 @@ psqdefault:
 	case 1059:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Exprs
-//line psql.y:5386
+//line psql.y:5392
 		{
 			psqLOCAL = nil
 		}
@@ -16889,7 +16895,7 @@ psqdefault:
 	case 1060:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Exprs
-//line psql.y:5390
+//line psql.y:5396
 		{
 			psqLOCAL = psqDollar[3].exprsUnion()
 		}
@@ -16897,7 +16903,7 @@ psqdefault:
 	case 1061:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5395
+//line psql.y:5401
 		{
 			psqLOCAL = nil
 		}
@@ -16905,7 +16911,7 @@ psqdefault:
 	case 1062:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5399
+//line psql.y:5405
 		{
 			psqLOCAL = psqDollar[2].exprUnion()
 		}
@@ -16913,7 +16919,7 @@ psqdefault:
 	case 1063:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.OrderBy
-//line psql.y:5404
+//line psql.y:5410
 		{
 			psqLOCAL = nil
 		}
@@ -16921,7 +16927,7 @@ psqdefault:
 	case 1064:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.OrderBy
-//line psql.y:5408
+//line psql.y:5414
 		{
 			psqLOCAL = psqDollar[1].orderByUnion()
 		}
@@ -16929,7 +16935,7 @@ psqdefault:
 	case 1065:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.OrderBy
-//line psql.y:5414
+//line psql.y:5420
 		{
 			psqLOCAL = psqDollar[3].orderByUnion()
 		}
@@ -16937,14 +16943,14 @@ psqdefault:
 	case 1066:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.OrderBy
-//line psql.y:5420
+//line psql.y:5426
 		{
 			psqLOCAL = ast.OrderBy{psqDollar[1].orderUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1067:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5424
+//line psql.y:5430
 		{
 			psqSLICE := (*ast.OrderBy)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].orderUnion())
@@ -16952,7 +16958,7 @@ psqdefault:
 	case 1068:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.Order
-//line psql.y:5430
+//line psql.y:5436
 		{
 			psqLOCAL = &ast.Order{Expr: psqDollar[1].exprUnion(), Direction: psqDollar[2].orderDirectionUnion()}
 		}
@@ -16960,7 +16966,7 @@ psqdefault:
 	case 1069:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.OrderDirection
-//line psql.y:5435
+//line psql.y:5441
 		{
 			psqLOCAL = ast.AscOrder
 		}
@@ -16968,7 +16974,7 @@ psqdefault:
 	case 1070:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.OrderDirection
-//line psql.y:5439
+//line psql.y:5445
 		{
 			psqLOCAL = ast.AscOrder
 		}
@@ -16976,7 +16982,7 @@ psqdefault:
 	case 1071:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.OrderDirection
-//line psql.y:5443
+//line psql.y:5449
 		{
 			psqLOCAL = ast.DescOrder
 		}
@@ -16984,7 +16990,7 @@ psqdefault:
 	case 1072:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.Limit
-//line psql.y:5448
+//line psql.y:5454
 		{
 			psqLOCAL = nil
 		}
@@ -16992,7 +16998,7 @@ psqdefault:
 	case 1073:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.Limit
-//line psql.y:5452
+//line psql.y:5458
 		{
 			psqLOCAL = psqDollar[1].limitUnion()
 		}
@@ -17000,7 +17006,7 @@ psqdefault:
 	case 1074:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.Limit
-//line psql.y:5458
+//line psql.y:5464
 		{
 			psqLOCAL = &ast.Limit{Rowcount: psqDollar[2].exprUnion()}
 		}
@@ -17008,7 +17014,7 @@ psqdefault:
 	case 1075:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.Limit
-//line psql.y:5462
+//line psql.y:5468
 		{
 			psqLOCAL = &ast.Limit{Offset: psqDollar[2].exprUnion(), Rowcount: psqDollar[4].exprUnion()}
 		}
@@ -17016,69 +17022,69 @@ psqdefault:
 	case 1076:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.Limit
-//line psql.y:5466
+//line psql.y:5472
 		{
 			psqLOCAL = &ast.Limit{Offset: psqDollar[4].exprUnion(), Rowcount: psqDollar[2].exprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1077:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5471
+//line psql.y:5477
 		{
 			psqVAL.str = ""
 		}
 	case 1078:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5475
+//line psql.y:5481
 		{
 			psqVAL.str = psqDollar[3].str
 		}
 	case 1079:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5481
+//line psql.y:5487
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1080:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5485
+//line psql.y:5491
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1081:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5490
+//line psql.y:5496
 		{
 			psqVAL.str = ""
 		}
 	case 1082:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
-//line psql.y:5494
+//line psql.y:5500
 		{
 			psqVAL.str = psqDollar[2].str
 		}
 	case 1083:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5499
+//line psql.y:5505
 		{
 			psqVAL.str = "cascaded"
 		}
 	case 1084:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5503
+//line psql.y:5509
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1085:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5507
+//line psql.y:5513
 		{
 			psqVAL.str = string(psqDollar[1].str)
 		}
 	case 1086:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL *ast.Definer
-//line psql.y:5512
+//line psql.y:5518
 		{
 			psqLOCAL = nil
 		}
@@ -17086,7 +17092,7 @@ psqdefault:
 	case 1087:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.Definer
-//line psql.y:5516
+//line psql.y:5522
 		{
 			psqLOCAL = psqDollar[3].definerUnion()
 		}
@@ -17094,7 +17100,7 @@ psqdefault:
 	case 1088:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.Definer
-//line psql.y:5522
+//line psql.y:5528
 		{
 			psqLOCAL = &ast.Definer{
 				Name: string(psqDollar[1].str),
@@ -17104,7 +17110,7 @@ psqdefault:
 	case 1089:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.Definer
-//line psql.y:5528
+//line psql.y:5534
 		{
 			psqLOCAL = &ast.Definer{
 				Name: string(psqDollar[1].str),
@@ -17114,7 +17120,7 @@ psqdefault:
 	case 1090:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.Definer
-//line psql.y:5534
+//line psql.y:5540
 		{
 			psqLOCAL = &ast.Definer{
 				Name:    psqDollar[1].str,
@@ -17124,32 +17130,32 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 1091:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5543
+//line psql.y:5549
 		{
 			psqVAL.str = sql_types.EncodeStringSQL(psqDollar[1].str)
 		}
 	case 1092:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5547
+//line psql.y:5553
 		{
 			psqVAL.str = ast.FormatIdentifier(psqDollar[1].str)
 		}
 	case 1093:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5552
+//line psql.y:5558
 		{
 			psqVAL.str = ""
 		}
 	case 1094:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5556
+//line psql.y:5562
 		{
 			psqVAL.str = ast.FormatAddress(psqDollar[1].str)
 		}
 	case 1095:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.Lock
-//line psql.y:5562
+//line psql.y:5568
 		{
 			psqLOCAL = ast.ForUpdateLock
 		}
@@ -17157,7 +17163,7 @@ psqdefault:
 	case 1096:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL ast.Lock
-//line psql.y:5566
+//line psql.y:5572
 		{
 			psqLOCAL = ast.ShareModeLock
 		}
@@ -17165,7 +17171,7 @@ psqdefault:
 	case 1097:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.SelectInto
-//line psql.y:5572
+//line psql.y:5578
 		{
 			psqLOCAL = &ast.SelectInto{ExportOption: sql_types.EncodeStringSQL(psqDollar[2].tableName.Name.V)}
 		}
@@ -17173,7 +17179,7 @@ psqdefault:
 	case 1098:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.Insert
-//line psql.y:5585
+//line psql.y:5591
 		{
 			psqLOCAL = &ast.Insert{Rows: psqDollar[2].valuesUnion()}
 		}
@@ -17181,7 +17187,7 @@ psqdefault:
 	case 1099:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL *ast.Insert
-//line psql.y:5589
+//line psql.y:5595
 		{
 			psqLOCAL = &ast.Insert{Rows: psqDollar[1].selStmtUnion()}
 		}
@@ -17189,7 +17195,7 @@ psqdefault:
 	case 1100:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL *ast.Insert
-//line psql.y:5593
+//line psql.y:5599
 		{
 			psqLOCAL = &ast.Insert{Columns: psqDollar[2].columnsUnion(), Rows: psqDollar[5].valuesUnion()}
 		}
@@ -17197,7 +17203,7 @@ psqdefault:
 	case 1101:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.Insert
-//line psql.y:5597
+//line psql.y:5603
 		{
 			psqLOCAL = &ast.Insert{Rows: psqDollar[4].valuesUnion()}
 		}
@@ -17205,7 +17211,7 @@ psqdefault:
 	case 1102:
 		psqDollar = psqS[psqpt-4 : psqpt+1]
 		var psqLOCAL *ast.Insert
-//line psql.y:5601
+//line psql.y:5607
 		{
 			psqLOCAL = &ast.Insert{Columns: psqDollar[2].columnsUnion(), Rows: psqDollar[4].selStmtUnion()}
 		}
@@ -17213,7 +17219,7 @@ psqdefault:
 	case 1103:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:5607
+//line psql.y:5613
 		{
 			psqLOCAL = ast.Columns{psqDollar[1].colIdent}
 		}
@@ -17221,21 +17227,21 @@ psqdefault:
 	case 1104:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.Columns
-//line psql.y:5611
+//line psql.y:5617
 		{
 			psqLOCAL = ast.Columns{psqDollar[3].colIdent}
 		}
 		psqVAL.union = psqLOCAL
 	case 1105:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5615
+//line psql.y:5621
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].colIdent)
 		}
 	case 1106:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
-//line psql.y:5619
+//line psql.y:5625
 		{
 			psqSLICE := (*ast.Columns)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[5].colIdent)
@@ -17243,7 +17249,7 @@ psqdefault:
 	case 1107:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.UpdateExprs
-//line psql.y:5624
+//line psql.y:5630
 		{
 			psqLOCAL = nil
 		}
@@ -17251,7 +17257,7 @@ psqdefault:
 	case 1108:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.UpdateExprs
-//line psql.y:5628
+//line psql.y:5634
 		{
 			psqLOCAL = psqDollar[5].updateExprsUnion()
 		}
@@ -17259,14 +17265,14 @@ psqdefault:
 	case 1109:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Values
-//line psql.y:5634
+//line psql.y:5640
 		{
 			psqLOCAL = ast.Values{psqDollar[1].valTupleUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1110:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5638
+//line psql.y:5644
 		{
 			psqSLICE := (*ast.Values)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].valTupleUnion())
@@ -17274,7 +17280,7 @@ psqdefault:
 	case 1111:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.ValTuple
-//line psql.y:5644
+//line psql.y:5650
 		{
 			psqLOCAL = psqDollar[1].valTupleUnion()
 		}
@@ -17282,7 +17288,7 @@ psqdefault:
 	case 1112:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL ast.ValTuple
-//line psql.y:5648
+//line psql.y:5654
 		{
 			psqLOCAL = ast.ValTuple{}
 		}
@@ -17290,7 +17296,7 @@ psqdefault:
 	case 1113:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL ast.ValTuple
-//line psql.y:5654
+//line psql.y:5660
 		{
 			psqLOCAL = ast.ValTuple(psqDollar[2].exprsUnion())
 		}
@@ -17298,7 +17304,7 @@ psqdefault:
 	case 1114:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5659
+//line psql.y:5665
 		{
 			if len(psqDollar[1].valTupleUnion()) == 1 {
 				psqLOCAL = psqDollar[1].valTupleUnion()[0]
@@ -17310,14 +17316,14 @@ psqdefault:
 	case 1115:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.UpdateExprs
-//line psql.y:5669
+//line psql.y:5675
 		{
 			psqLOCAL = ast.UpdateExprs{psqDollar[1].updateExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1116:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5673
+//line psql.y:5679
 		{
 			psqSLICE := (*ast.UpdateExprs)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].updateExprUnion())
@@ -17325,7 +17331,7 @@ psqdefault:
 	case 1117:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.UpdateExpr
-//line psql.y:5679
+//line psql.y:5685
 		{
 			psqLOCAL = &ast.UpdateExpr{Name: psqDollar[1].colNameUnion(), Expr: psqDollar[3].exprUnion()}
 		}
@@ -17333,14 +17339,14 @@ psqdefault:
 	case 1118:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.SetExprs
-//line psql.y:5685
+//line psql.y:5691
 		{
 			psqLOCAL = ast.SetExprs{psqDollar[1].setExprUnion()}
 		}
 		psqVAL.union = psqLOCAL
 	case 1119:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
-//line psql.y:5689
+//line psql.y:5695
 		{
 			psqSLICE := (*ast.SetExprs)(psqIaddr(psqVAL.union))
 			*psqSLICE = append(*psqSLICE, psqDollar[3].setExprUnion())
@@ -17348,7 +17354,7 @@ psqdefault:
 	case 1120:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.SetExpr
-//line psql.y:5695
+//line psql.y:5701
 		{
 			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("on")}
 		}
@@ -17356,7 +17362,7 @@ psqdefault:
 	case 1121:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.SetExpr
-//line psql.y:5699
+//line psql.y:5705
 		{
 			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: ast.NewStrLiteral("off")}
 		}
@@ -17364,7 +17370,7 @@ psqdefault:
 	case 1122:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.SetExpr
-//line psql.y:5703
+//line psql.y:5709
 		{
 			psqLOCAL = &ast.SetExpr{Name: psqDollar[1].colIdent, Scope: ast.ImplicitScope, Expr: psqDollar[3].exprUnion()}
 		}
@@ -17372,7 +17378,7 @@ psqdefault:
 	case 1123:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL *ast.SetExpr
-//line psql.y:5707
+//line psql.y:5713
 		{
 			psqLOCAL = &ast.SetExpr{Name: ast.NewColIdent(string(psqDollar[1].str)), Scope: ast.ImplicitScope, Expr: psqDollar[2].exprUnion()}
 		}
@@ -17380,7 +17386,7 @@ psqdefault:
 	case 1124:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.SetExpr
-//line psql.y:5711
+//line psql.y:5717
 		{
 			psqDollar[2].setExprUnion().Scope = psqDollar[1].scopeUnion()
 			psqLOCAL = psqDollar[2].setExprUnion()
@@ -17388,14 +17394,14 @@ psqdefault:
 		psqVAL.union = psqLOCAL
 	case 1126:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
-//line psql.y:5719
+//line psql.y:5725
 		{
 			psqVAL.str = "charset"
 		}
 	case 1129:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5729
+//line psql.y:5735
 		{
 			psqLOCAL = ast.NewStrLiteral(psqDollar[1].colIdent.String())
 		}
@@ -17403,7 +17409,7 @@ psqdefault:
 	case 1130:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5733
+//line psql.y:5739
 		{
 			psqLOCAL = ast.NewStrLiteral(psqDollar[1].str)
 		}
@@ -17411,7 +17417,7 @@ psqdefault:
 	case 1131:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Expr
-//line psql.y:5737
+//line psql.y:5743
 		{
 			psqLOCAL = &ast.Default{}
 		}
@@ -17419,7 +17425,7 @@ psqdefault:
 	case 1134:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5746
+//line psql.y:5752
 		{
 			psqLOCAL = false
 		}
@@ -17427,7 +17433,7 @@ psqdefault:
 	case 1135:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5748
+//line psql.y:5754
 		{
 			psqLOCAL = true
 		}
@@ -17435,7 +17441,7 @@ psqdefault:
 	case 1136:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5751
+//line psql.y:5757
 		{
 			psqLOCAL = false
 		}
@@ -17443,7 +17449,7 @@ psqdefault:
 	case 1137:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5753
+//line psql.y:5759
 		{
 			psqLOCAL = true
 		}
@@ -17451,7 +17457,7 @@ psqdefault:
 	case 1138:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5756
+//line psql.y:5762
 		{
 			psqLOCAL = false
 		}
@@ -17459,7 +17465,7 @@ psqdefault:
 	case 1139:
 		psqDollar = psqS[psqpt-3 : psqpt+1]
 		var psqLOCAL bool
-//line psql.y:5758
+//line psql.y:5764
 		{
 			psqLOCAL = true
 		}
@@ -17467,7 +17473,7 @@ psqdefault:
 	case 1140:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Ignore
-//line psql.y:5761
+//line psql.y:5767
 		{
 			psqLOCAL = false
 		}
@@ -17475,33 +17481,33 @@ psqdefault:
 	case 1141:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Ignore
-//line psql.y:5763
+//line psql.y:5769
 		{
 			psqLOCAL = true
 		}
 		psqVAL.union = psqLOCAL
 	case 1142:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5766
+//line psql.y:5772
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 1143:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5768
+//line psql.y:5774
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 1144:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5770
+//line psql.y:5776
 		{
 			psqVAL.empty = struct{}{}
 		}
 	case 1145:
 		psqDollar = psqS[psqpt-5 : psqpt+1]
 		var psqLOCAL ast.Statement
-//line psql.y:5774
+//line psql.y:5780
 		{
 			psqLOCAL = &ast.CallProc{Name: psqDollar[2].tableName, Params: psqDollar[4].exprsUnion()}
 		}
@@ -17509,7 +17515,7 @@ psqdefault:
 	case 1146:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL ast.Exprs
-//line psql.y:5779
+//line psql.y:5785
 		{
 			psqLOCAL = nil
 		}
@@ -17517,7 +17523,7 @@ psqdefault:
 	case 1147:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL ast.Exprs
-//line psql.y:5783
+//line psql.y:5789
 		{
 			psqLOCAL = psqDollar[1].exprsUnion()
 		}
@@ -17525,7 +17531,7 @@ psqdefault:
 	case 1148:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
 		var psqLOCAL []*ast.IndexOption
-//line psql.y:5788
+//line psql.y:5794
 		{
 			psqLOCAL = nil
 		}
@@ -17533,7 +17539,7 @@ psqdefault:
 	case 1149:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
 		var psqLOCAL []*ast.IndexOption
-//line psql.y:5790
+//line psql.y:5796
 		{
 			psqLOCAL = []*ast.IndexOption{psqDollar[1].indexOptionUnion()}
 		}
@@ -17541,92 +17547,92 @@ psqdefault:
 	case 1150:
 		psqDollar = psqS[psqpt-2 : psqpt+1]
 		var psqLOCAL *ast.IndexOption
-//line psql.y:5794
+//line psql.y:5800
 		{
 			psqLOCAL = &ast.IndexOption{Name: string(psqDollar[1].str), String: string(psqDollar[2].colIdent.String())}
 		}
 		psqVAL.union = psqLOCAL
 	case 1151:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5800
+//line psql.y:5806
 		{
 			psqVAL.colIdent = psqDollar[1].colIdent
 		}
 	case 1152:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5804
+//line psql.y:5810
 		{
 			psqVAL.colIdent = ast.NewColIdent(string(psqDollar[1].str))
 		}
 	case 1153:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5808
+//line psql.y:5814
 		{
 			psqVAL.colIdent = ast.NewColIdent(string(psqDollar[1].str))
 		}
 	case 1155:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5815
+//line psql.y:5821
 		{
 			psqVAL.colIdent = ast.NewColIdent(string(psqDollar[1].str))
 		}
 	case 1156:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5821
+//line psql.y:5827
 		{
 			psqVAL.schemaIdent = ast.NewSchemaIdent(string(psqDollar[1].colIdent.String()))
 		}
 	case 1157:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5827
+//line psql.y:5833
 		{
 			psqVAL.sequenceIdent = ast.NewSequenceIdent(string(psqDollar[1].colIdent.String()))
 		}
 	case 1158:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5833
+//line psql.y:5839
 		{
 			psqVAL.tableIdent = ast.NewTableIdent(string(psqDollar[1].colIdent.String()))
 		}
 	case 1159:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5837
+//line psql.y:5843
 		{
 			psqVAL.tableIdent = ast.NewTableIdent(string(psqDollar[1].str))
 		}
 	case 1160:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5841
+//line psql.y:5847
 		{
 			psqVAL.tableIdent = ast.NewTableIdent(string(psqDollar[1].str))
 		}
 	case 1161:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:5847
+//line psql.y:5853
 		{
 			psqVAL.tableIdent = ast.NewTableIdent("")
 		}
 	case 1162:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5851
+//line psql.y:5857
 		{
 			psqVAL.tableIdent = psqDollar[1].tableIdent
 		}
 	case 1164:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5858
+//line psql.y:5864
 		{
 			psqVAL.tableIdent = ast.NewTableIdent(string(psqDollar[1].str))
 		}
 	case 1166:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:5865
+//line psql.y:5871
 		{
 			psqVAL.sequenceIdent = ast.NewSequenceIdent(string(psqDollar[1].str))
 		}
 	case 1683:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:6416
+//line psql.y:6422
 		{
 			if incNesting(psqlex) {
 				psqlex.Error("max nesting level reached")
@@ -17635,31 +17641,31 @@ psqdefault:
 		}
 	case 1684:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:6425
+//line psql.y:6431
 		{
 			decNesting(psqlex)
 		}
 	case 1685:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:6430
+//line psql.y:6436
 		{
 			skipToEnd(psqlex)
 		}
 	case 1686:
 		psqDollar = psqS[psqpt-0 : psqpt+1]
-//line psql.y:6435
+//line psql.y:6441
 		{
 			skipToEnd(psqlex)
 		}
 	case 1687:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:6439
+//line psql.y:6445
 		{
 			skipToEnd(psqlex)
 		}
 	case 1688:
 		psqDollar = psqS[psqpt-1 : psqpt+1]
-//line psql.y:6443
+//line psql.y:6449
 		{
 			skipToEnd(psqlex)
 		}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgconn"
@@ -80,6 +81,15 @@ func (pgConnection *PgConnection) Execute(rawSql string) error {
 	}
 	defer pgConn.Close(ctx)
 
+	// Recognize COPY FROM STDIN command
+	if strings.Contains(rawSql, "COPY") && strings.HasSuffix(rawSql, "\\.") {
+		sqlCommandAndData := strings.SplitN(rawSql, "stdin;\n", 2)
+		_, err := pgConn.CopyFrom(ctx, strings.NewReader(sqlCommandAndData[1][:len(sqlCommandAndData[1])-2]), sqlCommandAndData[0]+" stdin;")
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	result := pgConn.ExecParams(ctx, rawSql, nil, nil, nil, nil).Read()
 	if result.Err != nil {
 		return result.Err

@@ -31,6 +31,7 @@ type Tokenizer interface {
 	GetParseTree() ast.Statement
 
 	SetAllowComments(allow bool)
+	SetIgnoreCommentKeyword(ignore bool)
 
 	SetPartialDDL(node ast.Statement)
 	GetPartialDDL() ast.Statement
