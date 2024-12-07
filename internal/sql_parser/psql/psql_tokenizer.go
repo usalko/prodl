@@ -51,7 +51,7 @@ type PsqlTokenizer struct {
 	ignoreCommentKeyword bool
 
 	Pos int
-	buf string
+	buf tokenizer.BytesBuffer
 }
 
 // SetSkipSpecialComments implements tokenizer.Tokenizer.
@@ -185,7 +185,7 @@ var PSQLServerVersion = flag.String("psql_server_version", "", "PSQL server vers
 func NewPsqlStringTokenizer(sql string) *PsqlTokenizer {
 
 	return &PsqlTokenizer{
-		buf:         sql,
+		buf:         *tokenizer.NewBytesBufferString(sql),
 		BindVars:    make(map[string]struct{}),
 		leftContext: *tokenizer.NewCyclicBuffer(10),
 	}
@@ -476,7 +476,7 @@ func (tzr *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 		}
 		tzr.Skip(1)
 	}
-	keywordName := tzr.buf[start:tzr.Pos]
+	keywordName := tzr.buf.StringAt(start, tzr.Pos)
 	if keywordID, found := cache.KeywordLookup(keywordName, dialect.PSQL); found {
 		return keywordID, keywordName
 	}
@@ -491,7 +491,7 @@ func (tzr *PsqlTokenizer) scanIdentifier(isVariable bool) (int, string) {
 func (tzr *PsqlTokenizer) scanHex() (int, string) {
 	start := tzr.Pos
 	tzr.scanMantissa(16)
-	hex := tzr.buf[start:tzr.Pos]
+	hex := tzr.buf.StringAt(start, tzr.Pos)
 	if tzr.Cur() != '\'' {
 		return LEX_ERROR, hex
 	}
@@ -506,7 +506,7 @@ func (tzr *PsqlTokenizer) scanHex() (int, string) {
 func (tzr *PsqlTokenizer) scanBitLiteral() (int, string) {
 	start := tzr.Pos
 	tzr.scanMantissa(2)
-	bit := tzr.buf[start:tzr.Pos]
+	bit := tzr.buf.StringAt(start, tzr.Pos)
 	if tzr.Cur() != '\'' {
 		return LEX_ERROR, bit
 	}
@@ -560,16 +560,16 @@ func (tzr *PsqlTokenizer) scanLiteralIdentifier() (int, string) {
 					return LEX_ERROR, ""
 				}
 				tzr.Skip(1)
-				return ID, tzr.buf[start : tzr.Pos-1]
+				return ID, tzr.buf.StringAt(start, tzr.Pos-1)
 			}
 
-			var buf strings.Builder
-			buf.WriteString(tzr.buf[start:tzr.Pos])
+			var builder strings.Builder
+			builder.WriteString(tzr.buf.StringAt(start, tzr.Pos))
 			tzr.Skip(1)
-			return tzr.scanLiteralIdentifierSlow(&buf)
+			return tzr.scanLiteralIdentifierSlow(&builder)
 		case tokenizer.EofChar:
 			// Premature EOF.
-			return LEX_ERROR, tzr.buf[start:tzr.Pos]
+			return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 		default:
 			tzr.Skip(1)
 		}
@@ -587,7 +587,7 @@ func (tzr *PsqlTokenizer) scanBindVar() (int, string) {
 		tzr.Skip(1)
 	}
 	if !isLetter(tzr.Cur()) {
-		return LEX_ERROR, tzr.buf[start:tzr.Pos]
+		return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 	}
 	for {
 		ch := tzr.Cur()
@@ -596,7 +596,7 @@ func (tzr *PsqlTokenizer) scanBindVar() (int, string) {
 		}
 		tzr.Skip(1)
 	}
-	return token, tzr.buf[start:tzr.Pos]
+	return token, tzr.buf.StringAt(start, tzr.Pos)
 }
 
 // scanEndDataMark scans a mark for end input data "\\."
@@ -610,7 +610,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 			tzr.Skip(1)
 			if tzr.Cur() == '.' {
 				tzr.Skip(1)
-				return ';', tzr.buf[start:tzr.Pos]
+				return ';', tzr.buf.StringAt(start, tzr.Pos)
 			}
 		}
 		if ch == tokenizer.EofChar {
@@ -674,7 +674,7 @@ exit:
 	if isLetter(tzr.Cur()) {
 		// A letter cannot immediately follow a float number.
 		if token == FLOAT || token == DECIMAL {
-			return LEX_ERROR, tzr.buf[start:tzr.Pos]
+			return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 		}
 		// A letter seen after a few numbers means that we should parse this
 		// as an identifier and not a number.
@@ -685,10 +685,10 @@ exit:
 			}
 			tzr.Skip(1)
 		}
-		return ID, tzr.buf[start:tzr.Pos]
+		return ID, tzr.buf.StringAt(start, tzr.Pos)
 	}
 
-	return token, tzr.buf[start:tzr.Pos]
+	return token, tzr.buf.StringAt(start, tzr.Pos)
 }
 
 // scanString scans a string surrounded by the given `delim`, which can be
@@ -703,17 +703,17 @@ func (tzr *PsqlTokenizer) scanString(delim rune, typ int) (int, string) {
 		case delim:
 			if tzr.Peek(1) != delim {
 				tzr.Skip(1)
-				return typ, tzr.buf[start : tzr.Pos-1]
+				return typ, tzr.buf.StringAt(start, tzr.Pos-1)
 			}
 			fallthrough
 
 		case '\\':
 			var buffer strings.Builder
-			buffer.WriteString(tzr.buf[start:tzr.Pos])
+			buffer.WriteString(tzr.buf.StringAt(start, tzr.Pos))
 			return tzr.scanStringSlow(&buffer, delim, typ)
 
 		case tokenizer.EofChar:
-			return LEX_ERROR, tzr.buf[start:tzr.Pos]
+			return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 		}
 
 		tzr.Skip(1)
@@ -734,15 +734,15 @@ func (tzr *PsqlTokenizer) scanStringSlow(buffer *strings.Builder, delim rune, ty
 		if ch != delim && ch != '\\' {
 			// Scan ahead to the next interesting character.
 			start := tzr.Pos
-			for ; tzr.Pos < len(tzr.buf); tzr.Pos++ {
-				ch = rune(tzr.buf[tzr.Pos])
+			for ; tzr.Pos < tzr.buf.Size(); tzr.Pos++ {
+				ch = tzr.buf.RuneAt(tzr.Pos)
 				if ch == delim || ch == '\\' {
 					break
 				}
 			}
 
-			buffer.WriteString(tzr.buf[start:tzr.Pos])
-			if tzr.Pos >= len(tzr.buf) {
+			buffer.WriteString(tzr.buf.StringAt(start, tzr.Pos))
+			if tzr.Pos >= tzr.buf.Size() {
 				// Reached the end of the buffer without finding a delim or
 				// escape character.
 				tzr.Skip(1)
@@ -785,7 +785,7 @@ func (tzr *PsqlTokenizer) scanCommentType1(prefixLen int) (int, string) {
 		}
 		tzr.Skip(1)
 	}
-	return COMMENT, tzr.buf[start:tzr.Pos]
+	return COMMENT, tzr.buf.StringAt(start, tzr.Pos)
 }
 
 // scanCommentType2 scans a '/*' delimited comment; assumes the opening
@@ -802,11 +802,11 @@ func (tzr *PsqlTokenizer) scanCommentType2() (int, string) {
 			continue
 		}
 		if tzr.Cur() == tokenizer.EofChar {
-			return LEX_ERROR, tzr.buf[start:tzr.Pos]
+			return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 		}
 		tzr.Skip(1)
 	}
-	return COMMENT, tzr.buf[start:tzr.Pos]
+	return COMMENT, tzr.buf.StringAt(start, tzr.Pos)
 }
 
 // scanPSQLSpecificComment scans a PSQL comment pragma, which always starts with '//*`
@@ -822,12 +822,12 @@ func (tzr *PsqlTokenizer) scanPSQLSpecificComment() (int, string) {
 			continue
 		}
 		if tzr.Cur() == tokenizer.EofChar {
-			return LEX_ERROR, tzr.buf[start:tzr.Pos]
+			return LEX_ERROR, tzr.buf.StringAt(start, tzr.Pos)
 		}
 		tzr.Skip(1)
 	}
 
-	commentVersion, sql := ExtractPsqlComment(tzr.buf[start:tzr.Pos])
+	commentVersion, sql := ExtractPsqlComment(tzr.buf.StringAt(start, tzr.Pos))
 
 	if "1" >= commentVersion {
 		// Only add the special comment to the tokenizer if the version of PSQL is higher or equal to the comment version
@@ -846,10 +846,10 @@ func (tzr *PsqlTokenizer) Skip(dist int) {
 }
 
 func (tzr *PsqlTokenizer) Peek(dist int) rune {
-	if tzr.Pos+dist >= len(tzr.buf) {
+	if tzr.Pos+dist >= tzr.buf.Size() {
 		return tokenizer.EofChar
 	}
-	return rune(tzr.buf[tzr.Pos+dist])
+	return tzr.buf.RuneAt(tzr.Pos + dist)
 }
 
 // Reset clears any internal state.

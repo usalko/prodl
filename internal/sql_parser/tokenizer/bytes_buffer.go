@@ -54,7 +54,7 @@ func (bytesBuffer *BytesBuffer) AvailableBuffer() []byte {
 }
 
 // String returns the contents of the unread portion of the buffer
-// as a string. If the [Buffer] is a nil pointer, it returns "<nil>".
+// as a string. If the [tokenizer.BytesBuffer] is a nil pointer, it returns "<nil>".
 //
 // To build strings more efficiently, see the [strings.Builder] type.
 func (bytesBuffer *BytesBuffer) String() string {
@@ -65,8 +65,23 @@ func (bytesBuffer *BytesBuffer) String() string {
 	return string(bytesBuffer.buf[bytesBuffer.off:])
 }
 
+// String returns the contents of the buffer
+// as a string. If the [tokenizer.BytesBuffer] is a nil pointer, it returns "<nil>".
+//
+// To build strings more efficiently, see the [strings.Builder] type.
+func (bytesBuffer *BytesBuffer) StringAt(start, end int) string {
+	if bytesBuffer == nil {
+		// Special case, useful in debugging.
+		return "<nil>"
+	}
+	return string(bytesBuffer.buf[start:end])
+}
+
 // empty reports whether the unread portion of the buffer is empty.
 func (bytesBuffer *BytesBuffer) empty() bool { return len(bytesBuffer.buf) <= bytesBuffer.off }
+
+// Size returns the number of bytes in the buffer;
+func (bytesBuffer *BytesBuffer) Size() int { return len(bytesBuffer.buf) }
 
 // Len returns the number of bytes of the unread portion of the buffer;
 // b.Len() == len(b.Bytes()).
@@ -188,7 +203,7 @@ func (bytesBuffer *BytesBuffer) WriteString(s string) (n int, err error) {
 }
 
 // MinRead is the minimum slice size passed to a [Buffer.Read] call by
-// [Buffer.ReadFrom]. As long as the [Buffer] has at least MinRead bytes beyond
+// [Buffer.ReadFrom]. As long as the [tokenizer.BytesBuffer] has at least MinRead bytes beyond
 // what is required to hold the contents of r, [Buffer.ReadFrom] will not grow the
 // underlying buffer.
 const MinRead = 512
@@ -398,6 +413,20 @@ func (bytesBuffer *BytesBuffer) UnreadRune() error {
 	return nil
 }
 
+// RuneAt reads and returns the next UTF-8-encoded
+// Unicode code point from the buffer.
+func (bytesBuffer *BytesBuffer) RuneAt(pos int) rune {
+	if bytesBuffer.empty() {
+		return 0
+	}
+	c := bytesBuffer.buf[pos]
+	if c < utf8.RuneSelf {
+		return rune(c)
+	}
+	r, _ := utf8.DecodeRune(bytesBuffer.buf[pos:])
+	return r
+}
+
 var errUnreadByte = errors.New("bytes.Buffer: UnreadByte: previous operation was not a successful read")
 
 // UnreadByte unreads the last byte returned by the most recent successful
@@ -454,23 +483,23 @@ func (bytesBuffer *BytesBuffer) ReadString(delim byte) (line string, err error) 
 	return string(slice), err
 }
 
-// NewBuffer creates and initializes a new [Buffer] using buf as its
-// initial contents. The new [Buffer] takes ownership of buf, and the
+// NewBuffer creates and initializes a new [tokenizer.BytesBuffer] using buf as its
+// initial contents. The new [tokenizer.BytesBuffer] takes ownership of buf, and the
 // caller should not use buf after this call. NewBuffer is intended to
-// prepare a [Buffer] to read existing data. It can also be used to set
+// prepare a [tokenizer.BytesBuffer] to read existing data. It can also be used to set
 // the initial size of the internal buffer for writing. To do that,
 // buf should have the desired capacity but a length of zero.
 //
-// In most cases, new([Buffer]) (or just declaring a [Buffer] variable) is
-// sufficient to initialize a [Buffer].
+// In most cases, new([tokenizer.BytesBuffer]) (or just declaring a [tokenizer.BytesBuffer] variable) is
+// sufficient to initialize a [tokenizer.BytesBuffer].
 func NewBytesBuffer(buf []byte) *BytesBuffer { return &BytesBuffer{buf: buf} }
 
-// NewBufferString creates and initializes a new [Buffer] using string s as its
+// NewBufferString creates and initializes a new [tokenizer.BytesBuffer] using string s as its
 // initial contents. It is intended to prepare a buffer to read an existing
 // string.
 //
-// In most cases, new([Buffer]) (or just declaring a [Buffer] variable) is
-// sufficient to initialize a [Buffer].
+// In most cases, new([tokenizer.BytesBuffer]) (or just declaring a [tokenizer.BytesBuffer] variable) is
+// sufficient to initialize a [tokenizer.BytesBuffer].
 func NewBytesBufferString(s string) *BytesBuffer {
 	return &BytesBuffer{buf: []byte(s)}
 }
