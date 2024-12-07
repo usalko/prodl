@@ -56,7 +56,7 @@ func processText(text string, sqlDialect dialect.SqlDialect, processor Statement
 		tkn, _ = _tokenizer.Scan()
 		switch tkn {
 		case ';':
-			rawSql = text[stmtBegin : _tokenizer.GetPos()-1]
+			rawSql = text[stmtBegin : _tokenizer.GetPos()]
 			if !statementIsEmpty {
 				stmt, err := Parse(rawSql, sqlDialect)
 				processor(rawSql, stmt, err)

@@ -593,7 +593,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 			tzr.Skip(1)
 			if tzr.Cur() == '.' {
 				tzr.Skip(1)
-				return ';', tzr.buf[start : tzr.Pos-1]
+				return ';', tzr.buf[start : tzr.Pos]
 			}
 		}
 		if ch == tokenizer.EofChar {
