@@ -311,8 +311,7 @@ func (tzr *PsqlTokenizer) Scan() (int, string) {
 			return 0, ""
 		}
 		if tzr.leftContext.Has("stdin") {
-			tzr.scanEndDataMark()
-			return ';', ""
+			return tzr.scanEndDataMark()
 		}
 		tzr.Skip(1)
 		return ';', ""
@@ -594,7 +593,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 			tzr.Skip(1)
 			if tzr.Cur() == '.' {
 				tzr.Skip(1)
-				break
+				return ';', tzr.buf[start : tzr.Pos-1]
 			}
 		}
 		if ch == tokenizer.EofChar {
@@ -602,7 +601,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 		}
 		tzr.Skip(1)
 	}
-	return '.', tzr.buf[start : tzr.Pos-1]
+	return 0, ""
 }
 
 // scanMantissa scans a sequence of numeric characters with the same base.
