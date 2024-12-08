@@ -1,11 +1,11 @@
-11881.58 user
-1008.04 system
-3:20:46 elapsed
-107%CPU
+ 28.82 user
+ 12.91 system
+ 4:46.83 elapsed
+ 14%CPU
 ( 0 avgtext+0avgdata
- 397728 maxresident ) k
-1044760 inputs
-82136 outputs
- (30 major
- +416688309 minor) pagefaults
+ 4888252 maxresident ) k
+1192716i nputs
+83520 outputs
+ (1053 major
+ +1277609 minor) pagefaults
  0 swaps

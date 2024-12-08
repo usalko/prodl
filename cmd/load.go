@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/usalko/prodl/internal/archive_stream"
@@ -24,6 +25,7 @@ var loadCmd = &cobra.Command{
 '<cmd> load --to sqlite3://./local.sqlite3 dump-file-name.tar.gz'.`,
 	Args: cobra.RangeArgs(1, MAX_COUNT_FOR_PROCESSING_FILES),
 	Run: func(cmd *cobra.Command, args []string) {
+		debugLevel, _ := cmd.Flags().GetInt("debug-level")
 		targetSqlUrl, _ := cmd.Flags().GetString("target-sql-connection")
 		sqlDialect, connectionOptions, err := (*dialect.SqlDialect).ParseUrl(nil, targetSqlUrl)
 		if err != nil {
@@ -52,7 +54,7 @@ var loadCmd = &cobra.Command{
 		// Open reader and do StatementStream
 		for _, fileName := range args {
 			rootCmd.Printf("process file %v", fileName)
-			err := processFile(fileName, sqlDialect, connection)
+			err := processFile(fileName, sqlDialect, connection, debugLevel)
 			if err != nil {
 				rootCmd.Println(" - fail")
 				rootCmd.Println()
@@ -74,10 +76,18 @@ Sql url for loading dump file. Examples:
     pg://username:password@localhost:5432/database_name    // [PostgresQL]
 
 `)
+	loadCmd.Flags().IntP("debug-level", "d", 0, `
+Debug level:
+
+    0 no debug messages
+	1 show debug messages
+	2 show advanced debug messages
+
+`)
 	rootCmd.AddCommand(loadCmd)
 }
 
-func processFile(fileName string, sqlDialect dialect.SqlDialect, connection sql_connection.SqlConnection) error {
+func processFile(fileName string, sqlDialect dialect.SqlDialect, connection sql_connection.SqlConnection, debugLevel int) error {
 	respBody, err := os.Open(fileName)
 	if err != nil {
 		return fmt.Errorf("file %s open error (%v)", fileName, err)
@@ -106,15 +116,31 @@ func processFile(fileName string, sqlDialect dialect.SqlDialect, connection sql_
 			if err != nil {
 				return fmt.Errorf("unable to open file: %s", err)
 			}
+
+			statementsCount := 0
+			lastTime := time.Now()
 			sql_parser.StatementStream(rc, sqlDialect,
 				func(statementText string, statement ast.Statement, parseError error) {
 					if parseError != nil {
-						rootCmd.PrintErrf("parse sql statement:\n %s \n\nfail: %s\n", statementText, parseError)
+						if debugLevel >= 1 {
+							rootCmd.PrintErrf("parse sql statement:\n %s \n\nfail: %s\n", statementText, parseError)
+						} else {
+							rootCmd.PrintErrf("%s\n", parseError)
+						}
 					}
 					executionError := connection.Execute(statementText)
 					if executionError != nil {
-						rootCmd.PrintErrf("execute sql statement:\n %s \n\nfail: %s\n", statementText, executionError)
+						if debugLevel >= 1 {
+							rootCmd.PrintErrf("execute sql statement:\n %s \n\nfail: %s\n", statementText, executionError)
+						} else {
+							rootCmd.PrintErrf("%s\n", executionError)
+						}
 					}
+					statementsCount++
+					if debugLevel >= 2 {
+						rootCmd.Printf("[%v] processed statements: %v\n", time.Since(lastTime), statementsCount)
+					}
+					lastTime = time.Now()
 				})
 		}
 	}
