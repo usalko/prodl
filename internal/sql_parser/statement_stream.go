@@ -20,11 +20,12 @@ var (
 
 type StatementProcessor func(statementText string, statement ast.Statement, parseError error)
 
-// Process text and return tail not processed (incomplete sql sentence)
-func processText(_tokenizer tokenizer.Tokenizer, processor StatementProcessor) int {
-	tkn := 0
+// Process text and return position for nextStatement
+// If no valid statements the second parameter return false
+func processText(_tokenizer tokenizer.Tokenizer, processor StatementProcessor) (int, bool) {
+	var tkn int
 	stmtBegin := 0
-	statementIsEmpty := true
+	statementIsEmpty := _tokenizer.GetPos() == 0
 	for {
 		tkn, _ = _tokenizer.Scan()
 		switch tkn {
@@ -37,7 +38,7 @@ func processText(_tokenizer tokenizer.Tokenizer, processor StatementProcessor) i
 			}
 			stmtBegin = _tokenizer.GetPos()
 		case 0, tokenizer.EofChar:
-			return stmtBegin
+			return stmtBegin, stmtBegin > 0
 		default:
 			statementIsEmpty = false
 		}
@@ -65,8 +66,10 @@ func StatementStream(blob io.Reader, sqlDialect dialect.SqlDialect, processor St
 			return nil
 		}
 		statementBuffer.Write(page)
-		nextStmtPos := processText(_tokenizer, processor)
-		// Reset do statementBuffer.ClipFrom(nextStmtPos)
-		_tokenizer.ResetTo(nextStmtPos)
+		nextStmtPos, ok := processText(_tokenizer, processor)
+		if ok {
+			// Reset do statementBuffer.ClipFrom(nextStmtPos)
+			_tokenizer.ResetTo(nextStmtPos)
+		}
 	}
 }

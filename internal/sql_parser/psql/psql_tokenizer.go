@@ -49,6 +49,7 @@ type PsqlTokenizer struct {
 	specialComment       *PsqlTokenizer
 	leftContext          tokenizer.CyclicBuffer
 	ignoreCommentKeyword bool
+	scanDataMarkMode     bool
 
 	Pos int
 	buf *tokenizer.BytesBuffer
@@ -279,6 +280,7 @@ func (tzr *PsqlTokenizer) Error(err string) {
 // Scan scans the tokenizer for the next token and returns
 // the token type and an optional value.
 func (tzr *PsqlTokenizer) Scan() (int, string) {
+
 	if tzr.specialComment != nil {
 		// Enter specialComment scan mode.
 		// for scanning such kind of comment: /*! PSQL-specific code */
@@ -290,6 +292,11 @@ func (tzr *PsqlTokenizer) Scan() (int, string) {
 		}
 		// leave specialComment scan mode after all stream consumed.
 		tzr.specialComment = nil
+	}
+
+	if tzr.scanDataMarkMode {
+		// Enter scan end data marker mode
+		return tzr.scanEndDataMark()
 	}
 
 	tzr.SkipBlank()
@@ -629,6 +636,7 @@ func (tzr *PsqlTokenizer) scanBindVar() (int, string) {
 // scanEndDataMark scans a mark for end input data "\\."
 func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 
+	tzr.scanDataMarkMode = true
 	tzr.Skip(1)
 	start := tzr.Pos
 	for {
@@ -637,6 +645,7 @@ func (tzr *PsqlTokenizer) scanEndDataMark() (int, string) {
 			tzr.Skip(1)
 			if tzr.Cur() == '.' {
 				tzr.Skip(1)
+				tzr.scanDataMarkMode = false
 				return ';', tzr.buf.StringAt(start, tzr.Pos)
 			}
 		}
