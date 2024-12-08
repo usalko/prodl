@@ -275,6 +275,16 @@ func NewStringTokenizer(sql string, sqlDialect dialect.SqlDialect) (tokenizer.To
 	return nil, fmt.Errorf("sorry string tokenizer not found for dialect %s", sqlDialect.String())
 }
 
+// New BufferedTokenizer creates a new Tokenizer for the
+// BytesBuffer
+func NewBufferedTokenizer(sql *tokenizer.BytesBuffer, sqlDialect dialect.SqlDialect) (tokenizer.Tokenizer, error) {
+	switch sqlDialect {
+	case dialect.PSQL:
+		return psql.NewBufferedPsqlStringTokenizer(sql), nil
+	}
+	return nil, fmt.Errorf("sorry buffered tokenizer not found for dialect %s", sqlDialect.String())
+}
+
 func parsePooled(tokenizer tokenizer.Tokenizer, sqlDialect dialect.SqlDialect) (int, error) {
 	switch sqlDialect {
 	case dialect.MYSQL:

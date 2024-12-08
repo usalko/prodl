@@ -53,6 +53,22 @@ type Sqlite3Tokenizer struct {
 	buf string
 }
 
+// ResetTo implements tokenizer.Tokenizer.
+func (tkn *Sqlite3Tokenizer) ResetTo(nextPos int) {
+	tkn.buf = strings.Clone(tkn.buf[nextPos:])
+	tkn.Pos = 0
+}
+
+// GetDialect implements tokenizer.Tokenizer.
+func (tkn *Sqlite3Tokenizer) GetDialect() dialect.SqlDialect {
+	return dialect.SQLITE3
+}
+
+// GetText implements tokenizer.Tokenizer.
+func (tkn *Sqlite3Tokenizer) GetText(startPos int) string {
+	return tkn.buf[startPos:tkn.Pos]
+}
+
 // SetSkipSpecialComments implements tokenizer.Tokenizer.
 func (tkn *Sqlite3Tokenizer) SetSkipSpecialComments(skip bool) {
 	tkn.SkipSpecialComments = skip

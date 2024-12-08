@@ -18,6 +18,7 @@ package tokenizer
 
 import (
 	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 const (
@@ -61,4 +62,12 @@ type Tokenizer interface {
 	GetPos() int
 
 	SetSkipSpecialComments(skip bool)
+
+	// The end position consider as Cur
+	GetText(startPos int) string
+	GetDialect() dialect.SqlDialect
+	// Reset current position to zero
+	// and clip from underlining buffer
+	// if buffer available in tokenizer
+	ResetTo(nextPos int)
 }

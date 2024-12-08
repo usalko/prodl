@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"slices"
 	"unicode/utf8"
 )
 
@@ -470,6 +471,16 @@ func (bytesBuffer *BytesBuffer) readSlice(delim byte) (line []byte, err error) {
 	bytesBuffer.off = end
 	bytesBuffer.lastRead = opRead
 	return line, err
+}
+
+// ClipFrom clip the current buffer, i.e. remove bytes from 0 to off and move bytes from off to the begin of buffer
+// then set off to zero
+func (bytesBuffer *BytesBuffer) ClipFrom(pos int) {
+	data := slices.Clone(bytesBuffer.buf[pos:])
+	copy(bytesBuffer.buf, data)
+	bytesBuffer.buf = bytesBuffer.buf[:len(data)]
+	bytesBuffer.off = 0
+	bytesBuffer.lastRead = opInvalid
 }
 
 // ReadString reads until the first occurrence of delim in the input,

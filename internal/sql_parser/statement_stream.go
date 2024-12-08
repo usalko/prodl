@@ -1,11 +1,9 @@
 package sql_parser
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/usalko/prodl/internal/sql_parser/ast"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
@@ -23,32 +21,7 @@ var (
 type StatementProcessor func(statementText string, statement ast.Statement, parseError error)
 
 // Process text and return tail not processed (incomplete sql sentence)
-func processText(text string, sqlDialect dialect.SqlDialect, processor StatementProcessor) (string, error) {
-	var rawSql string = text
-	switch strings.IndexByte(text, ';') {
-	case -1: // if there is no semicolon, return blob as a whole
-		stmt, err := Parse(text, sqlDialect)
-		if stmt == nil {
-			return text, ErrIncompleteStatement
-		}
-		processor(text, stmt, err)
-		return "", nil
-	case len(text) - 1: // if there's a single semicolon and it's the last character, return blob without it
-		rawSql = text[:len(text)-1]
-		stmt, err := Parse(rawSql, sqlDialect)
-		if stmt == nil {
-			return text, ErrIncompleteStatement
-		}
-		processor(rawSql, stmt, err)
-		return "", nil
-	}
-
-	_tokenizer, err := NewStringTokenizer(text, sqlDialect)
-	if err != nil {
-		processor(text, nil, err)
-		return "", nil
-	}
-
+func processText(_tokenizer tokenizer.Tokenizer, processor StatementProcessor) int {
 	tkn := 0
 	stmtBegin := 0
 	statementIsEmpty := true
@@ -56,15 +29,15 @@ func processText(text string, sqlDialect dialect.SqlDialect, processor Statement
 		tkn, _ = _tokenizer.Scan()
 		switch tkn {
 		case ';':
-			rawSql = text[stmtBegin : _tokenizer.GetPos()]
 			if !statementIsEmpty {
-				stmt, err := Parse(rawSql, sqlDialect)
+				rawSql := _tokenizer.GetText(stmtBegin)
+				stmt, err := Parse(rawSql, _tokenizer.GetDialect())
 				processor(rawSql, stmt, err)
 				statementIsEmpty = true
 			}
 			stmtBegin = _tokenizer.GetPos()
 		case 0, tokenizer.EofChar:
-			return text[stmtBegin:], ErrIncompleteStatement
+			return stmtBegin
 		default:
 			statementIsEmpty = false
 		}
@@ -77,19 +50,23 @@ func StatementStream(blob io.Reader, sqlDialect dialect.SqlDialect, processor St
 		return fmt.Errorf("blob undefined (nil)")
 	}
 	page := make([]byte, PAGE_SIZE)
-	statementBuffer := bytes.Buffer{}
+	statementBuffer := tokenizer.BytesBuffer{}
+
+	_tokenizer, err := NewBufferedTokenizer(&statementBuffer, sqlDialect)
+	if err != nil {
+		return fmt.Errorf("can't initialize a buffered tokenizer, error is %v", err)
+	}
+
 	for {
 		n, err := blob.Read(page)
 		if n < PAGE_SIZE || err == io.EOF {
 			statementBuffer.Write(page[:n])
-			processText(statementBuffer.String(), sqlDialect, processor)
+			processText(_tokenizer, processor)
 			return nil
 		}
 		statementBuffer.Write(page)
-		buffTail, err := processText(statementBuffer.String(), sqlDialect, processor)
-		if err == ErrIncompleteStatement {
-			statementBuffer.Reset()
-			statementBuffer.WriteString(buffTail)
-		}
+		nextStmtPos := processText(_tokenizer, processor)
+		// Reset do statementBuffer.ClipFrom(nextStmtPos)
+		_tokenizer.ResetTo(nextStmtPos)
 	}
 }

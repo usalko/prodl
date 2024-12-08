@@ -51,7 +51,23 @@ type PsqlTokenizer struct {
 	ignoreCommentKeyword bool
 
 	Pos int
-	buf tokenizer.BytesBuffer
+	buf *tokenizer.BytesBuffer
+}
+
+// ResetTo implements tokenizer.Tokenizer.
+func (tzr *PsqlTokenizer) ResetTo(nextPos int) {
+	tzr.buf.ClipFrom(nextPos)
+	tzr.Pos = 0
+}
+
+// GetDialect implements tokenizer.Tokenizer.
+func (tzr *PsqlTokenizer) GetDialect() dialect.SqlDialect {
+	return dialect.PSQL
+}
+
+// GetText implements tokenizer.Tokenizer.
+func (tzr *PsqlTokenizer) GetText(startPos int) string {
+	return tzr.buf.StringAt(startPos, tzr.Pos)
 }
 
 // SetSkipSpecialComments implements tokenizer.Tokenizer.
@@ -185,7 +201,18 @@ var PSQLServerVersion = flag.String("psql_server_version", "", "PSQL server vers
 func NewPsqlStringTokenizer(sql string) *PsqlTokenizer {
 
 	return &PsqlTokenizer{
-		buf:         *tokenizer.NewBytesBufferString(sql),
+		buf:         tokenizer.NewBytesBufferString(sql),
+		BindVars:    make(map[string]struct{}),
+		leftContext: *tokenizer.NewCyclicBuffer(10),
+	}
+}
+
+// NewBufferedPsqlStringTokenizer creates a new Tokenizer for the
+// BytesBuffer.
+func NewBufferedPsqlStringTokenizer(sql *tokenizer.BytesBuffer) *PsqlTokenizer {
+
+	return &PsqlTokenizer{
+		buf:         sql,
 		BindVars:    make(map[string]struct{}),
 		leftContext: *tokenizer.NewCyclicBuffer(10),
 	}

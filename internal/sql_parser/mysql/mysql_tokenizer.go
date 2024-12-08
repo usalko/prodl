@@ -54,6 +54,22 @@ type MysqlTokenizer struct {
 	buf string
 }
 
+// ResetTo implements tokenizer.Tokenizer.
+func (tkn *MysqlTokenizer) ResetTo(nextPos int) {
+	tkn.buf = strings.Clone(tkn.buf[nextPos:])
+	tkn.Pos = 0
+}
+
+// GetDialect implements tokenizer.Tokenizer.
+func (tkn *MysqlTokenizer) GetDialect() dialect.SqlDialect {
+	return dialect.MYSQL
+}
+
+// GetText implements tokenizer.Tokenizer.
+func (tkn *MysqlTokenizer) GetText(startPos int) string {
+	return tkn.buf[startPos:tkn.Pos]
+}
+
 // SetSkipSpecialComments implements tokenizer.Tokenizer.
 func (tkn *MysqlTokenizer) SetSkipSpecialComments(skip bool) {
 	tkn.SkipSpecialComments = skip
