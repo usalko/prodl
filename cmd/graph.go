@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -163,10 +164,21 @@ func getComprehensiveDotFileName(dumpFileName string) string {
 }
 
 func saveGraphToDotFile(digraph *DiGraph, fileName string, debugLevel int) error {
-	tmpl, err := template.New("digraph").Parse(graph_templates.GetTemplate(graph_templates.DIGRAPH))
+	funcs := template.FuncMap{"join": strings.Join}
+
+	tpl, err := template.New(graph_templates.LABEL).Funcs(funcs).Parse(graph_templates.GetTemplate(graph_templates.LABEL))
 	if err != nil {
 		return err
 	}
+	tpl.New(graph_templates.RELATION).Parse(graph_templates.GetTemplate(graph_templates.RELATION))
+	if err != nil {
+		return err
+	}
+	tpl, err = tpl.New(graph_templates.DIGRAPH).Parse(graph_templates.GetTemplate(graph_templates.DIGRAPH))
+	if err != nil {
+		return err
+	}
+
 	fileWriter, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		if debugLevel >= 1 {
@@ -176,7 +188,7 @@ func saveGraphToDotFile(digraph *DiGraph, fileName string, debugLevel int) error
 	}
 	defer fileWriter.Close()
 
-	return tmpl.Execute(fileWriter, digraph)
+	return tpl.Execute(fileWriter, digraph)
 }
 
 func processFileForGraph(
@@ -240,7 +252,8 @@ func processFileForGraph(
 }
 
 func getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(targetSqlUrl, "/", ""), ":", ""), "?", "") + ".dot"
+	targetSqlUrlWithoutUsernameAndPassword := regexp.MustCompile("(://[^@]*@)").ReplaceAllString(targetSqlUrl, "")
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(targetSqlUrlWithoutUsernameAndPassword, "/", "-"), ":", "-"), "?", "-") + ".dot"
 }
 
 func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
@@ -283,7 +296,7 @@ func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
 	dotFileName := getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl)
 	err = saveGraphToDotFile(result, dotFileName, debugLevel)
 	if err != nil {
-		rootCmd.PrintErrf("save graph to dot file %vfail with error: %v\n", dotFileName, err)
+		rootCmd.PrintErrf("save graph to dot file %v fail with error: %v\n", dotFileName, err)
 		return
 	}
 }

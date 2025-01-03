@@ -1,27 +1,27 @@
-{{ block "digraph" }}digraph model_graph {
+digraph tables_graph {
   // Dotfile by prodl (https://github.com/usalko/prodl)
   // Created: {{ .CreatedAt }}
   {{ if .CliOptions }}// Cli Options: {{ .CliOptions }}{{ end }}
 
-  {{ block "digraph_options" }}fontname = "Helvetica"
+  fontname = "Helvetica"
   fontsize = 8
   splines  = true
-  rankdir = "{{ .Rankdir }}"{{ end }}
+  rankdir = "{{ .Rankdir }}"
 
-  node [{{ block "node_options" }}
+  node [
     fontname = "Helvetica"
     fontsize = 8
     shape = "plaintext"
-  {{ end }}]
+  ]
 
-  edge [{{ block "edge_options" }}
+  edge [
     fontname = "Helvetica"
     fontsize = 8
-  {{ end }}]
+  ]
 
   // Labels
-{{ block "labels" }}{{ range .Graphs }}{{ template "label.dot" }}{{ end }}{{ end }}
+{{ range .Graphs }}{{ template "label.dot" . }}{{ end }}
 
   // Relations
-{{ block "relations" }}{{ for .Graphs }}{{ template "relation.dot" }}{{ end }}{{ end }}
-}{{ end }}
+{{ range .Graphs }}{{ template "relation.dot" . }}{{ end }}
+}

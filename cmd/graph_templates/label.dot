@@ -9,25 +9,26 @@
           </TABLE>
           >
     color=olivedrab4
-    style="rounded"{{ end }}
-{{ if .UseSubgraph }}{{ range .Tables }}
+    style="rounded"
+{{ range .Tables }}
   {{ .SchemaName }}_{{ .Name }} [label=<
     <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
     <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4">
     <FONT FACE="Helvetica Bold" COLOR="white">
     {{ .Label }}{{ if .Abstracts }}<BR/>&lt;<FONT FACE="Helvetica Italic">{{ join .Abstracts "," }}</FONT>&gt;{{ end }}
     </FONT></TD></TR>
-  {{ if ! .DisableFields }}{{ range .Fields }}
-  {{ if .DisableAbstractFields && .Abstract }}
+  {{ if not .DisableFields }}{{ range .Fields }}
+  {{ if and .DisableAbstractFields .Abstract }}
   {{ else }}
     <TR><TD ALIGN="LEFT" BORDER="0">
-    <FONT {{ if ! .PrimaryKey && .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if .Relation || .PrimaryKey }}Bold{{ end }}">{{ .Label }}</FONT>
+    <FONT {{ if and not .PrimaryKey .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Label }}</FONT>
     </TD><TD ALIGN="LEFT">
-    <FONT {{ if ! .PrimaryKey && .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if .Relation || .PrimaryKey }}Bold{{ end }}">{{ .Type }}</FONT>
+    <FONT {{ if and not .PrimaryKey .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Type }}</FONT>
     </TD></TR>
   {{ end }}
   {{ end }}{{ end }}
     </TABLE>
     >]
+    {{ end }}
+}
 {{ end }}
-{{ if .UseSubgraph }}  }{{ end }}
