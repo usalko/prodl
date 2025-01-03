@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"text/template"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/usalko/prodl/cmd/graph_templates"
 	"github.com/usalko/prodl/internal/archive_stream"
+	"github.com/usalko/prodl/internal/sql_connection"
 	"github.com/usalko/prodl/internal/sql_parser"
 	"github.com/usalko/prodl/internal/sql_parser/ast"
 	"github.com/usalko/prodl/internal/sql_parser/dialect"
@@ -25,12 +27,14 @@ var graphCmd = &cobra.Command{
 '<cmd> graph -c sqlite3://./local.sqlite3',
 '<cmd> graph dump-file-name.tar.gz -c sqlite3://./local.sqlite3'.
 `,
-	Args: cobra.RangeArgs(1, MAX_COUNT_FOR_PROCESSING_FILES),
+	Args: cobra.RangeArgs(0, MAX_COUNT_FOR_PROCESSING_FILES),
 	Run: func(cmd *cobra.Command, args []string) {
 		debugLevel, _ := cmd.Flags().GetInt("debug-level")
 		// 1. Open file and detect dialect
 		// 2. If connection specified extract tables structures to dot file
 		// 3. If dump specified extract tables structures to dot file
+
+		saveDatabaseStructure(cmd, debugLevel)
 
 		dumpSqlDialect := dialect.PSQL
 
@@ -47,7 +51,7 @@ var graphCmd = &cobra.Command{
 				// Save graphviz .dot file
 
 				dotFileName := getComprehensiveDotFileName(fileName)
-				err = saveGraphToDotFile(graph, dotFileName)
+				err = saveGraphToDotFile(graph, dotFileName, debugLevel)
 				if err != nil {
 					rootCmd.PrintErrf("Error is %v\n", err)
 				} else {
@@ -59,10 +63,18 @@ var graphCmd = &cobra.Command{
 }
 
 func init() {
+	graphCmd.Flags().StringP("target-sql-connection", "c", "sqlite3://./local.sqlite3", `
+Sql url for loading dump file. Examples:
+
+    mysql://user:password@/dbname            // [MySQL, MariaDB, TiDB]
+    sqlite3://./local.sqlite3?cache=shared   // [Sqlite3]
+    pg://username:password@localhost:5432/database_name    // [PostgresQL]
+
+`)
 	graphCmd.Flags().IntP("debug-level", "d", 0, `
 Debug level:
 
-    0 no debug messages
+	0 no debug messages
 	1 show debug messages
 	2 show advanced debug messages
 
@@ -150,13 +162,16 @@ func getComprehensiveDotFileName(dumpFileName string) string {
 	return dumpFileName + ".dot"
 }
 
-func saveGraphToDotFile(digraph *DiGraph, fileName string) error {
+func saveGraphToDotFile(digraph *DiGraph, fileName string, debugLevel int) error {
 	tmpl, err := template.New("digraph").Parse(graph_templates.GetTemplate(graph_templates.DIGRAPH))
 	if err != nil {
 		return err
 	}
 	fileWriter, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		if debugLevel >= 1 {
+			rootCmd.PrintErrf("Open file %v error %v\n", fileName, err)
+		}
 		return err
 	}
 	defer fileWriter.Close()
@@ -222,4 +237,53 @@ func processFileForGraph(
 		}
 	}
 	return dumpGraph, nil
+}
+
+func getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(strings.ReplaceAll(targetSqlUrl, "/", ""), ":", ""), "?", "") + ".dot"
+}
+
+func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
+	targetSqlUrl, _ := cmd.Flags().GetString("target-sql-connection")
+	sqlDialect, connectionOptions, err := (*dialect.SqlDialect).ParseUrl(nil, targetSqlUrl)
+	if err != nil {
+		rootCmd.PrintErrf("parse target url %v fail with error: %v\n", targetSqlUrl, err)
+		return
+	}
+	connection, err := sql_connection.Connect(sqlDialect)
+	if err != nil {
+		rootCmd.PrintErrf("make connection structure for target url %v fail with error: %v\n", targetSqlUrl, err)
+		return
+	}
+
+	err = connection.Establish(connectionOptions)
+	if err != nil {
+		rootCmd.PrintErrf("establish connection for target url %v fail with error: %v\n", targetSqlUrl, err)
+		return
+	}
+
+	// Test connection to the database
+	err = connection.Execute("select 1")
+	if err != nil {
+		rootCmd.PrintErrf("check connection for target url %v fail with error: %v\n", targetSqlUrl, err)
+		return
+	}
+	rootCmd.Printf("connection established\n")
+
+	dbStructure, err := connection.GetStructure("*")
+	if err != nil {
+		rootCmd.PrintErrf("get database structure for %v fail with error: %v\n", targetSqlUrl, err)
+		return
+	}
+	result := newDigraph()
+	for _, table := range dbStructure.Tables {
+		result.addTable(table.TableName, table.TableSchema)
+	}
+
+	dotFileName := getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl)
+	err = saveGraphToDotFile(result, dotFileName, debugLevel)
+	if err != nil {
+		rootCmd.PrintErrf("save graph to dot file %vfail with error: %v\n", dotFileName, err)
+		return
+	}
 }
