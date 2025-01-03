@@ -26,3 +26,15 @@ go.work.sum
 
 # Localest data
 .data
+
+# Git specific
+*.orig
+
+# Debugging output for goyacc command
+*.output
+
+# Local artifacts
+*.sqlite3
+
+# IDE specific
+.vscode
