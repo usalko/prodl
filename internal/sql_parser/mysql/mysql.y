@@ -18,44 +18,44 @@ limitations under the License.
 package mysql
 
 import (
-    "github.com/usalko/sent/internal/sql_parser/ast"
-	  "github.com/usalko/sent/internal/sql_parser/dialect"
-    "github.com/usalko/sent/internal/sql_types"
+    "github.com/usalko/prodl/internal/sql_parser/ast"
+	  "github.com/usalko/prodl/internal/sql_parser/tokenizer"
+    "github.com/usalko/prodl/internal/sql_types"
 )
 
 func setParseTree(mysqlex mysqLexer, stmt ast.Statement) {
-  mysqlex.(dialect.Tokenizer).SetParseTree(stmt)
+  mysqlex.(tokenizer.Tokenizer).SetParseTree(stmt)
 }
 
 func setAllowComments(mysqlex mysqLexer, allow bool) {
-  mysqlex.(dialect.Tokenizer).SetAllowComments(allow)
+  mysqlex.(tokenizer.Tokenizer).SetAllowComments(allow)
 }
 
 func setDDL(mysqlex mysqLexer, node ast.Statement) {
-  mysqlex.(dialect.Tokenizer).SetPartialDDL(node)
+  mysqlex.(tokenizer.Tokenizer).SetPartialDDL(node)
 }
 
 func incNesting(mysqlex mysqLexer) bool {
-  mysqlex.(dialect.Tokenizer).IncNesting()
-  if mysqlex.(dialect.Tokenizer).GetNesting() == 200 {
+  mysqlex.(tokenizer.Tokenizer).IncNesting()
+  if mysqlex.(tokenizer.Tokenizer).GetNesting() == 200 {
     return true
   }
   return false
 }
 
 func decNesting(mysqlex mysqLexer) {
-  mysqlex.(dialect.Tokenizer).DecNesting()
+  mysqlex.(tokenizer.Tokenizer).DecNesting()
 }
 
 // skipToEnd forces the lexer to end prematurely. Not all SQL statements
 // are supported by the Parser, thus calling skipToEnd will make the lexer
 // return EOF early.
 func skipToEnd(mysqlex mysqLexer) {
-  mysqlex.(dialect.Tokenizer).SetSkipToEnd(true)
+  mysqlex.(tokenizer.Tokenizer).SetSkipToEnd(true)
 }
 
 func bindVariable(mysqlex mysqLexer, bvar string) {
-  mysqlex.(dialect.Tokenizer).BindVar(bvar, struct{}{})
+  mysqlex.(tokenizer.Tokenizer).BindVar(bvar, struct{}{})
 }
 
 %}
@@ -240,7 +240,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 
 // Precedence dictated by mysql. But the vitess grammar is simplified.
 // Some of these operators don\'t conflict in our situation. Nevertheless,
-// it's better to have these listed in the correct order. Also, we don\'t
+// it\'s better to have these listed in the correct order. Also, we don\'t
 // support all operators yet.
 // * NOTE: ast.If you change anything here, update precedence.go as well *
 %nonassoc <str> LOWER_THAN_CHARSET
@@ -287,7 +287,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 %token <str> SEQUENCE MERGE TEMPORARY TEMPTABLE INVOKER SECURITY FIRST AFTER LAST
 
 // Migration tokens
-%token <str> VITESS_MIGRATION CANCEL RETRY COMPLETE CLEANUP THROTTLE UNTHROTTLE EXPIRE RATIO
+%token <str> CANCEL RETRY COMPLETE CLEANUP THROTTLE UNTHROTTLE EXPIRE RATIO
 
 // Transaction Tokens
 %token <str> BEGIN START TRANSACTION COMMIT ROLLBACK SAVEPOINT RELEASE WORK
@@ -308,7 +308,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 // SHOW tokens
 %token <str> CODE COLLATION COLUMNS DATABASES ENGINES EVENT EXTENDED FIELDS FULL FUNCTION GTID_EXECUTED
 %token <str> KEYSPACES OPEN PLUGINS PRIVILEGES PROCESSLIST SCHEMAS TABLES TRIGGERS USER
-%token <str> VGTID_EXECUTED VITESS_KEYSPACES VITESS_METADATA VITESS_MIGRATIONS VITESS_REPLICATION_STATUS VITESS_SHARDS VITESS_TABLETS VITESS_TARGET VSCHEMA VITESS_THROTTLED_APPS
+%token <str> VGTID_EXECUTED VSCHEMA
 
 // SET tokens
 %token <str> NAMES GLOBAL SESSION ISOLATION LEVEL READ WRITE ONLY REPEATABLE COMMITTED UNCOMMITTED SERIALIZABLE
@@ -340,9 +340,7 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 %token <str> NESTED NETWORK_NAMESPACE NOWAIT NULLS OJ OLD OPTIONAL ORDINALITY ORGANIZATION OTHERS PARTIAL PATH PERSIST PERSIST_ONLY PRECEDING PRIVILEGE_CHECKS_USER PROCESS
 %token <str> RANDOM REFERENCE REQUIRE_ROW_FORMAT RESOURCE RESPECT RESTART RETAIN REUSE ROLE SECONDARY SECONDARY_ENGINE SECONDARY_ENGINE_ATTRIBUTE SECONDARY_LOAD SECONDARY_UNLOAD SIMPLE SKIP SRID
 %token <str> THREAD_PRIORITY TIES UNBOUNDED VCPU VISIBLE RETURNING
-
-// Explain tokens
-%token <str> FORMAT TREE VITESS TRADITIONAL
+%token <str> FORMAT TREE TRADITIONAL
 
 // Lock type tokens
 %token <str> LOCAL LOW_PRIORITY
@@ -383,7 +381,6 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 %type <statement> analyze_statement show_statement use_statement other_statement
 %type <statement> begin_statement commit_statement rollback_statement savepoint_statement release_statement load_statement
 %type <statement> lock_statement unlock_statement call_statement
-%type <statement> revert_statement
 %type <strs> comment_opt comment_list
 %type <str> wild_opt check_option_opt cascade_or_local_opt restrict_or_cascade_opt
 %type <explainType> explain_format_opt
@@ -460,10 +457,10 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 %type <characteristics> transaction_chars
 %type <isolationLevel> isolation_level
 %type <str> for_from from_or_on
-%type <str> default_opt
+%type <str> default_val
 %type <ignore> ignore_opt
 %type <str> columns_or_fields extended_opt storage_opt
-%type <showFilter> like_or_where_opt like_opt
+%type <showFilter> like_or_where_opt
 %type <boolean> exists_opt not_exists_opt enforced enforced_opt temp_opt full_opt
 %type <empty> to_opt
 %type <str> reserved_keyword non_reserved_keyword
@@ -527,8 +524,6 @@ func bindVariable(mysqlex mysqLexer, bvar string) {
 %type <colKeyOpt> keys
 %type <referenceDefinition> reference_definition reference_definition_opt
 %type <str> underscore_charsets
-%type <str> expire_opt
-%type <literal> ratio_opt
 %start any_command
 
 %%
@@ -576,7 +571,6 @@ command:
 | lock_statement
 | unlock_statement
 | call_statement
-| revert_statement
 | prepare_statement
 | execute_statement
 | deallocate_statement
@@ -2730,28 +2724,6 @@ after_opt:
     $$ = $2
   }
 
-expire_opt:
-  {
-    $$ = ""
-  }
-| EXPIRE STRING
-  {
-    $$ = string($2)
-  }
-
-ratio_opt:
-  {
-    $$ = nil
-  }
-| RATIO INTEGRAL
-  {
-    $$ = ast.NewIntLiteral($2)
-  }
-| RATIO DECIMAL
-  {
-    $$ = ast.NewDecimalLiteral($2)
-  }
-
 alter_commands_list:
   {
     $$ = nil
@@ -3085,70 +3057,6 @@ alter_statement:
             Column: $8,
             Sequence: $10,
         },
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING RETRY
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.RetryMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING CLEANUP
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CleanupMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING COMPLETE
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CompleteMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING CANCEL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CancelMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION CANCEL ALL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.CancelAllMigrationType,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING THROTTLE expire_opt ratio_opt
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.ThrottleMigrationType,
-      UUID: string($4),
-      Expire: $6,
-      Ratio: $7,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION THROTTLE ALL expire_opt ratio_opt
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.ThrottleAllMigrationType,
-      Expire: $6,
-      Ratio: $7,
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION STRING UNTHROTTLE
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.UnthrottleMigrationType,
-      UUID: string($4),
-    }
-  }
-| ALTER comment_opt VITESS_MIGRATION UNTHROTTLE ALL
-  {
-    $$ = &ast.AlterMigration{
-      Type: ast.UnthrottleAllMigrationType,
     }
   }
 
@@ -3780,10 +3688,6 @@ show_statement:
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
   }
-| SHOW VITESS_KEYSPACES like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Keyspace, Filter: $3}}
-  }
 | SHOW FUNCTION STATUS like_or_where_opt
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Function, Filter: $4}}
@@ -3876,26 +3780,6 @@ show_statement:
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VGtidExecGlobal, DbName: $4}}
   }
-| SHOW VITESS_METADATA VARIABLES like_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessVariables, Filter: $4}}
-  }
-| SHOW VITESS_MIGRATIONS from_database_opt like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessMigrations, Filter: $4, DbName: $3}}
-  }
-| SHOW VITESS_MIGRATION STRING LOGS
-  {
-    $$ = &ast.ShowMigrationLogs{UUID: string($3)}
-  }
-| SHOW VITESS_THROTTLED_APPS
-  {
-    $$ = &ast.ShowThrottledApps{}
-  }
-| SHOW VITESS_REPLICATION_STATUS like_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessReplicationStatus, Filter: $3}}
-  }
 | SHOW VSCHEMA TABLES
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VschemaTables}}
@@ -3911,18 +3795,6 @@ show_statement:
 | SHOW WARNINGS
   {
     $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.Warnings}}
-  }
-| SHOW VITESS_SHARDS like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessShards, Filter: $3}}
-  }
-| SHOW VITESS_TABLETS like_or_where_opt
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTablets, Filter: $3}}
-  }
-| SHOW VITESS_TARGET
-  {
-    $$ = &ast.Show{Internal: &ast.ShowBasic{Command: ast.VitessTarget}}
   }
 /*
  * Catch-all for show statements without vitess keywords:
@@ -4022,16 +3894,6 @@ like_or_where_opt:
     $$ = &ast.ShowFilter{Filter:$2}
   }
 
-like_opt:
-  /* empty */
-    {
-      $$ = nil
-    }
-  | LIKE STRING
-    {
-      $$ = &ast.ShowFilter{Like:string($2)}
-    }
-
 session_or_local_opt:
   /* empty */
   {
@@ -4130,10 +3992,6 @@ explain_format_opt:
 | FORMAT '=' TREE
   {
     $$ = ast.TreeType
-  }
-| FORMAT '=' VITESS
-  {
-    $$ = ast.VitessType
   }
 | FORMAT '=' TRADITIONAL
   {
@@ -4253,12 +4111,6 @@ unlock_statement:
   UNLOCK TABLES
   {
     $$ = &ast.UnlockTables{}
-  }
-
-revert_statement:
-  REVERT comment_opt VITESS_MIGRATION STRING
-  {
-    $$ = &ast.RevertMigration{Comments: ast.Comments($2).Parsed(), UUID: string($4)}
   }
 
 flush_statement:
@@ -5142,7 +4994,7 @@ function_call_keyword
     //    BINARY expr
     $$ = &ast.ConvertExpr{Expr: $2, Type: &ast.ConvertType{Type: $1}}
   }
-| DEFAULT default_opt
+| DEFAULT default_val
   {
 	 $$ = &ast.Default{ColName: $2}
   }
@@ -5177,7 +5029,7 @@ trim_type:
     $$ = ast.TrailingTrimType
   }
 
-default_opt:
+default_val:
   /* empty */
   {
     $$ = ""
@@ -6581,7 +6433,7 @@ reserved_table_id:
 
   These are more importantly reserved because they may conflict with our grammar.
   If you want to move one that is not reserved in MySQL (i.e. ESCAPE) to the
-  non_reserved_keywords, you'll need to deal with any conflicts.
+  non_reserved_keywords, you\'ll need to deal with any conflicts.
 
   Sorted alphabetically
 */
@@ -7059,16 +6911,6 @@ non_reserved_keyword:
 | VINDEX
 | VINDEXES
 | VISIBLE
-| VITESS
-| VITESS_KEYSPACES
-| VITESS_METADATA
-| VITESS_MIGRATION
-| VITESS_MIGRATIONS
-| VITESS_REPLICATION_STATUS
-| VITESS_SHARDS
-| VITESS_TABLETS
-| VITESS_TARGET
-| VITESS_THROTTLED_APPS
 | VSCHEMA
 | WARNINGS
 | WITHOUT

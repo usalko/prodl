@@ -20,8 +20,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 func TestNormalizeSetExpr(t *testing.T) {
@@ -77,7 +78,7 @@ func TestNormalizeSetExpr(t *testing.T) {
 				tt.expected = tt.in
 			}
 
-			statement, err := sql_parser.Parse("set " + tt.in)
+			statement, err := sql_parser.Parse("set "+tt.in, dialect.MYSQL)
 			require.NoError(t, err)
 			rewriter := sql_parser.SetNormalizer{}
 			out, err := rewriter.NormalizeSetExpr(statement.(*ast.Set).Exprs[0])

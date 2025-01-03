@@ -21,8 +21,7 @@ package hack
 import (
 	"testing"
 
-	"github.com/usalko/sent/internal/hack"
-
+	"github.com/usalko/prodl/internal/hack"
 )
 
 func TestByteToString(t *testing.T) {

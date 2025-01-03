@@ -19,7 +19,7 @@ package ast
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // Format formats the node.
@@ -445,6 +445,20 @@ func (node *PartitionSpec) Format(buf *TrackedBuffer) {
 	}
 }
 
+// Format formats the node.
+func (node *AlterSchema) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "alter schema")
+	buf.WriteByte(' ')
+	node.Schema.Format(buf)
+	for i, option := range node.AlterOptions {
+		if i != 0 {
+			buf.WriteByte(',')
+		}
+		buf.WriteByte(' ')
+		option.Format(buf)
+	}
+}
+
 // Format formats the node
 func (node *PartitionDefinition) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "partition %v", node.Name)
@@ -728,7 +742,7 @@ func (ct *ColumnType) Format(buf *TrackedBuffer) {
 			buf.astPrintf(ct, " %s", "auto_increment")
 		}
 		if ct.Options.Comment != nil {
-			buf.astPrintf(ct, " %s %v", "comment_keyword", ct.Options.Comment)
+			buf.astPrintf(ct, " %s %v", "comment", ct.Options.Comment)
 		}
 		if ct.Options.Invisible != nil {
 			if *ct.Options.Invisible {
@@ -908,6 +922,25 @@ func (c *CheckConstraintDefinition) Format(buf *TrackedBuffer) {
 	buf.astPrintf(c, "check (%v)", c.Expr)
 	if !c.Enforced {
 		buf.astPrintf(c, " not enforced")
+	}
+}
+
+// Format formats the node.
+func (ts *SequenceSpec) Format(buf *TrackedBuffer) {
+	if ts.StartWith != nil {
+		buf.astPrintf(ts, "start with %d ", *ts.StartWith)
+	}
+	if ts.IncrementBy != nil {
+		buf.astPrintf(ts, "increment by %d ", *ts.IncrementBy)
+	}
+	if ts.NoMinValue {
+		buf.astPrintf(ts, "no minvalue ")
+	}
+	if ts.NoMaxValue {
+		buf.astPrintf(ts, "no maxvalue")
+	}
+	if ts.Cache != nil {
+		buf.astPrintf(ts, "cache %d ", *ts.Cache)
 	}
 }
 
@@ -1161,6 +1194,11 @@ func (node *JoinCondition) Format(buf *TrackedBuffer) {
 // Format formats the node.
 func (node *JoinTableExpr) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "%v %s %v%v", node.LeftExpr, node.Join.ToString(), node.RightExpr, node.Condition)
+}
+
+// Format formats the node.
+func (node *CommentOnSchema) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "comment on schema %v is %v", node.Schema, node.Value)
 }
 
 // Format formats the node.
@@ -1639,6 +1677,11 @@ func (node TableIdent) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node.
+func (node SequenceIdent) Format(buf *TrackedBuffer) {
+	formatID(buf, node.V, NoAt)
+}
+
+// Format formats the node.
 func (node IsolationLevel) Format(buf *TrackedBuffer) {
 	buf.literal("isolation level ")
 	switch node {
@@ -1790,6 +1833,18 @@ func (node *CreateView) Format(buf *TrackedBuffer) {
 	}
 }
 
+// Format formats the node.
+func (node *CreateSequence) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "create %v", node.Comments)
+	buf.astPrintf(node, "sequence %v", node.Sequence)
+}
+
+// Format formats the node.
+func (node *AlterSequence) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "alter %v", node.Comments)
+	buf.astPrintf(node, "sequence %v", node.Sequence)
+}
+
 // Format formats the LockTables node.
 func (node *LockTables) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "lock tables %v %s", node.Tables[0].Table, node.Tables[0].Lock.ToString())
@@ -1921,6 +1976,11 @@ func (node AlgorithmValue) Format(buf *TrackedBuffer) {
 }
 
 // Format formats the node
+func (node *AlterOwner) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "owner to %v", node.Owner)
+}
+
+// Format formats the node
 func (node *AlterColumn) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "alter column %v", node.Column)
 	if node.DropDefault {
@@ -2032,6 +2092,11 @@ func (node *OrderByOption) Format(buf *TrackedBuffer) {
 // Format formats the node
 func (node *RenameTableName) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "rename %v", node.Table)
+}
+
+// Format formats the node
+func (node *SchemaName) Format(buf *TrackedBuffer) {
+	buf.astPrintf(node, "%v", node.Name.V)
 }
 
 // Format formats the node
@@ -2341,4 +2406,14 @@ func (node *JSONRemoveExpr) Format(buf *TrackedBuffer) {
 func (node *JSONUnquoteExpr) Format(buf *TrackedBuffer) {
 	buf.astPrintf(node, "json_unquote(%v", node.JSONValue)
 	buf.WriteString(")")
+}
+
+// Format formats the node.
+func (node *CopyFrom) Format(buf *TrackedBuffer) {
+	node.formatFast(buf)
+}
+
+// Format formats the node
+func (node *CopyTo) Format(buf *TrackedBuffer) {
+	node.formatFast(buf)
 }

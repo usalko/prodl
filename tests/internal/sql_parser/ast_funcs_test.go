@@ -22,7 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
 )
 
 func TestAddQueryHint(t *testing.T) {

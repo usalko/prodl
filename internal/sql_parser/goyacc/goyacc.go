@@ -691,7 +691,7 @@ outer:
 				tempty = TYPE(toklev[tempty])
 			}
 			if tempty != nontrst[curprod[0]-NTBASE].value {
-				lerrorf(ruleline, "default action causes potential type clash")
+				lerrorf(ruleline, "default action causes potential type clash, symbol is %q", nontrst[nnonter].name)
 			}
 		}
 		moreprod()
@@ -1341,12 +1341,13 @@ func cpyyvalaccess(fcode *bytes.Buffer, curprod []int, tok int, unionType *strin
 		return
 	}
 
+	pattern := ""
 	if tok < 0 {
-		tok, _ = fdtype(curprod[0])
+		tok, pattern = fdtype(curprod[0])
 	}
 	ti, ok := gotypes[typeset[tok]]
 	if !ok {
-		errorf("missing Go type information for %s", typeset[tok])
+		errorf("missing Go type information for %q, pattern is %q", typeset[tok], pattern)
 	}
 	if !ti.union {
 		fmt.Fprintf(fcode, "%sVAL.%s", prefix, typeset[tok])
@@ -1507,12 +1508,13 @@ loop:
 				if j <= 0 && tok < 0 {
 					errorf("must specify type of $%v", j)
 				}
+				pattern := ""
 				if tok < 0 {
-					tok, _ = fdtype(curprod[j])
+					tok, pattern = fdtype(curprod[j])
 				}
 				ti, ok := gotypes[typeset[tok]]
 				if !ok {
-					errorf("missing Go type information for %s", typeset[tok])
+					errorf("missing Go type information for %q, pattern is %q", typeset[tok], pattern)
 				}
 				if ti.union {
 					fmt.Fprintf(fcode, ".%sUnion()", typeset[tok])
@@ -2148,7 +2150,7 @@ func putitem(p Pitem, set Lkset) {
 	p.first = p.prod[p.off]
 
 	if pidebug != 0 && foutput != nil {
-		fmt.Fprintf(foutput, "putitem(%v), state %v\n", writem(p), nstate)
+		fmt.Fprintf(foutput, "putitem(%v), state-%v\n", writem(p), nstate)
 	}
 	j := pstate[nstate+1]
 	if j >= len(statemem) {
@@ -2493,7 +2495,7 @@ func wrstate(i int) {
 	if foutput == nil {
 		return
 	}
-	fmt.Fprintf(foutput, "\nstate %v\n", i)
+	fmt.Fprintf(foutput, "\nstate-%v\n", i)
 	qq = pstate[i+1]
 	for pp = pstate[i]; pp < qq; pp++ {
 		fmt.Fprintf(foutput, "\t%v\n", writem(statemem[pp].pitem))
@@ -2885,7 +2887,7 @@ nextn:
 					indgo[i] = n
 					if adb > 1 {
 						fmt.Fprintf(ftable, "State %v: entry at"+
-							"%v equals state %v\n",
+							"%v equals state-%v\n",
 							i, n, j)
 					}
 					return
@@ -2912,7 +2914,7 @@ nextn:
 		}
 		return
 	}
-	errorf("Error; failure to place state %v", i)
+	errorf("Error; failure to place state-%v", i)
 }
 
 // this version is for limbo
@@ -3356,8 +3358,9 @@ func $$Iaddr(v any) __yyunsafe__.Pointer {
 }
 
 var (
+	/* available values are: 0, 1, 2, 3, 4 */
 	$$Debug        = 0
-	$$ErrorVerbose = false
+	$$ErrorVerbose = true
 )
 
 type $$Lexer interface {
@@ -3471,6 +3474,9 @@ func $$ErrorMessage(state, lookAhead int) string {
 func $$lex1(lex $$Lexer, lval *$$SymType) (char, token int) {
 	token = 0
 	char = lex.Lex(lval)
+	if $$Debug >= 4 {
+	    __yyfmt__.Printf("lval is %v => ", lval)
+	}
 	if char <= 0 {
 		token = $$Tok1[0]
 		goto out
@@ -3495,10 +3501,11 @@ func $$lex1(lex $$Lexer, lval *$$SymType) (char, token int) {
 
 out:
 	if token == 0 {
+		__yyfmt__.Printf("token zero")
 		token = $$Tok2[1] /* unknown char */
 	}
 	if $$Debug >= 3 {
-		__yyfmt__.Printf("lex %s(%d)\n", $$Tokname(token), uint(char))
+		__yyfmt__.Printf("lex %s(%d) token=%d\n", $$Tokname(token), uint(char), token)
 	}
 	return char, token
 }
@@ -3627,7 +3634,7 @@ $$default:
 
 				/* the current p has no shift on "error", pop stack */
 				if $$Debug >= 2 {
-					__yyfmt__.Printf("error recovery pops state %d\n", $$S[$$p].yys)
+					__yyfmt__.Printf("error recovery pops state-%d\n", $$S[$$p].yys)
 				}
 				$$p--
 			}

@@ -26,9 +26,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/usalko/sent/internal/bytes2"
-	"github.com/usalko/sent/internal/hack"
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/bytes2"
+	"github.com/usalko/prodl/internal/hack"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 var (
@@ -245,7 +245,7 @@ func (v Value) RawStr() string {
 func (v Value) ToBytes() ([]byte, error) {
 	switch v.typ {
 	case Expression:
-		return nil, sql_parser_errors.New(sql_parser_errors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
+		return nil, sql_parser_errors.NewError(sql_parser_errors.Code_INVALID_ARGUMENT, "expression cannot be converted to bytes")
 	case HexVal:
 		return v.decodeHexVal()
 	case HexNum:

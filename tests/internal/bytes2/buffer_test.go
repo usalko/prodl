@@ -19,7 +19,7 @@ package bytes2
 import (
 	"testing"
 
-	"github.com/usalko/sent/internal/bytes2"
+	"github.com/usalko/prodl/internal/bytes2"
 )
 
 func TestBuffer(t *testing.T) {

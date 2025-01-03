@@ -1,3 +1,5 @@
+package sql_parser
+
 /*
 Copyright 2020 The Vitess Authors.
 
@@ -14,13 +16,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package sql_parser
-
 import (
 	"fmt"
 	"math/rand"
 
-	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
 )
 
 // This file is used to generate random expressions to be used for testing

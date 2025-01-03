@@ -17,8 +17,8 @@ limitations under the License.
 package sql_parser
 
 import (
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 // ParseTable parses the input as a qualified table name.

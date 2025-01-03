@@ -141,6 +141,11 @@ type (
 		Invisible   *bool
 	}
 
+	// AlterColumn is used to add or drop defaults & visibility to columns in alter table command
+	AlterOwner struct {
+		Owner *RoleName
+	}
+
 	// With contains the lists of common table expression and specifies if it is recursive or not
 	With struct {
 		Ctes      []*CommonTableExpr
@@ -275,6 +280,44 @@ type (
 
 	// SelectIntoType is an enum for SelectInto.Type
 	SelectIntoType int8
+
+	// CopyFrom is a struct that represent the COPY command
+	CopyFrom struct {
+		Table    TableName
+		Columns  Columns
+		From     CopyFromSource
+		With     CopyOptions
+		Where    Expr
+		Comments *ParsedComments
+	}
+
+	// CopyFromType is an enum for CopyFrom.Type
+	CopyFromType int8
+
+	// CopyFromSource is a struct for store variable part of copy from type
+	CopyFromSource struct {
+		Type CopyFromType
+		V    string
+	}
+
+	// CopyTo is a struct that represent the COPY command
+	CopyTo struct {
+		Table    TableName
+		Columns  Columns
+		Query    SelectStatement
+		To       CopyToTarget
+		With     CopyOptions
+		Comments *ParsedComments
+	}
+
+	// CopyToType is an enum for CopyTo.Type
+	CopyToType int8
+
+	// CopyToTarget is a struct for store variable part of copy to target
+	CopyToTarget struct {
+		Type CopyToType
+		V    string
+	}
 
 	// Lock is an enum for the type of lock in the statement
 	Lock int8
@@ -422,6 +465,16 @@ type (
 		FullyParsed         bool
 	}
 
+	// CopyOptionType is an enum for copy with options
+	CopyOptionType int8
+
+	// CopyOption is a struct that stores option value
+	CopyOption struct {
+		Type      CopyOptionType
+		IsDefault bool
+		Value     string
+	}
+
 	// Flush represents a FLUSH statement.
 	Flush struct {
 		IsLocal      bool
@@ -490,6 +543,14 @@ type (
 		Ratio  *Literal
 	}
 
+	// AlterSchema represents a ALTER SCHEMA statement
+	AlterSchema struct {
+		Schema       SchemaName
+		AlterOptions []AlterOption
+		Comments     *ParsedComments
+		FullyParsed  bool
+	}
+
 	// AlterTable represents a ALTER TABLE statement.
 	AlterTable struct {
 		Table           TableName
@@ -497,6 +558,7 @@ type (
 		PartitionSpec   *PartitionSpec
 		PartitionOption *PartitionOption
 		Comments        *ParsedComments
+		Only            bool
 		FullyParsed     bool
 	}
 
@@ -514,6 +576,29 @@ type (
 		FromTables TableNames
 		IfExists   bool
 		Comments   *ParsedComments
+	}
+
+	// DropSequence represents a DROP sequence statement.
+	DropSequence struct {
+		FromTables SequenceNames
+		IfExists   bool
+		Comments   *ParsedComments
+	}
+
+	// CreateSequence represents a CREATE SEQUENCE query
+	CreateSequence struct {
+		Sequence     SequenceName
+		Comments     *ParsedComments
+		SequenceSpec *SequenceSpec
+		FullyParsed  bool
+	}
+
+	// AlterSequence represents a ALTER SEQUENCE query
+	AlterSequence struct {
+		Sequence     SequenceName
+		Comments     *ParsedComments
+		SequenceSpec *SequenceSpec
+		FullyParsed  bool
 	}
 
 	// CreateTable represents a CREATE TABLE statement.
@@ -680,6 +765,13 @@ type (
 	// It should be used only as an indicator. It does not contain
 	// the full AST for the statement.
 	OtherAdmin struct{}
+
+	// CommentOnSchema represents a schema comment setup
+	CommentOnSchema struct {
+		Schema   SchemaIdent
+		Value    Expr
+		Comments *ParsedComments
+	}
 )
 
 func (*Union) iStatement()             {}
@@ -711,11 +803,15 @@ func (*AlterDatabase) iStatement()     {}
 func (*CreateTable) iStatement()       {}
 func (*CreateView) iStatement()        {}
 func (*AlterView) iStatement()         {}
+func (*CreateSequence) iStatement()    {}
+func (*AlterSequence) iStatement()     {}
+func (*DropSequence) iStatement()      {}
 func (*LockTables) iStatement()        {}
 func (*UnlockTables) iStatement()      {}
 func (*AlterTable) iStatement()        {}
 func (*AlterVschema) iStatement()      {}
 func (*AlterMigration) iStatement()    {}
+func (*AlterSchema) iStatement()       {}
 func (*RevertMigration) iStatement()   {}
 func (*ShowMigrationLogs) iStatement() {}
 func (*ShowThrottledApps) iStatement() {}
@@ -729,6 +825,9 @@ func (*ExplainTab) iStatement()        {}
 func (*PrepareStmt) iStatement()       {}
 func (*ExecuteStmt) iStatement()       {}
 func (*DeallocateStmt) iStatement()    {}
+func (*CommentOnSchema) iStatement()   {}
+func (*CopyFrom) iStatement()          {}
+func (*CopyTo) iStatement()            {}
 
 func (*CreateView) iDDLStatement()    {}
 func (*AlterView) iDDLStatement()     {}
@@ -738,12 +837,14 @@ func (*DropView) iDDLStatement()      {}
 func (*AlterTable) iDDLStatement()    {}
 func (*TruncateTable) iDDLStatement() {}
 func (*RenameTable) iDDLStatement()   {}
+func (*AlterSchema) iDDLStatement()   {}
 
 func (*AddConstraintDefinition) iAlterOption() {}
 func (*AddIndexDefinition) iAlterOption()      {}
 func (*AddColumns) iAlterOption()              {}
 func (AlgorithmValue) iAlterOption()           {}
 func (*AlterColumn) iAlterOption()             {}
+func (*AlterOwner) iAlterOption()              {}
 func (*AlterCheck) iAlterOption()              {}
 func (*AlterIndex) iAlterOption()              {}
 func (*ChangeColumn) iAlterOption()            {}
@@ -809,6 +910,26 @@ func (node *AlterTable) SetFullyParsed(fullyParsed bool) {
 }
 
 // IsFullyParsed implements the DDLStatement interface
+func (node *CreateSequence) IsFullyParsed() bool {
+	return node.FullyParsed
+}
+
+// SetFullyParsed implements the DDLStatement interface
+func (node *CreateSequence) SetFullyParsed(fullyParsed bool) {
+	node.FullyParsed = fullyParsed
+}
+
+// IsFullyParsed implements the DDLStatement interface
+func (node *AlterSequence) IsFullyParsed() bool {
+	return node.FullyParsed
+}
+
+// SetFullyParsed implements the DDLStatement interface
+func (node *AlterSequence) SetFullyParsed(fullyParsed bool) {
+	node.FullyParsed = fullyParsed
+}
+
+// IsFullyParsed implements the DDLStatement interface
 func (node *CreateView) IsFullyParsed() bool {
 	return true
 }
@@ -841,6 +962,11 @@ func (node *AlterView) IsFullyParsed() bool {
 func (node *AlterView) SetFullyParsed(fullyParsed bool) {}
 
 // IsTemporary implements the DDLStatement interface
+func (node *AlterSchema) IsTemporary() bool {
+	return false
+}
+
+// IsTemporary implements the DDLStatement interface
 func (*TruncateTable) IsTemporary() bool {
 	return false
 }
@@ -861,6 +987,11 @@ func (node *AlterTable) IsTemporary() bool {
 }
 
 // IsTemporary implements the DDLStatement interface
+func (node *DropTable) IsTemporary() bool {
+	return node.Temp
+}
+
+// IsTemporary implements the DDLStatement interface
 func (node *CreateView) IsTemporary() bool {
 	return false
 }
@@ -871,12 +1002,22 @@ func (node *DropView) IsTemporary() bool {
 }
 
 // IsTemporary implements the DDLStatement interface
-func (node *DropTable) IsTemporary() bool {
-	return node.Temp
+func (node *AlterView) IsTemporary() bool {
+	return false
 }
 
 // IsTemporary implements the DDLStatement interface
-func (node *AlterView) IsTemporary() bool {
+func (node *CreateSequence) IsTemporary() bool {
+	return false
+}
+
+// IsTemporary implements the DDLStatement interface
+func (node *DropSequence) IsTemporary() bool {
+	return false
+}
+
+// IsTemporary implements the DDLStatement interface
+func (node *AlterSequence) IsTemporary() bool {
 	return false
 }
 
@@ -1868,6 +2009,15 @@ type ConstraintDefinition struct {
 	Details ConstraintInfo
 }
 
+// SequenceSpec describes the sequence parameters from a CREATE SEQUENCE statement
+type SequenceSpec struct {
+	StartWith   *int
+	IncrementBy *int
+	NoMinValue  bool
+	NoMaxValue  bool
+	Cache       *int
+}
+
 type (
 	// ConstraintInfo details a constraint in a CREATE TABLE statement
 	ConstraintInfo interface {
@@ -2027,17 +2177,42 @@ type (
 	}
 )
 
+type (
+	// SequenceName represents a name. of sequence
+	// Qualifier, if specified, represents a database or schema namespace.
+	// SequenceName is a value struct whose fields are case sensitive.
+	// This means two SequenceName vars can be compared for equality
+	// and a SequenceName can also be used as key in a map.
+	SequenceName struct {
+		Name, Qualifier SequenceIdent
+	}
+)
+
 func (TableName) iSimpleTableExpr()     {}
 func (*DerivedTable) iSimpleTableExpr() {}
 
 // TableNames is a list of TableName.
 type TableNames []TableName
 
+// SequenceNames is a list of SequenceName.
+type SequenceNames []SequenceName
+
+// ColIdentities is a list of Column identities.
+type ColIdentities []ColIdent
+
+// CopyOptions is a list of CopyOption
+type CopyOptions []CopyOption
+
 // JoinCondition represents the join conditions (either a ON or USING clause)
 // of a JoinTableExpr.
 type JoinCondition struct {
 	On    Expr
 	Using Columns
+}
+
+// TableName represents a schema  name.
+type SchemaName struct {
+	Name SchemaIdent
 }
 
 // IndexHint represents an index hint.
@@ -2163,6 +2338,11 @@ type (
 
 	// BoolVal is true or false.
 	BoolVal bool
+
+	// RoleName represents a role name.
+	RoleName struct {
+		Name RoleIdent
+	}
 
 	// ColName represents a column name.
 	ColName struct {
@@ -2731,8 +2911,26 @@ type ColIdent struct {
 }
 
 // TableIdent is a case sensitive SQL identifier. It will be escaped with
-// backquotes if necessary.
+// dialect specific quotes if necessary.
 type TableIdent struct {
+	V string
+}
+
+// TableIdent is a case sensitive SQL identifier. It will be escaped with
+// dialect specific quotes if necessary.
+type SequenceIdent struct {
+	V string
+}
+
+// SchemaIdent is a case sensitive SQL identifier. It will be escaped with
+// quotes if necessary.
+type SchemaIdent struct {
+	V string
+}
+
+// RoleIdent is a case sensitive SQL identifier. It will be escaped with
+// quotes if necessary.
+type RoleIdent struct {
 	V string
 }
 

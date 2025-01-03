@@ -26,7 +26,7 @@ import (
 
 	"context"
 
-	"github.com/usalko/sent/internal/sql_parser_errors"
+	"github.com/usalko/prodl/internal/sql_parser_errors"
 )
 
 func TestWrapNil(t *testing.T) {
@@ -44,7 +44,7 @@ func TestWrap(t *testing.T) {
 		wantCode    int32
 	}{
 		{io.EOF, "read error", "read error: EOF", sql_parser_errors.Code_UNKNOWN},
-		{sql_parser_errors.New(sql_parser_errors.Code_ALREADY_EXISTS, "oops"), "client error", "client error: oops", sql_parser_errors.Code_ALREADY_EXISTS},
+		{sql_parser_errors.NewError(sql_parser_errors.Code_ALREADY_EXISTS, "oops"), "client error", "client error: oops", sql_parser_errors.Code_ALREADY_EXISTS},
 	}
 
 	for _, tt := range tests {
@@ -63,7 +63,7 @@ type nilError struct{}
 func (nilError) Error() string { return "nil error" }
 
 func TestRootCause(t *testing.T) {
-	x := sql_parser_errors.New(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
+	x := sql_parser_errors.NewError(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
 	tests := []struct {
 		err  error
 		want error
@@ -101,7 +101,7 @@ func TestRootCause(t *testing.T) {
 }
 
 func TestCause(t *testing.T) {
-	x := sql_parser_errors.New(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
+	x := sql_parser_errors.NewError(sql_parser_errors.Code_FAILED_PRECONDITION, "error")
 	tests := []struct {
 		err  error
 		want error
@@ -210,7 +210,7 @@ func TestErrorEquality(t *testing.T) {
 		nil,
 		io.EOF,
 		errors.New("EOF"),
-		sql_parser_errors.New(sql_parser_errors.Code_ALREADY_EXISTS, "EOF"),
+		sql_parser_errors.NewError(sql_parser_errors.Code_ALREADY_EXISTS, "EOF"),
 		sql_parser_errors.Errorf(sql_parser_errors.Code_INVALID_ARGUMENT, "EOF"),
 		sql_parser_errors.Wrap(io.EOF, "EOF"),
 		sql_parser_errors.Wrapf(io.EOF, "EOF%d", 2),
@@ -234,7 +234,7 @@ func TestCreation(t *testing.T) {
 		want: sql_parser_errors.Code_UNKNOWN,
 	}}
 	for _, tcase := range testcases {
-		if got := sql_parser_errors.Code(sql_parser_errors.New(tcase.in, "")); got != tcase.want {
+		if got := sql_parser_errors.Code(sql_parser_errors.NewError(tcase.in, "")); got != tcase.want {
 			t.Errorf("Code(New(%v)): %v, want %v", tcase.in, got, tcase.want)
 		}
 		if got := sql_parser_errors.Code(sql_parser_errors.Errorf(tcase.in, "")); got != tcase.want {
@@ -254,7 +254,7 @@ func TestCode(t *testing.T) {
 		in:   errors.New("generic"),
 		want: sql_parser_errors.Code_UNKNOWN,
 	}, {
-		in:   sql_parser_errors.New(sql_parser_errors.Code_CANCELED, "generic"),
+		in:   sql_parser_errors.NewError(sql_parser_errors.Code_CANCELED, "generic"),
 		want: sql_parser_errors.Code_CANCELED,
 	}, {
 		in:   context.Canceled,

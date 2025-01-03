@@ -19,7 +19,7 @@ package sql_types
 import (
 	"strings"
 
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 // TestValue builds a Value from typ and val.

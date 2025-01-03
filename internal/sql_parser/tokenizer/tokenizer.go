@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Vitess Authors.
+Copyright 2024 Vanya Usalko <ivict@rambler.ru>.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package dialect
+package tokenizer
 
 import (
-	"github.com/usalko/sent/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/ast"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
 )
 
 const (
@@ -31,6 +32,7 @@ type Tokenizer interface {
 	GetParseTree() ast.Statement
 
 	SetAllowComments(allow bool)
+	SetIgnoreCommentKeyword(ignore bool)
 
 	SetPartialDDL(node ast.Statement)
 	GetPartialDDL() ast.Statement
@@ -42,7 +44,7 @@ type Tokenizer interface {
 	SetSkipToEnd(skip bool)
 
 	BindVar(bvar string, value struct{})
-	GetBindVars() BindVars
+	GetBindVars() ast.BindVars
 
 	Scan() (int, string)
 
@@ -51,7 +53,7 @@ type Tokenizer interface {
 
 	GetLastError() error
 
-	Cur() uint16
+	Cur() rune
 	Skip(count int)
 	SkipBlank()
 	Reset()
@@ -60,4 +62,12 @@ type Tokenizer interface {
 	GetPos() int
 
 	SetSkipSpecialComments(skip bool)
+
+	// The end position consider as Cur
+	GetText(startPos int) string
+	GetDialect() dialect.SqlDialect
+	// Reset current position to zero
+	// and clip from underlining buffer
+	// if buffer available in tokenizer
+	ResetTo(nextPos int)
 }

@@ -1,9 +1,10 @@
-module github.com/usalko/sent
+module github.com/usalko/prodl
 
 go 1.23
 
 require (
 	github.com/google/go-cmp v0.6.0
+	github.com/jackc/pgx/v5 v5.7.1
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/usalko/hexi v0.1.12
@@ -12,7 +13,7 @@ require (
 
 require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/pgservicefile v0.0.0-2024060.1.1523-5a60cdf6a761 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	golang.org/x/crypto v0.27.0 // indirect

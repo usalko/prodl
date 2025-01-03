@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/usalko/sent/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser"
 )
 
 func TestParseTable(t *testing.T) {

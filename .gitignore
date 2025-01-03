@@ -32,6 +32,7 @@ go.work.sum
 
 # Debugging output for goyacc command
 *.output
+__debug_bin*
 
 # Local artifacts
 *.sqlite3

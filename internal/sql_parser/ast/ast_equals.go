@@ -86,6 +86,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfAlterColumn(a, b)
+	case *AlterOwner:
+		b, ok := inB.(*AlterOwner)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfAlterOwner(a, b)
 	case *AlterDatabase:
 		b, ok := inB.(*AlterDatabase)
 		if !ok {
@@ -104,6 +110,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfAlterMigration(a, b)
+	case *AlterSchema:
+		b, ok := inB.(*AlterSchema)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfAlterSchema(a, b)
 	case *AlterTable:
 		b, ok := inB.(*AlterTable)
 		if !ok {
@@ -284,6 +296,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfCreateView(a, b)
+	case *CreateSequence:
+		b, ok := inB.(*CreateSequence)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfCreateSequence(a, b)
 	case *CurTimeFuncExpr:
 		b, ok := inB.(*CurTimeFuncExpr)
 		if !ok {
@@ -1076,6 +1094,12 @@ func EqualsSQLNode(inA, inB SQLNode) bool {
 			return false
 		}
 		return EqualsRefOfTablespaceOperation(a, b)
+	case *SequenceSpec:
+		b, ok := inB.(*SequenceSpec)
+		if !ok {
+			return false
+		}
+		return EqualsRefOfSequenceSpec(a, b)
 	case *TimestampFuncExpr:
 		b, ok := inB.(*TimestampFuncExpr)
 		if !ok {
@@ -1301,6 +1325,17 @@ func EqualsRefOfAlterCheck(a, b *AlterCheck) bool {
 }
 
 // EqualsRefOfAlterColumn does deep equals between the two objects.
+func EqualsRefOfAlterOwner(a, b *AlterOwner) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsRefOfRoleName(a.Owner, b.Owner)
+}
+
+// EqualsRefOfAlterColumn does deep equals between the two objects.
 func EqualsRefOfAlterColumn(a, b *AlterColumn) bool {
 	if a == b {
 		return true
@@ -1352,6 +1387,19 @@ func EqualsRefOfAlterMigration(a, b *AlterMigration) bool {
 		a.Expire == b.Expire &&
 		a.Type == b.Type &&
 		EqualsRefOfLiteral(a.Ratio, b.Ratio)
+}
+
+// EqualsRefOfAlterSchema does deep equals between the two objects.
+func EqualsRefOfAlterSchema(a, b *AlterSchema) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsSchemaName(a.Schema, b.Schema) &&
+		EqualsSliceOfAlterOption(a.AlterOptions, b.AlterOptions) &&
+		EqualsRefOfParsedComments(a.Comments, b.Comments)
 }
 
 // EqualsRefOfAlterTable does deep equals between the two objects.
@@ -1535,6 +1583,17 @@ func EqualsRefOfColName(a, b *ColName) bool {
 		EqualsTableName(a.Qualifier, b.Qualifier)
 }
 
+// EqualsRefOfColName does deep equals between the two objects.
+func EqualsRefOfRoleName(a, b *RoleName) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsRoleName(a.Name, b.Name)
+}
+
 // EqualsRefOfCollateExpr does deep equals between the two objects.
 func EqualsRefOfCollateExpr(a, b *CollateExpr) bool {
 	if a == b {
@@ -1691,6 +1750,20 @@ func EqualsRefOfCreateDatabase(a, b *CreateDatabase) bool {
 		EqualsRefOfParsedComments(a.Comments, b.Comments) &&
 		EqualsTableIdent(a.DBName, b.DBName) &&
 		EqualsSliceOfDatabaseOption(a.CreateOptions, b.CreateOptions)
+}
+
+// EqualsRefOfCreateSequence does deep equals between the two objects.
+func EqualsRefOfCreateSequence(a, b *CreateSequence) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return a.FullyParsed == b.FullyParsed &&
+		EqualsSequenceName(a.Sequence, b.Sequence) &&
+		EqualsRefOfParsedComments(a.Comments, b.Comments) &&
+		EqualsRefOfSequenceSpec(a.SequenceSpec, b.SequenceSpec)
 }
 
 // EqualsRefOfCreateTable does deep equals between the two objects.
@@ -3260,6 +3333,27 @@ func EqualsTableExprs(a, b TableExprs) bool {
 	return true
 }
 
+// EqualsSchemaName does deep equals between the two objects.
+func EqualsSchemaName(a, b SchemaName) bool {
+	return EqualsSchemaIdent(a.Name, b.Name)
+}
+
+// EqualsSchemaIdent does deep equals between the two objects.
+func EqualsSchemaIdent(a, b SchemaIdent) bool {
+	return a.V == b.V
+}
+
+// EqualsRoleName does deep equals between the two objects.
+func EqualsRoleName(a, b RoleIdent) bool {
+	return a.V == b.V
+}
+
+// EqualsSequenceName does deep equals between the two objects.
+func EqualsSequenceName(a, b SequenceName) bool {
+	return EqualsSequenceIdent(a.Name, b.Name) &&
+		EqualsSequenceIdent(a.Qualifier, b.Qualifier)
+}
+
 // EqualsTableIdent does deep equals between the two objects.
 func EqualsTableIdent(a, b TableIdent) bool {
 	return a.V == b.V
@@ -3321,6 +3415,21 @@ func EqualsRefOfTablespaceOperation(a, b *TablespaceOperation) bool {
 		return false
 	}
 	return a.Import == b.Import
+}
+
+// EqualsRefOfTableSpec does deep equals between the two objects.
+func EqualsRefOfSequenceSpec(a, b *SequenceSpec) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsIntReferences(a.StartWith, b.StartWith) &&
+		EqualsIntReferences(a.IncrementBy, b.IncrementBy) &&
+		EqualsIntReferences(a.Cache, b.Cache) &&
+		a.NoMinValue == b.NoMinValue &&
+		a.NoMaxValue == b.NoMaxValue
 }
 
 // EqualsRefOfTimestampFuncExpr does deep equals between the two objects.
@@ -3401,6 +3510,22 @@ func EqualsRefOfUnlockTables(a, b *UnlockTables) bool {
 		return false
 	}
 	return true
+}
+
+// EqualsIntReferences dues deep equals between the two objects.
+func EqualsIntReferences(a, b *int) bool {
+	if a == b {
+		return true
+	}
+	return a != nil && b != nil && *a == *b
+}
+
+// EqualsIntReferences dues deep equals between the two objects.
+func EqualsBoolReferences(a, b *bool) bool {
+	if a == b {
+		return true
+	}
+	return a != nil && b != nil && *a == *b
 }
 
 // EqualsRefOfUpdate does deep equals between the two objects.
@@ -5725,6 +5850,26 @@ func EqualsSliceOfCharacteristic(a, b []Characteristic) bool {
 		}
 	}
 	return true
+}
+
+// EqualsRefOfSequenceName does deep equals between the two objects.
+func EqualsRefOfSequenceName(a, b *SequenceName) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	return EqualsSequenceIdent(a.Name, b.Name) &&
+		EqualsSequenceIdent(a.Qualifier, b.Qualifier)
+}
+
+// EqualsRefOfSequenceIdent does deep equals between the two objects.
+func EqualsSequenceIdent(a, b SequenceIdent) bool {
+	if a == b {
+		return true
+	}
+	return a.V == b.V
 }
 
 // EqualsRefOfTableIdent does deep equals between the two objects.

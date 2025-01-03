@@ -20,7 +20,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 func TestTypeValues(t *testing.T) {

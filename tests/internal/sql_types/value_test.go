@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_types"
+	"github.com/usalko/prodl/internal/sql_types"
 )
 
 const (

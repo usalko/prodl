@@ -21,9 +21,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/usalko/sent/internal/sql_parser"
-	"github.com/usalko/sent/internal/sql_parser/dialect"
-	"github.com/usalko/sent/internal/sql_parser/mysql"
+	"github.com/usalko/prodl/internal/sql_parser"
+	"github.com/usalko/prodl/internal/sql_parser/dialect"
+	"github.com/usalko/prodl/internal/sql_parser/mysql"
 )
 
 func TestLiteralID(t *testing.T) {
@@ -205,7 +205,7 @@ func TestSplitStatement(t *testing.T) {
 
 	for _, tcase := range testcases {
 		t.Run(tcase.in, func(t *testing.T) {
-			sql, rem, err := sql_parser.SplitStatement(tcase.in)
+			sql, rem, err := sql_parser.SplitStatement(tcase.in, dialect.MYSQL)
 			if err != nil {
 				t.Errorf("EndOfStatementPosition(%s): ERROR: %v", tcase.in, err)
 				return
@@ -323,7 +323,7 @@ func TestIntegerAndID(t *testing.T) {
 		t.Run(tcase.in, func(t *testing.T) {
 			tkn, err := sql_parser.NewStringTokenizer(tcase.in, dialect.MYSQL)
 			if err != nil {
-				t.Fatalf("%q")
+				t.Fatalf("%q", err)
 			}
 			id, out := tkn.Scan()
 			require.Equal(t, tcase.id, id)
