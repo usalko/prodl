@@ -1,0 +1,10 @@
+{{ range .Tables }}{{ range .Relations }}{{ if .NeedsNode }}  {{ .TargetSchema }}_{{ .Target }} [label=<
+  <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+  <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4">
+  <FONT FACE="Helvetica Bold" COLOR="white">{{ .Target }}</FONT>
+  </TD></TR>
+  </TABLE>
+  >]{{ end }}
+  {{ .SchemaName }}_{{ .Name }} -> {{ .TargetSchema }}_{{ .Target }}
+  [label="{{ .Label }}"] {{ .Arrows }};
+{{ end }}{{ end }}
