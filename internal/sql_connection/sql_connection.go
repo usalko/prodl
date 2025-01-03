@@ -61,6 +61,21 @@ type DbField struct {
 	IsUpdatable            string
 }
 
+type DbRelation struct {
+	ConstraintSchema           string
+	ConstraintName             string
+	TableSchema                string
+	TableName                  string
+	ColumnName                 string
+	OrdinalPosition            string
+	ReferencedConstraintSchema string
+	ReferencedConstraintName   string
+	ReferencedTableSchema      string
+	ReferencedTableName        string
+	ReferencedColumnName       string
+	ReferencedOrdinalPosition  string
+}
+
 type DbTable struct {
 	TableCatalog              string
 	TableSchema               string
@@ -75,7 +90,8 @@ type DbTable struct {
 	IsTyped                   string
 	CommitAction              string
 
-	Fields []*DbField
+	Fields    []*DbField
+	Relations []*DbRelation
 }
 
 type DbStructure struct {
@@ -352,6 +368,52 @@ WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
 			}
 		}
 
+		relations := make([]*DbRelation, 0, 5)
+		relationsReader := pgConn.ExecParams(ctx, fmt.Sprintf(`SELECT 
+     KCU1.CONSTRAINT_SCHEMA AS CONSTRAINT_SCHEMA 
+    ,KCU1.CONSTRAINT_NAME AS CONSTRAINT_NAME 
+    ,KCU1.TABLE_SCHEMA AS TABLE_SCHEMA 
+    ,KCU1.TABLE_NAME AS TABLE_NAME 
+    ,KCU1.COLUMN_NAME AS COLUMN_NAME 
+    ,KCU1.ORDINAL_POSITION AS ORDINAL_POSITION 
+    ,KCU2.CONSTRAINT_SCHEMA AS REFERENCED_CONSTRAINT_SCHEMA 
+    ,KCU2.CONSTRAINT_NAME AS REFERENCED_CONSTRAINT_NAME 
+    ,KCU2.TABLE_SCHEMA AS REFERENCED_TABLE_SCHEMA 
+    ,KCU2.TABLE_NAME AS REFERENCED_TABLE_NAME 
+    ,KCU2.COLUMN_NAME AS REFERENCED_COLUMN_NAME 
+    ,KCU2.ORDINAL_POSITION AS REFERENCED_ORDINAL_POSITION 
+FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS RC 
+
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU1 
+    ON KCU1.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG  
+    AND KCU1.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA 
+    AND KCU1.CONSTRAINT_NAME = RC.CONSTRAINT_NAME 
+
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU2 
+    ON KCU2.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG  
+    AND KCU2.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA 
+    AND KCU2.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME 
+    AND KCU2.ORDINAL_POSITION = KCU1.ORDINAL_POSITION 
+	WHERE KCU1.TABLE_SCHEMA = '%v' AND KCU1.TABLE_NAME = '%v'`, schemaName, tableName), nil, nil, nil, nil).Read()
+		if relationsReader.Err == nil {
+			for _, row := range relationsReader.Rows {
+				relations = append(relations, &DbRelation{
+					ConstraintSchema:           string(row[0]),
+					ConstraintName:             string(row[1]),
+					TableSchema:                string(row[2]),
+					TableName:                  string(row[3]),
+					ColumnName:                 string(row[4]),
+					OrdinalPosition:            string(row[5]),
+					ReferencedConstraintSchema: string(row[6]),
+					ReferencedConstraintName:   string(row[7]),
+					ReferencedTableSchema:      string(row[8]),
+					ReferencedTableName:        string(row[9]),
+					ReferencedColumnName:       string(row[10]),
+					ReferencedOrdinalPosition:  string(row[11]),
+				})
+			}
+		}
+
 		table := DbTable{
 			TableCatalog:              string(row[0]),
 			TableSchema:               schemaName,
@@ -366,7 +428,8 @@ WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
 			IsTyped:                   string(row[10]),
 			CommitAction:              string(row[11]),
 
-			Fields: fields,
+			Fields:    fields,
+			Relations: relations,
 		}
 		result.Tables = append(result.Tables, &table)
 	}

@@ -144,7 +144,7 @@ func newDigraph() *DiGraph {
 	}
 }
 
-func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field) {
+func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field, relations []*Relation) {
 	if len(dg.Graphs) == 0 {
 		dg.Graphs = append(dg.Graphs, &Graph{
 			UseSubgraph: true,
@@ -157,6 +157,7 @@ func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field
 		Name:       tableName,
 		Label:      tableName,
 		Fields:     fields,
+		Relations:  relations,
 	})
 }
 
@@ -246,7 +247,9 @@ func processFileForGraph(
 								Type:  column.Type.Type,
 							})
 						}
-						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V, fields)
+
+						relations := make([]*Relation, 0, 5)
+						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V, fields, relations)
 					}
 					statementsCount++
 					if debugLevel >= 2 {
@@ -305,7 +308,19 @@ func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
 				Type:  dbField.DataType,
 			})
 		}
-		result.addTable(table.TableName, table.TableSchema, fields)
+
+		relations := make([]*Relation, 0, 5)
+		for _, dbRelation := range table.Relations {
+			relations = append(relations, &Relation{
+				NeedsNode:    true,
+				TargetSchema: dbRelation.ReferencedTableSchema,
+				Target:       dbRelation.ReferencedTableName,
+				SchemaName:   dbRelation.TableSchema,
+				Name:         dbRelation.TableName,
+				Label:        dbRelation.ConstraintName,
+			})
+		}
+		result.addTable(table.TableName, table.TableSchema, fields, relations)
 	}
 
 	dotFileName := getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl)
