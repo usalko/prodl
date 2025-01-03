@@ -14,6 +14,53 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type DbField struct {
+	TableCatalog           string
+	TableSchema            string
+	TableName              string
+	ColumnName             string
+	OrdinalPosition        string
+	ColumnDefault          string
+	IsNullable             string
+	DataType               string
+	CharacterMaximumLength string
+	CharacterOctetLength   string
+	NumericPrecision       string
+	NumericPrecisionRadix  string
+	NumericScale           string
+	DatetimePrecision      string
+	IntervalType           string
+	IntervalPrecision      string
+	CharacterSetCatalog    string
+	CharacterSetSchema     string
+	CharacterSetName       string
+	CollationCatalog       string
+	CollationSchema        string
+	CollationName          string
+	DomainCatalog          string
+	DomainSchema           string
+	DomainName             string
+	DdtCatalog             string
+	UdtSchema              string
+	UdtName                string
+	ScopeCatalog           string
+	ScopeSchema            string
+	ScopeName              string
+	MaximumCardinality     string
+	DtdIdentifier          string
+	IsSelfReferencing      string
+	IsIdentity             string
+	IdentityGeneration     string
+	IdentityStart          string
+	IdentityIncrement      string
+	IdentityMaximum        string
+	IdentityMinimum        string
+	IdentityCycle          string
+	IsGenerated            string
+	GenerationExpression   string
+	IsUpdatable            string
+}
+
 type DbTable struct {
 	TableCatalog              string
 	TableSchema               string
@@ -27,6 +74,8 @@ type DbTable struct {
 	IsInsertableInto          string
 	IsTyped                   string
 	CommitAction              string
+
+	Fields []*DbField
 }
 
 type DbStructure struct {
@@ -245,10 +294,68 @@ WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
 		return nil, resultReader.Err
 	}
 	for _, row := range resultReader.Rows {
+		fields := make([]*DbField, 0, 20)
+		schemaName := string(row[1])
+		tableName := string(row[2])
+
+		fieldsReader := pgConn.ExecParams(ctx, fmt.Sprintf(`SELECT *
+		FROM INFORMATION_SCHEMA.COLUMNS
+		WHERE TABLE_SCHEMA = '%v' AND TABLE_NAME = '%v'`, schemaName, tableName), nil, nil, nil, nil).Read()
+		if fieldsReader.Err == nil {
+			for _, row := range fieldsReader.Rows {
+				fields = append(fields, &DbField{
+					TableCatalog:           string(row[0]),
+					TableSchema:            string(row[1]),
+					TableName:              string(row[2]),
+					ColumnName:             string(row[3]),
+					OrdinalPosition:        string(row[4]),
+					ColumnDefault:          string(row[5]),
+					IsNullable:             string(row[6]),
+					DataType:               string(row[7]),
+					CharacterMaximumLength: string(row[8]),
+					CharacterOctetLength:   string(row[9]),
+					NumericPrecision:       string(row[10]),
+					NumericPrecisionRadix:  string(row[11]),
+					NumericScale:           string(row[12]),
+					DatetimePrecision:      string(row[13]),
+					IntervalType:           string(row[14]),
+					IntervalPrecision:      string(row[15]),
+					CharacterSetCatalog:    string(row[16]),
+					CharacterSetSchema:     string(row[17]),
+					CharacterSetName:       string(row[18]),
+					CollationCatalog:       string(row[19]),
+					CollationSchema:        string(row[20]),
+					CollationName:          string(row[21]),
+					DomainCatalog:          string(row[22]),
+					DomainSchema:           string(row[23]),
+					DomainName:             string(row[24]),
+					DdtCatalog:             string(row[25]),
+					UdtSchema:              string(row[26]),
+					UdtName:                string(row[27]),
+					ScopeCatalog:           string(row[28]),
+					ScopeSchema:            string(row[29]),
+					ScopeName:              string(row[30]),
+					MaximumCardinality:     string(row[31]),
+					DtdIdentifier:          string(row[32]),
+					IsSelfReferencing:      string(row[33]),
+					IsIdentity:             string(row[34]),
+					IdentityGeneration:     string(row[35]),
+					IdentityStart:          string(row[36]),
+					IdentityIncrement:      string(row[37]),
+					IdentityMaximum:        string(row[38]),
+					IdentityMinimum:        string(row[39]),
+					IdentityCycle:          string(row[40]),
+					IsGenerated:            string(row[41]),
+					GenerationExpression:   string(row[42]),
+					IsUpdatable:            string(row[43]),
+				})
+			}
+		}
+
 		table := DbTable{
 			TableCatalog:              string(row[0]),
-			TableSchema:               string(row[1]),
-			TableName:                 string(row[2]),
+			TableSchema:               schemaName,
+			TableName:                 tableName,
 			TableType:                 string(row[3]),
 			SelfReferencingColumnName: string(row[4]),
 			ReferenceGeneration:       string(row[5]),
@@ -258,6 +365,8 @@ WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
 			IsInsertableInto:          string(row[9]),
 			IsTyped:                   string(row[10]),
 			CommitAction:              string(row[11]),
+
+			Fields: fields,
 		}
 		result.Tables = append(result.Tables, &table)
 	}

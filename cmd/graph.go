@@ -107,7 +107,7 @@ type Field struct {
 	Abstract              bool
 	PrimaryKey            bool
 	Blank                 bool
-	Relation              Relation
+	Relation              *Relation
 	Label                 string
 	Type                  string
 }
@@ -118,8 +118,8 @@ type Table struct {
 	Label         string
 	Abstracts     []string
 	DisableFields bool
-	Fields        []Field
-	Relations     []Relation
+	Fields        []*Field
+	Relations     []*Relation
 }
 
 type Graph struct {
@@ -144,7 +144,7 @@ func newDigraph() *DiGraph {
 	}
 }
 
-func (dg *DiGraph) addTable(tableName string, schemaName string) {
+func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field) {
 	if len(dg.Graphs) == 0 {
 		dg.Graphs = append(dg.Graphs, &Graph{
 			UseSubgraph: true,
@@ -156,6 +156,7 @@ func (dg *DiGraph) addTable(tableName string, schemaName string) {
 		SchemaName: schemaName,
 		Name:       tableName,
 		Label:      tableName,
+		Fields:     fields,
 	})
 }
 
@@ -238,7 +239,14 @@ func processFileForGraph(
 					}
 					createStatement, ok := statement.(*ast.CreateTable)
 					if ok {
-						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V)
+						fields := make([]*Field, 0, 10)
+						for _, column := range createStatement.TableSpec.Columns {
+							fields = append(fields, &Field{
+								Label: column.Name.Val,
+								Type:  column.Type.Type,
+							})
+						}
+						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V, fields)
 					}
 					statementsCount++
 					if debugLevel >= 2 {
@@ -290,7 +298,14 @@ func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
 	}
 	result := newDigraph()
 	for _, table := range dbStructure.Tables {
-		result.addTable(table.TableName, table.TableSchema)
+		fields := make([]*Field, 0, 10)
+		for _, dbField := range table.Fields {
+			fields = append(fields, &Field{
+				Label: dbField.ColumnName,
+				Type:  dbField.DataType,
+			})
+		}
+		result.addTable(table.TableName, table.TableSchema, fields)
 	}
 
 	dotFileName := getComprehensiveDotFileNameForTargetSqlUrl(targetSqlUrl)

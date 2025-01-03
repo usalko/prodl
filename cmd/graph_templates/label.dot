@@ -21,9 +21,9 @@
   {{ if and .DisableAbstractFields .Abstract }}
   {{ else }}
     <TR><TD ALIGN="LEFT" BORDER="0">
-    <FONT {{ if and not .PrimaryKey .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Label }}</FONT>
+    <FONT {{ if and (not .PrimaryKey) .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Label }}</FONT>
     </TD><TD ALIGN="LEFT">
-    <FONT {{ if and not .PrimaryKey .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Type }}</FONT>
+    <FONT {{ if and (not .PrimaryKey) .Blank }}COLOR="#7B7B7B" {{ end }}FACE="Helvetica {{ if .Abstract }}Italic{{ end }}{{ if or .Relation .PrimaryKey }}Bold{{ end }}">{{ .Type }}</FONT>
     </TD></TR>
   {{ end }}
   {{ end }}{{ end }}
