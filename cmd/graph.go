@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
+	"text/template"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/usalko/prodl/cmd/graph_templates"
 	"github.com/usalko/prodl/internal/archive_stream"
 	"github.com/usalko/prodl/internal/sql_parser"
 	"github.com/usalko/prodl/internal/sql_parser/ast"
@@ -43,12 +44,15 @@ var graphCmd = &cobra.Command{
 				rootCmd.PrintErrf("Error is %v", err)
 				rootCmd.PrintErrln()
 			} else {
-				text := strings.Builder{}
-				for k, _ := range graph.table_records {
-					text.WriteString(k)
-					text.WriteRune('\n')
+				// Save graphviz .dot file
+
+				dotFileName := getComprehensiveDotFileName(fileName)
+				err = saveGraphToDotFile(graph, dotFileName)
+				if err != nil {
+					rootCmd.PrintErrf("Error is %v\n", err)
+				} else {
+					rootCmd.Printf("Successfully save .dot file %v, for more details @see information from https://graphviz.org/ \n", dotFileName)
 				}
-				rootCmd.Printf("%s", text.String())
 			}
 		}
 	},
@@ -66,15 +70,105 @@ Debug level:
 	rootCmd.AddCommand(graphCmd)
 }
 
-type DumpGraph struct {
-	table_records map[string]int
+type RankDir string
+
+const (
+	TB RankDir = "TB"
+	BT RankDir = "BT"
+	LR RankDir = "LR"
+	RL RankDir = "RL"
+)
+
+type Relation struct {
+	NeedsNode    bool
+	TargetSchema string
+	Target       string
+	SchemaName   string
+	Name         string
+	Label        string
+	Arrows       []string
+}
+
+type Field struct {
+	DisableAbstractFields bool
+	Abstract              bool
+	PrimaryKey            bool
+	Blank                 bool
+	Relation              Relation
+	Label                 string
+	Type                  string
+}
+
+type Table struct {
+	SchemaName    string
+	Name          string
+	Label         string
+	Abstracts     []string
+	DisableFields bool
+	Fields        []Field
+	Relations     []Relation
+}
+
+type Graph struct {
+	UseSubgraph bool
+	SchemaName  string
+	Tables      []*Table
+}
+
+type DiGraph struct {
+	CreatedAt  time.Time
+	CliOptions string
+	Rankdir    RankDir
+	Graphs     []*Graph
+}
+
+func newDigraph() *DiGraph {
+	return &DiGraph{
+		CreatedAt:  time.Now(),
+		CliOptions: "",
+		Rankdir:    BT,
+		Graphs:     make([]*Graph, 0, 1),
+	}
+}
+
+func (dg *DiGraph) addTable(tableName string, schemaName string) {
+	if len(dg.Graphs) == 0 {
+		dg.Graphs = append(dg.Graphs, &Graph{
+			UseSubgraph: false,
+			SchemaName:  schemaName,
+			Tables:      make([]*Table, 0, 100),
+		})
+	}
+	dg.Graphs[0].Tables = append(dg.Graphs[0].Tables, &Table{
+		SchemaName: schemaName,
+		Name:       tableName,
+		Label:      tableName,
+	})
+}
+
+func getComprehensiveDotFileName(dumpFileName string) string {
+	return dumpFileName + ".dot"
+}
+
+func saveGraphToDotFile(digraph *DiGraph, fileName string) error {
+	tmpl, err := template.New("digraph").Parse(graph_templates.GetTemplate(graph_templates.DIGRAPH))
+	if err != nil {
+		return err
+	}
+	fileWriter, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer fileWriter.Close()
+
+	return tmpl.Execute(fileWriter, digraph)
 }
 
 func processFileForGraph(
 	fileName string,
 	sqlDialect dialect.SqlDialect,
 	debugLevel int,
-) (*DumpGraph, error) {
+) (*DiGraph, error) {
 	respBody, err := os.Open(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("file %s open error (%v)", fileName, err)
@@ -82,10 +176,7 @@ func processFileForGraph(
 	defer respBody.Close()
 
 	reader := archive_stream.NewReader(respBody)
-	dumpGraph := DumpGraph{
-		table_records: make(map[string]int, 100),
-	}
-
+	dumpGraph := newDigraph()
 	for {
 		entry, err := reader.GetNextEntry()
 		if err == io.EOF {
@@ -120,7 +211,7 @@ func processFileForGraph(
 					}
 					createStatement, ok := statement.(*ast.CreateTable)
 					if ok {
-						dumpGraph.table_records[createStatement.Table.Name.V] = 1
+						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V)
 					}
 					statementsCount++
 					if debugLevel >= 2 {
@@ -130,5 +221,5 @@ func processFileForGraph(
 				})
 		}
 	}
-	return &dumpGraph, nil
+	return dumpGraph, nil
 }
