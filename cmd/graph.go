@@ -147,7 +147,7 @@ func newDigraph() *DiGraph {
 func (dg *DiGraph) addTable(tableName string, schemaName string) {
 	if len(dg.Graphs) == 0 {
 		dg.Graphs = append(dg.Graphs, &Graph{
-			UseSubgraph: false,
+			UseSubgraph: true,
 			SchemaName:  schemaName,
 			Tables:      make([]*Table, 0, 100),
 		})
@@ -283,7 +283,7 @@ func saveDatabaseStructure(cmd *cobra.Command, debugLevel int) {
 	}
 	rootCmd.Printf("connection established\n")
 
-	dbStructure, err := connection.GetStructure("*")
+	dbStructure, err := connection.GetStructure("*", false)
 	if err != nil {
 		rootCmd.PrintErrf("get database structure for %v fail with error: %v\n", targetSqlUrl, err)
 		return

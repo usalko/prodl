@@ -36,7 +36,7 @@ type DbStructure struct {
 type SqlConnection interface {
 	Establish(connectionOptions string) error
 	Execute(rawSql string) error
-	GetStructure(schemaPattern string) (*DbStructure, error)
+	GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error)
 }
 
 type MysqlConnection struct {
@@ -60,7 +60,7 @@ func (mysqlConnection *MysqlConnection) Execute(rawSql string) error {
 }
 
 // GetStructure implements SqlConnection.
-func (mysqlConnection *MysqlConnection) GetStructure(schemaPattern string) (*DbStructure, error) {
+func (mysqlConnection *MysqlConnection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
 	rows, err := mysqlConnection.db.Query(`SELECT *
 FROM INFORMATION_SCHEMA.Tables`)
 	if err != nil {
@@ -121,7 +121,7 @@ func (sqlite3Connection *Sqlite3Connection) Execute(rawSql string) error {
 }
 
 // GetStructure implements SqlConnection.
-func (sqlite3Connection *Sqlite3Connection) GetStructure(schemaPattern string) (*DbStructure, error) {
+func (sqlite3Connection *Sqlite3Connection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
 	rows, err := sqlite3Connection.db.Query(`SELECT *
 FROM INFORMATION_SCHEMA.Tables`)
 	if err != nil {
@@ -217,7 +217,7 @@ func (pgConnection *PgConnection) Query(rawSql string) (*sql.Rows, error) {
 }
 
 // GetStructure implements SqlConnection.
-func (pgConnection *PgConnection) GetStructure(schemaPattern string) (*DbStructure, error) {
+func (pgConnection *PgConnection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
@@ -233,8 +233,14 @@ func (pgConnection *PgConnection) GetStructure(schemaPattern string) (*DbStructu
 		Tables: make([]*DbTable, 0, 100),
 	}
 
-	resultReader := pgConn.ExecParams(ctx, `SELECT *
-FROM INFORMATION_SCHEMA.Tables`, nil, nil, nil, nil).Read()
+	getTablesQuery := `SELECT *
+FROM INFORMATION_SCHEMA.Tables`
+	if !includeSystemTables {
+		getTablesQuery += `
+WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
+	}
+
+	resultReader := pgConn.ExecParams(ctx, getTablesQuery, nil, nil, nil, nil).Read()
 	if resultReader.Err != nil {
 		return nil, resultReader.Err
 	}
