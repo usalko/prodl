@@ -64,7 +64,7 @@ func TestPsqlStatements(t *testing.T) {
 	}
 }
 
-func TestCreateStatement(t *testing.T) {
+func TestCreateStatementCase1(t *testing.T) {
 	text := `CREATE TABLE public.articles_article (
     id bigint NOT NULL,
     title character varying(300) NOT NULL,
@@ -75,6 +75,26 @@ func TestCreateStatement(t *testing.T) {
     preview character varying(300) NOT NULL,
     published boolean NOT NULL
 )`
+
+	tok, err := sql_parser.Parse(text, dialect.PSQL)
+	if err != nil {
+		t.Fatalf("%v", err)
+		return
+	}
+	createTable, ok := tok.(*ast.CreateTable)
+	if !ok {
+		t.Fatalf("%v", fmt.Errorf("not a create table statement: %v", text))
+		return
+	}
+	if createTable.TableSpec == nil {
+		t.Fatalf("%v", fmt.Errorf("doesn't recognize fields for create table statement: %v", text))
+		return
+	}
+	fmt.Printf("tok: %v\n", tok)
+}
+
+func TestCreateStatementCase2(t *testing.T) {
+	text := "\n\n\n--\n-- Name: auth_user; Type: TABLE; Schema: public; Owner: phytonyms.dev\n--\n\nCREATE TABLE public.auth_user (\n    id integer NOT NULL,\n    password character varying(128) NOT NULL,\n    last_login timestamp with time zone,\n    is_superuser boolean NOT NULL,\n    username character varying(150) NOT NULL,\n    first_name character varying(150) NOT NULL,\n    last_name character varying(150) NOT NULL,\n    email character varying(254) NOT NULL,\n    is_staff boolean NOT NULL,\n    is_active boolean NOT NULL,\n    date_joined timestamp with time zone NOT NULL\n);"
 
 	tok, err := sql_parser.Parse(text, dialect.PSQL)
 	if err != nil {

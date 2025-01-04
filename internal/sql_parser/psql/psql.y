@@ -525,7 +525,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <convertType> convert_type returning_type_opt convert_type_weight_string
 %type <columnType> column_type
 %type <columnType> int_type decimal_type numeric_type time_type char_type spatial_type
-%type <literal> length_opt varying_opt
+%type <literal> length_opt varying_opt with_timezone_opt
 %type <expr> func_datetime_precision
 %type <columnCharset> charset_opt
 %type <str> collate_opt
@@ -2106,9 +2106,9 @@ time_type:
   {
     $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
-| TIMESTAMP length_opt
+| TIMESTAMP with_timezone_opt length_opt
   {
-    $$ = ast.ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $3}
   }
 | INTERVAL length_opt
   {
@@ -2219,6 +2219,15 @@ varying_opt:
     $$ = nil
   }
 | VARYING
+  {
+    $$ = ast.NewStrLiteral($1)
+  }
+
+with_timezone_opt:
+  {
+    $$ = nil
+  }
+| WITH TIME ZONE
   {
     $$ = ast.NewStrLiteral($1)
   }
