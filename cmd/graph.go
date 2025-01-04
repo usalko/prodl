@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"text/template"
 	"time"
@@ -161,6 +162,19 @@ func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field
 	})
 }
 
+func (dg *DiGraph) getTable(tableName string, schemaName string) *Table {
+	if len(dg.Graphs) == 0 {
+		return nil
+	}
+	tableIndex := slices.IndexFunc(dg.Graphs[0].Tables, func(table *Table) bool {
+		return table.Name == tableName && table.SchemaName == schemaName
+	})
+	if tableIndex < 0 {
+		return nil
+	}
+	return dg.Graphs[0].Tables[tableIndex]
+}
+
 func getComprehensiveDotFileName(dumpFileName string) string {
 	return dumpFileName + ".dot"
 }
@@ -238,6 +252,7 @@ func processFileForGraph(
 							rootCmd.PrintErrf("%s\n", parseError)
 						}
 					}
+
 					createStatement, ok := statement.(*ast.CreateTable)
 					if ok {
 						fields := make([]*Field, 0, 10)
@@ -249,8 +264,33 @@ func processFileForGraph(
 						}
 
 						relations := make([]*Relation, 0, 5)
+
 						dumpGraph.addTable(createStatement.Table.Name.V, createStatement.Table.Qualifier.V, fields, relations)
 					}
+
+					alterTable, ok := statement.(*ast.AlterTable)
+					if ok {
+						table := dumpGraph.getTable(alterTable.Table.Qualifier.V, alterTable.Table.Name.V)
+						if table != nil {
+							for _, alterOption := range alterTable.AlterOptions {
+								addConstraintDefinition, ok := alterOption.(*ast.AddConstraintDefinition)
+								if ok {
+									foreignKeyDefinition, ok := addConstraintDefinition.ConstraintDefinition.Details.(*ast.ForeignKeyDefinition)
+									if ok {
+										table.Relations = append(table.Relations, &Relation{
+											NeedsNode:    true,
+											TargetSchema: foreignKeyDefinition.ReferenceDefinition.ReferencedTable.Qualifier.V,
+											Target:       foreignKeyDefinition.ReferenceDefinition.ReferencedTable.Name.V,
+											SchemaName:   table.SchemaName,
+											Name:         table.Name,
+											Label:        addConstraintDefinition.ConstraintDefinition.Name.Val,
+										})
+									}
+								}
+							}
+						}
+					}
+
 					statementsCount++
 					if debugLevel >= 2 {
 						rootCmd.Printf("[%v] processed statements: %v\n", time.Since(lastTime), statementsCount)

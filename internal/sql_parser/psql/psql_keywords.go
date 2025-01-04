@@ -134,6 +134,7 @@ var keywords = []cache.Keyword{
 	{Name: "cycle", Id: CYCLE},
 	{Name: "data", Id: DATA},
 	{Name: "database", Id: DATABASE},
+	{Name: "date", Id: DATE},
 	{Name: "day", Id: DAY},
 	{Name: "deallocate", Id: DEALLOCATE},
 	{Name: "dec", Id: DEC},
