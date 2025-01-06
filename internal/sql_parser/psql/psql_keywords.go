@@ -79,6 +79,7 @@ var keywords = []cache.Keyword{
 	{Name: "both", Id: BOTH},
 	{Name: "breadth", Id: BREADTH},
 	{Name: "by", Id: BY},
+	{Name: "bytea", Id: BYTEA},
 	{Name: "cache", Id: CACHE},
 	{Name: "call", Id: CALL},
 	{Name: "called", Id: CALLED},

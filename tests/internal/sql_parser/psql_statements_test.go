@@ -112,3 +112,23 @@ func TestCreateStatementCase2(t *testing.T) {
 	}
 	fmt.Printf("tok: %v\n", tok)
 }
+
+func TestCreateStatementCase3(t *testing.T) {
+	text := "\n\n\n--\n-- Name: django_apscheduler_djangojob; Type: TABLE; Schema: public; Owner: phytonyms.dev\n--\n\nCREATE TABLE public.django_apscheduler_djangojob (\n    id character varying(255) NOT NULL,\n    next_run_time timestamp with time zone,\n    job_state bytea NOT NULL\n);"
+
+	tok, err := sql_parser.Parse(text, dialect.PSQL)
+	if err != nil {
+		t.Fatalf("%v", err)
+		return
+	}
+	createTable, ok := tok.(*ast.CreateTable)
+	if !ok {
+		t.Fatalf("%v", fmt.Errorf("not a create table statement: %v", text))
+		return
+	}
+	if createTable.TableSpec == nil {
+		t.Fatalf("%v", fmt.Errorf("doesn't recognize fields for create table statement: %v", text))
+		return
+	}
+	fmt.Printf("tok: %v\n", tok)
+}
