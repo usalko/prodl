@@ -182,3 +182,25 @@ CREATE TABLE public.feedback_feedback (
 	}
 	fmt.Printf("tok: %v\n", tok)
 }
+
+func TestCreateStatementCase6(t *testing.T) {
+	text := `
+CREATE TABLE public.phytonyms_citation (
+    page_number_in_publication double precision NOT NULL
+)	`
+	tok, err := sql_parser.Parse(text, dialect.PSQL)
+	if err != nil {
+		t.Fatalf("%v", err)
+		return
+	}
+	createTable, ok := tok.(*ast.CreateTable)
+	if !ok {
+		t.Fatalf("%v", fmt.Errorf("not a create table statement: %v", text))
+		return
+	}
+	if createTable.TableSpec == nil {
+		t.Fatalf("%v", fmt.Errorf("doesn't recognize fields for create table statement: %v", text))
+		return
+	}
+	fmt.Printf("tok: %v\n", tok)
+}
