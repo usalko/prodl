@@ -321,7 +321,6 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %right <str> UNDERSCORE_GREEK UNDERSCORE_HEBREW UNDERSCORE_HP8 UNDERSCORE_KEYBCS2 UNDERSCORE_KOI8R UNDERSCORE_KOI8U UNDERSCORE_LATIN1 UNDERSCORE_LATIN2 UNDERSCORE_LATIN5
 %right <str> UNDERSCORE_LATIN7 UNDERSCORE_MACCE UNDERSCORE_MACROMAN UNDERSCORE_SJIS UNDERSCORE_SWE7 UNDERSCORE_TIS620 UNDERSCORE_UCS2 UNDERSCORE_UJIS UNDERSCORE_UTF16
 %right <str> UNDERSCORE_UTF16LE UNDERSCORE_UTF32 UNDERSCORE_UTF8 UNDERSCORE_UTF8MB4 UNDERSCORE_UTF8MB3
-%right <str> INTERVAL
 %nonassoc <str> '.'
 
 // There is no need to define precedence for the JSON
@@ -334,7 +333,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> REVERT
 %token <str> SCHEMA TABLE INDEX VIEW TO IGNORE IF PRIMARY COLUMN SPATIAL FULLTEXT KEY_BLOCK_SIZE CHECK INDEXES
 %token <str> ACTION CASCADE CONSTRAINT FOREIGN NO REFERENCES RESTRICT
-%token <str> SHOW DESCRIBE EXPLAIN DATE ESCAPE REPAIR OPTIMIZE TRUNCATE COALESCE EXCHANGE REBUILD PARTITIONING REMOVE PREPARE EXECUTE
+%token <str> SHOW DESCRIBE EXPLAIN ESCAPE REPAIR OPTIMIZE TRUNCATE COALESCE EXCHANGE REBUILD PARTITIONING REMOVE PREPARE EXECUTE
 %token <str> MAXVALUE PARTITION REORGANIZE LESS THAN PROCEDURE TRIGGER
 %token <str> VINDEX VINDEXES DIRECTORY NAME UPGRADE
 %token <str> STATUS VARIABLES WARNINGS CASCADED DEFINER OPTION SQL UNDEFINED
@@ -349,10 +348,10 @@ func bindVariable(psqlex psqLexer, bvar string) {
 // Type Tokens
 %token <str> BIT TINYINT SMALLINT MEDIUMINT INT INTEGER BIGINT INTNUM
 %token <str> REAL DOUBLE FLOAT_TYPE DECIMAL_TYPE NUMERIC
-%token <str> TIME TIMESTAMP DATETIME YEAR
+%token <str> DATE TIME TIMESTAMP INTERVAL
 %token <str> CHAR VARCHAR BOOL CHARACTER VARBINARY NCHAR
-%token <str> TEXT TINYTEXT MEDIUMTEXT LONGTEXT
-%token <str> BLOB TINYBLOB MEDIUMBLOB LONGBLOB JSON JSON_SCHEMA_VALID JSON_SCHEMA_VALIDATION_REPORT ENUM
+%token <str> TEXT
+%token <str> JSON JSON_SCHEMA_VALID JSON_SCHEMA_VALIDATION_REPORT ENUM
 %token <str> GEOMETRY POINT LINESTRING POLYGON GEOMETRYCOLLECTION MULTIPOINT MULTILINESTRING MULTIPOLYGON
 %token <str> ASCII UNICODE // used in CONVERT/CAST types
 
@@ -371,7 +370,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> CURRENT_TIMESTAMP DATABASE CURRENT_DATE NOW
 %token <str> CURRENT_TIME LOCALTIME LOCALTIMESTAMP CURRENT_USER
 %token <str> UTC_DATE UTC_TIME UTC_TIMESTAMP
-%token <str> DAY DAY_HOUR DAY_MICROSECOND DAY_MINUTE DAY_SECOND HOUR HOUR_MICROSECOND HOUR_MINUTE HOUR_SECOND MICROSECOND MINUTE MINUTE_MICROSECOND MINUTE_SECOND MONTH QUARTER SECOND SECOND_MICROSECOND YEAR_MONTH WEEK
+%token <str> DAY DAY_HOUR DAY_MICROSECOND DAY_MINUTE DAY_SECOND HOUR HOUR_MICROSECOND HOUR_MINUTE HOUR_SECOND MICROSECOND MINUTE MINUTE_MICROSECOND MINUTE_SECOND MONTH QUARTER SECOND SECOND_MICROSECOND YEAR_MONTH WEEK YEAR
 %token <str> REPLACE
 %token <str> CONVERT CAST
 %token <str> SUBSTR SUBSTRING
@@ -387,7 +386,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %token <str> MATCH AGAINST BOOLEAN LANGUAGE WITH QUERY EXPANSION WITHOUT VALIDATION
 
 // PostgresQL reserved words that are unused by this grammar will map to this token.
-%token <str> UNUSED ARRAY BYTE CUME_DIST DESCRIPTION DENSE_RANK EMPTY EXCEPT FIRST_VALUE GROUPING GROUPS JSON_TABLE LAG LAST_VALUE LATERAL LEAD
+%token <str> UNUSED ARRAY BYTEA BYTE CUME_DIST DESCRIPTION DENSE_RANK EMPTY EXCEPT FIRST_VALUE GROUPING GROUPS JSON_TABLE LAG LAST_VALUE LATERAL LEAD
 %token <str> NTH_VALUE NTILE OF OVER PERCENT_RANK RANK RECURSIVE ROW_NUMBER SYSTEM WINDOW
 %token <str> ACTIVE ADMIN AUTOEXTEND_SIZE BUCKETS CLONE COLUMN_FORMAT COMPONENT DEFINITION ENFORCED ENGINE_ATTRIBUTE EXCLUDE FOLLOWING GEOMCOLLECTION GET_MASTER_PUBLIC_KEY HISTOGRAM HISTORY
 %token <str> INACTIVE INVISIBLE LOCKED MASTER_COMPRESSION_ALGORITHMS MASTER_PUBLIC_KEY_PATH MASTER_TLS_CIPHERSUITES MASTER_ZSTD_COMPRESSION_LEVEL
@@ -526,7 +525,7 @@ func bindVariable(psqlex psqLexer, bvar string) {
 %type <convertType> convert_type returning_type_opt convert_type_weight_string
 %type <columnType> column_type
 %type <columnType> int_type decimal_type numeric_type time_type char_type spatial_type
-%type <literal> length_opt
+%type <literal> length_opt varying_opt with_timezone_opt
 %type <expr> func_datetime_precision
 %type <columnCharset> charset_opt
 %type <str> collate_opt
@@ -2079,6 +2078,10 @@ REAL float_length_opt
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
+| DOUBLE PRECISION
+  {
+    $$ = ast.ColumnType{Type: string($1)}
+  }
 | FLOAT_TYPE float_length_opt
   {
     $$ = ast.ColumnType{Type: string($1)}
@@ -2097,6 +2100,12 @@ REAL float_length_opt
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
+| DECIMAL decimal_length_opt
+  {
+    $$ = ast.ColumnType{Type: string($1)}
+    $$.Length = $2.Length
+    $$.Scale = $2.Scale
+  }
 
 time_type:
   DATE
@@ -2107,15 +2116,11 @@ time_type:
   {
     $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
-| TIMESTAMP length_opt
+| TIMESTAMP with_timezone_opt length_opt
   {
-    $$ = ast.ColumnType{Type: string($1), Length: $2}
+    $$ = ast.ColumnType{Type: string($1), Length: $3}
   }
-| DATETIME length_opt
-  {
-    $$ = ast.ColumnType{Type: string($1), Length: $2}
-  }
-| YEAR length_opt
+| INTERVAL length_opt
   {
     $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
@@ -2131,11 +2136,19 @@ char_type:
     // https://dev.psql.com/doc/refman/8.0/en/string-type-syntax.html
     $$ = ast.ColumnType{Type: "binary", Length: $2}
   }
+| CHARACTER varying_opt length_opt charset_opt
+  {
+    $$ = ast.ColumnType{Type: string($1), Length: $3, Charset: $4}
+  }
 | VARCHAR length_opt charset_opt
   {
     $$ = ast.ColumnType{Type: string($1), Length: $2, Charset: $3}
   }
 | BINARY length_opt
+  {
+    $$ = ast.ColumnType{Type: string($1), Length: $2}
+  }
+| BYTEA length_opt
   {
     $$ = ast.ColumnType{Type: string($1), Length: $2}
   }
@@ -2146,34 +2159,6 @@ char_type:
 | TEXT charset_opt
   {
     $$ = ast.ColumnType{Type: string($1), Charset: $2}
-  }
-| TINYTEXT charset_opt
-  {
-    $$ = ast.ColumnType{Type: string($1), Charset: $2}
-  }
-| MEDIUMTEXT charset_opt
-  {
-    $$ = ast.ColumnType{Type: string($1), Charset: $2}
-  }
-| LONGTEXT charset_opt
-  {
-    $$ = ast.ColumnType{Type: string($1), Charset: $2}
-  }
-| BLOB
-  {
-    $$ = ast.ColumnType{Type: string($1)}
-  }
-| TINYBLOB
-  {
-    $$ = ast.ColumnType{Type: string($1)}
-  }
-| MEDIUMBLOB
-  {
-    $$ = ast.ColumnType{Type: string($1)}
-  }
-| LONGBLOB
-  {
-    $$ = ast.ColumnType{Type: string($1)}
   }
 | JSON
   {
@@ -2243,6 +2228,24 @@ length_opt:
     $$ = ast.NewIntLiteral($2)
   }
 
+varying_opt:
+  {
+    $$ = nil
+  }
+| VARYING
+  {
+    $$ = ast.NewStrLiteral($1)
+  }
+
+with_timezone_opt:
+  {
+    $$ = nil
+  }
+| WITH TIME ZONE
+  {
+    $$ = ast.NewStrLiteral($1)
+  }
+
 float_length_opt:
   {
     $$ = ast.LengthScaleOption{}
@@ -2251,6 +2254,19 @@ float_length_opt:
 decimal_length_opt:
   {
     $$ = ast.LengthScaleOption{}
+  }
+| '(' INTEGRAL ')'
+  {
+    $$ = ast.LengthScaleOption{
+        Length: ast.NewIntLiteral($2),
+    }
+  }
+| '(' INTEGRAL ',' INTEGRAL ')'
+  {
+    $$ = ast.LengthScaleOption{
+        Length: ast.NewIntLiteral($2),
+        Scale: ast.NewIntLiteral($4),
+    }
   }
 
 unsigned_opt:
@@ -5263,10 +5279,6 @@ convert_type:
   {
     $$ = &ast.ConvertType{Type: string($1)}
   }
-| DATETIME length_opt
-  {
-    $$ = &ast.ConvertType{Type: string($1), Length: $2}
-  }
 | DECIMAL_TYPE decimal_length_opt
   {
     $$ = &ast.ConvertType{Type: string($1)}
@@ -5305,7 +5317,7 @@ convert_type:
   {
     $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
-| DOUBLE
+| DOUBLE PRECISION
   {
     $$ = &ast.ConvertType{Type: string($1)}
   }
@@ -5894,6 +5906,7 @@ reserved_keyword:
 | AUTHORIZATION
 | BINARY
 | BOTH
+| BYTEA
 | CASE
 | CAST
 | CHECK
@@ -6333,6 +6346,7 @@ non_reserved_keyword:
 | TEMPORARY
 | TEXT
 | TIES
+| DATE
 | TIME
 | TIMESTAMP
 | TRANSACTION

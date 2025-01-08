@@ -14,9 +14,94 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type DbField struct {
+	TableCatalog           string
+	TableSchema            string
+	TableName              string
+	ColumnName             string
+	OrdinalPosition        string
+	ColumnDefault          string
+	IsNullable             string
+	DataType               string
+	CharacterMaximumLength string
+	CharacterOctetLength   string
+	NumericPrecision       string
+	NumericPrecisionRadix  string
+	NumericScale           string
+	DatetimePrecision      string
+	IntervalType           string
+	IntervalPrecision      string
+	CharacterSetCatalog    string
+	CharacterSetSchema     string
+	CharacterSetName       string
+	CollationCatalog       string
+	CollationSchema        string
+	CollationName          string
+	DomainCatalog          string
+	DomainSchema           string
+	DomainName             string
+	DdtCatalog             string
+	UdtSchema              string
+	UdtName                string
+	ScopeCatalog           string
+	ScopeSchema            string
+	ScopeName              string
+	MaximumCardinality     string
+	DtdIdentifier          string
+	IsSelfReferencing      string
+	IsIdentity             string
+	IdentityGeneration     string
+	IdentityStart          string
+	IdentityIncrement      string
+	IdentityMaximum        string
+	IdentityMinimum        string
+	IdentityCycle          string
+	IsGenerated            string
+	GenerationExpression   string
+	IsUpdatable            string
+}
+
+type DbRelation struct {
+	ConstraintSchema           string
+	ConstraintName             string
+	TableSchema                string
+	TableName                  string
+	ColumnName                 string
+	OrdinalPosition            string
+	ReferencedConstraintSchema string
+	ReferencedConstraintName   string
+	ReferencedTableSchema      string
+	ReferencedTableName        string
+	ReferencedColumnName       string
+	ReferencedOrdinalPosition  string
+}
+
+type DbTable struct {
+	TableCatalog              string
+	TableSchema               string
+	TableName                 string
+	TableType                 string
+	SelfReferencingColumnName string
+	ReferenceGeneration       string
+	UserDefinedTypeCatalog    string
+	UserDefinedTypeSchema     string
+	UserDefinedTypeName       string
+	IsInsertableInto          string
+	IsTyped                   string
+	CommitAction              string
+
+	Fields    []*DbField
+	Relations []*DbRelation
+}
+
+type DbStructure struct {
+	Tables []*DbTable
+}
+
 type SqlConnection interface {
 	Establish(connectionOptions string) error
 	Execute(rawSql string) error
+	GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error)
 }
 
 type MysqlConnection struct {
@@ -39,6 +124,46 @@ func (mysqlConnection *MysqlConnection) Execute(rawSql string) error {
 	return err
 }
 
+// GetStructure implements SqlConnection.
+func (mysqlConnection *MysqlConnection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
+	rows, err := mysqlConnection.db.Query(`SELECT *
+FROM INFORMATION_SCHEMA.Tables`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	// An album slice to hold data from returned rows.
+	result := &DbStructure{
+		Tables: make([]*DbTable, 0, 100),
+	}
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var table DbTable
+		if err := rows.Scan(
+			&table.TableCatalog,
+			&table.TableSchema,
+			&table.TableName,
+			&table.TableType,
+			&table.SelfReferencingColumnName,
+			&table.ReferenceGeneration,
+			&table.UserDefinedTypeCatalog,
+			&table.UserDefinedTypeSchema,
+			&table.UserDefinedTypeName,
+			&table.IsInsertableInto,
+			&table.IsTyped,
+			&table.CommitAction,
+		); err != nil {
+			return nil, err
+		}
+		result.Tables = append(result.Tables, &table)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 type Sqlite3Connection struct {
 	db *sql.DB
 }
@@ -58,6 +183,46 @@ func (sqlite3Connection *Sqlite3Connection) Establish(connectionOptions string) 
 func (sqlite3Connection *Sqlite3Connection) Execute(rawSql string) error {
 	_, err := sqlite3Connection.db.Exec(rawSql)
 	return err
+}
+
+// GetStructure implements SqlConnection.
+func (sqlite3Connection *Sqlite3Connection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
+	rows, err := sqlite3Connection.db.Query(`SELECT *
+FROM INFORMATION_SCHEMA.Tables`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	// An album slice to hold data from returned rows.
+	result := &DbStructure{
+		Tables: make([]*DbTable, 0, 100),
+	}
+
+	// Loop through rows, using Scan to assign column data to struct fields.
+	for rows.Next() {
+		var table DbTable
+		if err := rows.Scan(
+			&table.TableCatalog,
+			&table.TableSchema,
+			&table.TableName,
+			&table.TableType,
+			&table.SelfReferencingColumnName,
+			&table.ReferenceGeneration,
+			&table.UserDefinedTypeCatalog,
+			&table.UserDefinedTypeSchema,
+			&table.UserDefinedTypeName,
+			&table.IsInsertableInto,
+			&table.IsTyped,
+			&table.CommitAction,
+		); err != nil {
+			return nil, err
+		}
+		result.Tables = append(result.Tables, &table)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 type PgConnection struct {
@@ -95,6 +260,181 @@ func (pgConnection *PgConnection) Execute(rawSql string) error {
 		return result.Err
 	}
 	return nil
+}
+
+// Query implements SqlConnection.
+func (pgConnection *PgConnection) Query(rawSql string) (*sql.Rows, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	pgConn, err := pgconn.Connect(ctx, pgConnection.pgxOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer pgConn.Close(ctx)
+
+	// Recognize COPY FROM STDIN command
+	result := pgConn.ExecParams(ctx, rawSql, nil, nil, nil, nil).Read()
+	if result.Err != nil {
+		return nil, result.Err
+	}
+	return &sql.Rows{}, nil
+}
+
+// GetStructure implements SqlConnection.
+func (pgConnection *PgConnection) GetStructure(schemaPattern string, includeSystemTables bool) (*DbStructure, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
+
+	pgConn, err := pgconn.Connect(ctx, pgConnection.pgxOptions)
+	if err != nil {
+		return nil, err
+	}
+	defer pgConn.Close(ctx)
+
+	// An tables slice to hold data from returned rows.
+	result := &DbStructure{
+		Tables: make([]*DbTable, 0, 100),
+	}
+
+	getTablesQuery := `SELECT *
+FROM INFORMATION_SCHEMA.Tables`
+	if !includeSystemTables {
+		getTablesQuery += `
+WHERE table_schema <> 'pg_catalog' and table_schema <> 'information_schema'`
+	}
+
+	resultReader := pgConn.ExecParams(ctx, getTablesQuery, nil, nil, nil, nil).Read()
+	if resultReader.Err != nil {
+		return nil, resultReader.Err
+	}
+	for _, row := range resultReader.Rows {
+		fields := make([]*DbField, 0, 20)
+		schemaName := string(row[1])
+		tableName := string(row[2])
+
+		fieldsReader := pgConn.ExecParams(ctx, fmt.Sprintf(`SELECT *
+		FROM INFORMATION_SCHEMA.COLUMNS
+		WHERE TABLE_SCHEMA = '%v' AND TABLE_NAME = '%v'`, schemaName, tableName), nil, nil, nil, nil).Read()
+		if fieldsReader.Err == nil {
+			for _, row := range fieldsReader.Rows {
+				fields = append(fields, &DbField{
+					TableCatalog:           string(row[0]),
+					TableSchema:            string(row[1]),
+					TableName:              string(row[2]),
+					ColumnName:             string(row[3]),
+					OrdinalPosition:        string(row[4]),
+					ColumnDefault:          string(row[5]),
+					IsNullable:             string(row[6]),
+					DataType:               string(row[7]),
+					CharacterMaximumLength: string(row[8]),
+					CharacterOctetLength:   string(row[9]),
+					NumericPrecision:       string(row[10]),
+					NumericPrecisionRadix:  string(row[11]),
+					NumericScale:           string(row[12]),
+					DatetimePrecision:      string(row[13]),
+					IntervalType:           string(row[14]),
+					IntervalPrecision:      string(row[15]),
+					CharacterSetCatalog:    string(row[16]),
+					CharacterSetSchema:     string(row[17]),
+					CharacterSetName:       string(row[18]),
+					CollationCatalog:       string(row[19]),
+					CollationSchema:        string(row[20]),
+					CollationName:          string(row[21]),
+					DomainCatalog:          string(row[22]),
+					DomainSchema:           string(row[23]),
+					DomainName:             string(row[24]),
+					DdtCatalog:             string(row[25]),
+					UdtSchema:              string(row[26]),
+					UdtName:                string(row[27]),
+					ScopeCatalog:           string(row[28]),
+					ScopeSchema:            string(row[29]),
+					ScopeName:              string(row[30]),
+					MaximumCardinality:     string(row[31]),
+					DtdIdentifier:          string(row[32]),
+					IsSelfReferencing:      string(row[33]),
+					IsIdentity:             string(row[34]),
+					IdentityGeneration:     string(row[35]),
+					IdentityStart:          string(row[36]),
+					IdentityIncrement:      string(row[37]),
+					IdentityMaximum:        string(row[38]),
+					IdentityMinimum:        string(row[39]),
+					IdentityCycle:          string(row[40]),
+					IsGenerated:            string(row[41]),
+					GenerationExpression:   string(row[42]),
+					IsUpdatable:            string(row[43]),
+				})
+			}
+		}
+
+		relations := make([]*DbRelation, 0, 5)
+		relationsReader := pgConn.ExecParams(ctx, fmt.Sprintf(`SELECT 
+     KCU1.CONSTRAINT_SCHEMA AS CONSTRAINT_SCHEMA 
+    ,KCU1.CONSTRAINT_NAME AS CONSTRAINT_NAME 
+    ,KCU1.TABLE_SCHEMA AS TABLE_SCHEMA 
+    ,KCU1.TABLE_NAME AS TABLE_NAME 
+    ,KCU1.COLUMN_NAME AS COLUMN_NAME 
+    ,KCU1.ORDINAL_POSITION AS ORDINAL_POSITION 
+    ,KCU2.CONSTRAINT_SCHEMA AS REFERENCED_CONSTRAINT_SCHEMA 
+    ,KCU2.CONSTRAINT_NAME AS REFERENCED_CONSTRAINT_NAME 
+    ,KCU2.TABLE_SCHEMA AS REFERENCED_TABLE_SCHEMA 
+    ,KCU2.TABLE_NAME AS REFERENCED_TABLE_NAME 
+    ,KCU2.COLUMN_NAME AS REFERENCED_COLUMN_NAME 
+    ,KCU2.ORDINAL_POSITION AS REFERENCED_ORDINAL_POSITION 
+FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS AS RC 
+
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU1 
+    ON KCU1.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG  
+    AND KCU1.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA 
+    AND KCU1.CONSTRAINT_NAME = RC.CONSTRAINT_NAME 
+
+INNER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS KCU2 
+    ON KCU2.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG  
+    AND KCU2.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA 
+    AND KCU2.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME 
+    AND KCU2.ORDINAL_POSITION = KCU1.ORDINAL_POSITION 
+	WHERE KCU1.TABLE_SCHEMA = '%v' AND KCU1.TABLE_NAME = '%v'`, schemaName, tableName), nil, nil, nil, nil).Read()
+		if relationsReader.Err == nil {
+			for _, row := range relationsReader.Rows {
+				relations = append(relations, &DbRelation{
+					ConstraintSchema:           string(row[0]),
+					ConstraintName:             string(row[1]),
+					TableSchema:                string(row[2]),
+					TableName:                  string(row[3]),
+					ColumnName:                 string(row[4]),
+					OrdinalPosition:            string(row[5]),
+					ReferencedConstraintSchema: string(row[6]),
+					ReferencedConstraintName:   string(row[7]),
+					ReferencedTableSchema:      string(row[8]),
+					ReferencedTableName:        string(row[9]),
+					ReferencedColumnName:       string(row[10]),
+					ReferencedOrdinalPosition:  string(row[11]),
+				})
+			}
+		}
+
+		table := DbTable{
+			TableCatalog:              string(row[0]),
+			TableSchema:               schemaName,
+			TableName:                 tableName,
+			TableType:                 string(row[3]),
+			SelfReferencingColumnName: string(row[4]),
+			ReferenceGeneration:       string(row[5]),
+			UserDefinedTypeCatalog:    string(row[6]),
+			UserDefinedTypeSchema:     string(row[7]),
+			UserDefinedTypeName:       string(row[8]),
+			IsInsertableInto:          string(row[9]),
+			IsTyped:                   string(row[10]),
+			CommitAction:              string(row[11]),
+
+			Fields:    fields,
+			Relations: relations,
+		}
+		result.Tables = append(result.Tables, &table)
+	}
+
+	return result, nil
 }
 
 // connection factory

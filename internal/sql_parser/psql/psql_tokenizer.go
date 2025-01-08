@@ -219,6 +219,11 @@ func NewBufferedPsqlStringTokenizer(sql *tokenizer.BytesBuffer) *PsqlTokenizer {
 	}
 }
 
+func acceptInContext(statement ast.Statement) bool {
+	_, ok := statement.(*ast.CreateTable)
+	return !ok
+}
+
 // Lex returns the next token form the Tokenizer.
 // This function is used by go yacc.
 func (tzr *PsqlTokenizer) Lex(lval *psqSymType) int {
@@ -228,7 +233,7 @@ func (tzr *PsqlTokenizer) Lex(lval *psqSymType) int {
 
 	typ, val := tzr.Scan()
 	for typ == COMMENT {
-		if tzr.ignoreCommentKeyword {
+		if tzr.ignoreCommentKeyword || (!acceptInContext(tzr.partialDDL) && strings.ToUpper(val) == "COMMENT") {
 			lval.str = val
 			tzr.lastToken = val
 			return ID

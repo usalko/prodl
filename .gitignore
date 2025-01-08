@@ -27,14 +27,15 @@ go.work.sum
 # Localest data
 .data
 
-# IDE specific
-.vscode
+# Git specific
+*.orig
 
-# yacc.go debug output
-y.output
-
-# debug compilations
+# Debugging output for goyacc command
+*.output
 __debug_bin*
 
-# tests output
+# Local artifacts
 *.sqlite3
+
+# IDE specific
+.vscode

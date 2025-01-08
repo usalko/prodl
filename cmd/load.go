@@ -79,7 +79,7 @@ Sql url for loading dump file. Examples:
 	loadCmd.Flags().IntP("debug-level", "d", 0, `
 Debug level:
 
-    0 no debug messages
+	0 no debug messages
 	1 show debug messages
 	2 show advanced debug messages
 
