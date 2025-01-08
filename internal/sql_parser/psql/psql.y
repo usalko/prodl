@@ -2096,6 +2096,12 @@ REAL float_length_opt
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
+| DECIMAL decimal_length_opt
+  {
+    $$ = ast.ColumnType{Type: string($1)}
+    $$.Length = $2.Length
+    $$.Scale = $2.Scale
+  }
 
 time_type:
   DATE
@@ -2244,7 +2250,20 @@ float_length_opt:
 decimal_length_opt:
   {
     $$ = ast.LengthScaleOption{}
-  } 
+  }
+| '(' INTEGRAL ')'
+  {
+    $$ = ast.LengthScaleOption{
+        Length: ast.NewIntLiteral($2),
+    }
+  }
+| '(' INTEGRAL ',' INTEGRAL ')'
+  {
+    $$ = ast.LengthScaleOption{
+        Length: ast.NewIntLiteral($2),
+        Scale: ast.NewIntLiteral($4),
+    }
+  }
 
 unsigned_opt:
   {

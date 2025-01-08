@@ -132,3 +132,53 @@ func TestCreateStatementCase3(t *testing.T) {
 	}
 	fmt.Printf("tok: %v\n", tok)
 }
+
+func TestCreateStatementCase4(t *testing.T) {
+	text := `
+	CREATE TABLE public.django_apscheduler_djangojobexecution (
+    duration numeric(15,2),
+    finished numeric(15,2)
+);
+	`
+	tok, err := sql_parser.Parse(text, dialect.PSQL)
+	if err != nil {
+		t.Fatalf("%v", err)
+		return
+	}
+	createTable, ok := tok.(*ast.CreateTable)
+	if !ok {
+		t.Fatalf("%v", fmt.Errorf("not a create table statement: %v", text))
+		return
+	}
+	if createTable.TableSpec == nil {
+		t.Fatalf("%v", fmt.Errorf("doesn't recognize fields for create table statement: %v", text))
+		return
+	}
+	fmt.Printf("tok: %v\n", tok)
+}
+
+func TestCreateStatementCase5(t *testing.T) {
+	text := `
+CREATE TABLE public.feedback_feedback (
+    id bigint NOT NULL,
+    name character varying(100) NOT NULL,
+    comment text NOT NULL,
+    contacts character varying(500) NOT NULL,
+    created timestamp with time zone NOT NULL
+)	`
+	tok, err := sql_parser.Parse(text, dialect.PSQL)
+	if err != nil {
+		t.Fatalf("%v", err)
+		return
+	}
+	createTable, ok := tok.(*ast.CreateTable)
+	if !ok {
+		t.Fatalf("%v", fmt.Errorf("not a create table statement: %v", text))
+		return
+	}
+	if createTable.TableSpec == nil {
+		t.Fatalf("%v", fmt.Errorf("doesn't recognize fields for create table statement: %v", text))
+		return
+	}
+	fmt.Printf("tok: %v\n", tok)
+}
