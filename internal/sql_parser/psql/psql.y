@@ -2078,6 +2078,10 @@ REAL float_length_opt
     $$.Length = $2.Length
     $$.Scale = $2.Scale
   }
+| DOUBLE PRECISION
+  {
+    $$ = ast.ColumnType{Type: string($1)}
+  }
 | FLOAT_TYPE float_length_opt
   {
     $$ = ast.ColumnType{Type: string($1)}
@@ -5313,7 +5317,7 @@ convert_type:
   {
     $$ = &ast.ConvertType{Type: string($1), Length: $2}
   }
-| DOUBLE
+| DOUBLE PRECISION
   {
     $$ = &ast.ConvertType{Type: string($1)}
   }
