@@ -8860,7 +8860,7 @@ func psqIaddr(v any) __yyunsafe__.Pointer {
 
 var (
 	/* available values are: 0, 1, 2, 3, 4 */
-	psqDebug        = 4
+	psqDebug        = 0
 	psqErrorVerbose = true
 )
 
