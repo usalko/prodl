@@ -162,7 +162,7 @@ func (dg *DiGraph) addTable(tableName string, schemaName string, fields []*Field
 	})
 }
 
-func (dg *DiGraph) getTable(tableName string, schemaName string) *Table {
+func (dg *DiGraph) getTable(schemaName string, tableName string) *Table {
 	if len(dg.Graphs) == 0 {
 		return nil
 	}
