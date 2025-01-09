@@ -96,7 +96,8 @@ if [ "$COMMAND" == "generate" ] || [ "$COMMAND" == "gen" ]; then
 fi
 
 if [ "$COMMAND" == "install" ]; then
-    go build -o 
+    go build -o build/prodl
+    sudo cp build/prodl /usr/local/bin/
 fi
 
 # =================================================================================================

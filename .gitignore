@@ -39,3 +39,6 @@ __debug_bin*
 
 # IDE specific
 .vscode
+
+# build folder
+build
