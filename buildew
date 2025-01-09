@@ -65,13 +65,13 @@ if [ "$COMMAND" == "version" ]; then
     # Check version format
     [[ "$NEW_PRODL_PACKAGE_VERSION" =~ [0-9]+\.[0-9]+\.[0-9]+ ]] || ( echo ERROR: wrong version format; exit 1 )
 
-    # Replace versions in go.mod files
-    find . -name go.mod -exec sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" '{}' \;
-    [ $? -eq 0 ] || ( echo Fail replace version in go.mod files; exit 1 ) 
+    # # Replace versions in go.mod files
+    # find . -name go.mod -exec sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" '{}' \;
+    # [ $? -eq 0 ] || ( echo Fail replace version in go.mod files; exit 1 ) 
 
-    # Replace version in README.md
-    sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" ./README.md
-    [ $? -eq 0 ] || ( echo Fail replace version in README.md; exit 1 )
+    # # Replace version in README.md
+    # sed -i "s/$PRODL_PACKAGE_VERSION/$NEW_PRODL_PACKAGE_VERSION/g" ./README.md
+    # [ $? -eq 0 ] || ( echo Fail replace version in README.md; exit 1 )
 
     if [ "$PRODL_PACKAGE_VERSION" != "$NEW_PRODL_PACKAGE_VERSION" ]; then
         git add .
@@ -93,6 +93,10 @@ if [ "$COMMAND" == "generate" ] || [ "$COMMAND" == "gen" ]; then
     for SCRIPT in "${SCRIPTS[@]}"; do
         go generate $SCRIPT
     done
+fi
+
+if [ "$COMMAND" == "install" ]; then
+    go build -o 
 fi
 
 # =================================================================================================
