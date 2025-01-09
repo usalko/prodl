@@ -7,8 +7,8 @@ require (
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	github.com/usalko/hexi v0.1.12
-	github.com/usalko/hexi/ft v0.1.12
+	github.com/usalko/hexi v0.2.12
+	github.com/usalko/hexi/ft v0.2.12
 )
 
 require (

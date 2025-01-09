@@ -97,5 +97,5 @@ fi
 
 # =================================================================================================
 
-AVAILABLE_COMMANDS="test tests version gen"
+AVAILABLE_COMMANDS="test tests version gen install"
 [[ $AVAILABLE_COMMANDS =~ (^| )$COMMAND($| ) ]] && echo 'Ok' || (echo 'Unknown command: ' "$COMMAND" && echo 'Available commands are: ' "$AVAILABLE_COMMANDS")
